@@ -324,3 +324,15 @@
     display: grid;
   }
 }
+.mt-conversation-card { display: flex; gap: 16px; align-items: start; padding: 20px; }
+.mt-conversation-card > div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.mt-conversation-card > svg { color: var(--mt-primary); flex: none; }
+.mt-conversation-card:hover { border-color: var(--mt-input-line); }
+.mt-message-list { display: grid; gap: 16px; }
+.mt-message { padding: 14px 16px; border-radius: 12px; background: var(--mt-page); width: fit-content; max-width: 85%; min-width: 0; overflow-wrap: anywhere; }
+.mt-message p + p { margin-top: 6px; }
+.mt-message-own { margin-left: auto; background: var(--mt-mint); }
+.mt-schedule-summary summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; color: var(--mt-primary); font-weight: 600; }
+@media(max-width:639px) { .mt-conversation-card { flex-wrap: wrap; padding: 16px; gap: 12px; } .mt-message { max-width: 95%; } }
+.mt-interval { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; align-items: end; gap: 12px; }
+@media(max-width:639px) { .mt-interval { grid-template-columns: minmax(0,1fr); } .mt-interval > button { justify-self: start; } }

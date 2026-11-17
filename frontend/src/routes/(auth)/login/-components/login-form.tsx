@@ -147,6 +147,7 @@ export function LoginForm() {
               {pending ? 'Kirilmoqda…' : 'Kirish'}
             </button>
           </form>
+          <Link to="/faollashtirish" className="mt-link mt-5 inline-flex min-h-11 items-center text-sm text-action underline">Bemor hisobini faollashtirish</Link>
         </div>
       </div>
     </main>
