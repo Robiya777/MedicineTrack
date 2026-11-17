@@ -1,13 +1,35 @@
-import { Link, Navigate, Outlet, useNavigate, useRouter } from '@tanstack/react-router'
-import { HeartPulse } from 'lucide-react'
+import {
+  Link,
+  Navigate,
+  Outlet,
+  getRouteApi,
+  useNavigate,
+  useRouter,
+  useLocation,
+} from '@tanstack/react-router'
+import {
+  Building2,
+  HeartPulse,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  ShieldCheck,
+} from 'lucide-react'
 import { useState } from 'react'
 import { signOut } from '../../../../../api/session'
 import { workspaces } from '../../../../../components/workspaces'
+import { Dialog } from '../../../../../components/dialog'
 import { useSessionStore } from '../../../../../state/session'
+import { secondaryButton } from '../../../../../features/hospital/ui'
+
+const workspaceRoute = getRouteApi('/(app)/kabinet/$role')
 
 export function WorkspaceLayout() {
   const user = useSessionStore((state) => state.user)
   const navigate = useNavigate()
+  const search = workspaceRoute.useSearch()
+  const pathname = useLocation({ select: (location) => location.pathname })
+  const [drawer, setDrawer] = useState(false)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
 
@@ -18,42 +40,162 @@ export function WorkspaceLayout() {
       await signOut()
       await navigate({ to: '/login', search: {}, replace: true })
     } catch {
-      setError('Chiqish amalga oshmadi. Ulanishni tekshirib, qayta urinib ko‘ring.')
+      setError(
+        'Chiqish amalga oshmadi. Ulanishni tekshirib, qayta urinib ko‘ring.',
+      )
     } finally {
       setPending(false)
     }
   }
 
-  if (!user) return pending ? null : <Navigate to="/login" search={{ expired: true }} replace />
-
-  const patientPortal = user.role === 'PATIENT'
-  const rail = patientPortal ? 'bg-[#fffdf5]' : 'bg-[#f7fcfa] md:border-b-0 md:border-r'
-  const layout = patientPortal ? 'bg-[#f8f5ec]' : 'bg-[#edf5f3] md:grid md:grid-cols-[14rem_minmax(0,1fr)]'
-
+  if (!user)
+    return pending ? null : (
+      <Navigate to="/login" search={{ expired: true }} replace />
+    )
+  const workspace = workspaces[user.role]
+  const fullName =
+    [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username
+  const initials = fullName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+  const home = '/kabinet/' + workspace.slug
+  const navigation = (
+    <nav
+      className="mt-navigation mt-live-navigation"
+      aria-label="Kabinet menyusi"
+    >
+      <Link
+        to="/kabinet/$role"
+        params={{ role: workspace.slug }}
+        search={{}}
+        aria-current={
+          pathname.replace(/\/$/, '') === home &&
+          (!search.segment ||
+            search.segment === 'all' ||
+            search.segment === 'open')
+            ? 'page'
+            : undefined
+        }
+        onClick={() => setDrawer(false)}
+      >
+        <LayoutDashboard size={19} aria-hidden="true" />
+        <span>{user.role === 'HOSPITAL' ? 'Chiqarishlar' : 'Ish stoli'}</span>
+      </Link>
+      {user.role === 'COORDINATOR' &&
+        [
+          ['unassigned', 'Mas’ulsiz chaqiruvlar'],
+          ['soon', 'Muddati yaqin'],
+          ['overdue', 'Kechikkan chaqiruvlar'],
+        ].map(([segment, label]) => (
+          <Link
+            key={segment}
+            to="/kabinet/$role"
+            params={{ role: workspace.slug }}
+            search={{ segment: segment as 'unassigned' | 'soon' | 'overdue' }}
+            aria-current={search.segment === segment ? 'true' : undefined}
+            onClick={() => setDrawer(false)}
+          >
+            {label}
+          </Link>
+        ))}
+    </nav>
+  )
+  const logout = (
+    <button
+      type="button"
+      className={secondaryButton}
+      onClick={() => void handleLogout()}
+      disabled={pending}
+    >
+      <LogOut size={17} aria-hidden="true" />
+      {pending ? 'Chiqilmoqda…' : 'Chiqish'}
+    </button>
+  )
   return (
-    <div className={`min-h-dvh ${layout}`}>
-      <header className={`flex flex-wrap justify-between gap-3 border-b border-line px-5 py-4 ${rail} ${patientPortal ? '' : 'md:flex-col md:justify-start md:gap-6 md:py-7'}`}>
+    <div className="mt-theme mt-live">
+      <a href="#workspace-content" className="mt-skip">
+        Asosiy mazmunga o‘tish
+      </a>
+      <aside className="mt-sidebar">
         <Link
           to="/kabinet/$role"
-          params={{ role: workspaces[user.role].slug }}
-          className="inline-flex min-h-11 items-center gap-2 rounded-sm text-lg font-semibold text-[#123e37]"
+          params={{ role: workspace.slug }}
+          search={{}}
+          className="mt-brand"
         >
-          <HeartPulse size={22} aria-hidden="true" />
-          MedicineTrack
+          <span>
+            <HeartPulse size={29} aria-hidden="true" />
+          </span>
+          <strong>MedicineTrack</strong>
         </Link>
-        <button
-          type="button"
-          onClick={() => void handleLogout()}
-          disabled={pending}
-          className="min-h-11 rounded-lg border border-line bg-white px-4 text-sm font-medium text-action hover:bg-surface disabled:opacity-60"
-        >
-          {pending ? 'Chiqilmoqda…' : 'Chiqish'}
-        </button>
-      </header>
-      <main className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8">
-        {error && <p className="mb-5 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">{error}</p>}
-        <Outlet />
-      </main>
+        {navigation}
+        <div className="mt-sidebar-bottom">
+          <div className="mt-territory">
+            <span>
+              <ShieldCheck size={16} aria-hidden="true" />
+              Ishchi kabinet
+            </span>
+            <strong>{workspace.label}</strong>
+          </div>
+          {logout}
+        </div>
+      </aside>
+      <div className="mt-workspace">
+        <header className="mt-topbar">
+          <button
+            type="button"
+            className="mt-button mt-button-quiet mt-icon-button mt-menu-trigger"
+            aria-label="Menyuni ochish"
+            aria-expanded={drawer}
+            onClick={() => setDrawer(true)}
+          >
+            <Menu size={22} aria-hidden="true" />
+          </button>
+          <div className="mt-topbar-location">
+            <Building2 size={18} aria-hidden="true" />
+            <span>{workspace.title}</span>
+          </div>
+          <div className="mt-profile">
+            <span className="mt-avatar" aria-hidden="true">
+              {initials}
+            </span>
+            <div>
+              <strong>{fullName}</strong>
+              <span>{workspace.label}</span>
+            </div>
+          </div>
+        </header>
+        <main id="workspace-content" tabIndex={-1} className="mt-main">
+          {error && (
+            <p
+              className="mb-5 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800"
+              role="alert"
+            >
+              {error}
+            </p>
+          )}
+          <Outlet />
+          <footer className="mt-page-footer">
+            <p>
+              <ShieldCheck size={14} aria-hidden="true" />
+              Bemor kuzatuvi
+            </p>
+            <p>Vaqtlar Toshkent vaqtida</p>
+          </footer>
+        </main>
+      </div>
+      {drawer && (
+        <Dialog title="MedicineTrack" close={() => setDrawer(false)} drawer>
+          {navigation}
+          <div className="mt-drawer-bottom">
+            <span>{fullName}</span>
+            {logout}
+          </div>
+        </Dialog>
+      )}
     </div>
   )
 }
@@ -61,19 +203,24 @@ export function WorkspaceLayout() {
 export function SessionError({ reset }: { reset: () => void }) {
   const router = useRouter()
   return (
-    <main className="mx-auto max-w-xl space-y-4 px-5 py-12">
-      <h1 className="text-2xl font-semibold">Kabinet ochilmadi</h1>
-      <p className="text-muted" role="alert">Sessiyani tekshirib bo‘lmadi. Ulanishni tekshirib, qayta urinib ko‘ring.</p>
-      <button
-        type="button"
-        onClick={() => {
-          reset()
-          void router.invalidate()
-        }}
-        className="min-h-11 rounded-lg bg-action px-4 font-medium text-white"
-      >
-        Qayta tekshirish
-      </button>
-    </main>
+    <div className="mt-theme">
+      <main className="mx-auto max-w-xl space-y-4 px-5 py-12">
+        <h1 className="text-2xl font-semibold">Kabinet ochilmadi</h1>
+        <p className="text-muted" role="alert">
+          Sessiyani tekshirib bo‘lmadi. Ulanishni tekshirib, qayta urinib
+          ko‘ring.
+        </p>
+        <button
+          type="button"
+          className={secondaryButton}
+          onClick={() => {
+            reset()
+            void router.invalidate()
+          }}
+        >
+          Qayta tekshirish
+        </button>
+      </main>
+    </div>
   )
 }

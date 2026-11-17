@@ -1,4 +1,9 @@
 export const variants = {
+  medicinetrack: {
+    name: 'MedicineTrack',
+    description: 'Kelishilgan teal va mint yo‘nalishi. Koordinator preview.',
+    startScreen: 'queue',
+  },
   clinical: {
     name: 'Klinik kabinet',
     description: 'Yon menyu va keng klinik jadvallar.',

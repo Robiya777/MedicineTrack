@@ -7,7 +7,7 @@ Statsionardan chiqarilgan og‘ir bemorni hududiy oilaviy shifokorga avtomatik t
 - [Batafsil texnik topshiriq — TZ (o‘zbekcha)](docs/TECHNICAL_SPEC_UZ.md)
 - [Nurazizning uch kunlik frontend rejasi](docs/FRONTEND_PLAN_UZ.md)
 
-Repo tarkibida [backend](backend/README.md), [web frontend](frontend/README.md) va [Android prototip](android/README.md) mavjud. Webda backendga ulangan login, sessiya va rolga mos kabinetlar ishlaydi. Androidda bemor va shifokor kirishi, patronaj, chat, holat va dori eslatmalari tekshirilgan.
+Repo tarkibida [backend](backend/README.md), [web frontend](frontend/README.md) va [Android prototip](android/README.md) mavjud. Webda backendga ulangan login, sessiya, statsionar chiqarishlari, koordinator nazorati va shifokor hisoboti ishlaydi. Asosiy ishchi ekranlarga teal/mint dizayn ulangan. Androidda bemor va shifokor kirishi, patronaj, chat, holat va dori eslatmalari tekshirilgan.
 
 Android sinov natijalari va cheklovlari [tekshiruv hisobotida](android/VALIDATION.md) keltirilgan.
 
@@ -36,7 +36,7 @@ Demo muhitida `frontend/dist`ni HTTPS orqali tarqating. Shu origin ichida `/api/
 
 ### Web dizayn galereyasi
 
-Dev serverni ishga tushiring va terminaldagi manzilga `/design` qo‘shing. Galereyada beshta variant va sintetik demo oqimlari bor. Ko‘rib chiqish uchun build kerak bo‘lsa, `VITE_ENABLE_DESIGN_PREVIEW=true npm run build` buyrug‘idan foydalaning.
+Dev serverni ishga tushiring va terminaldagi manzilga `/design` qo‘shing. Galereyada oltita variant va sintetik demo oqimlari bor. Ko‘rib chiqish uchun build kerak bo‘lsa, `VITE_ENABLE_DESIGN_PREVIEW=true npm run build` buyrug‘idan foydalaning.
 
 ### Kutubxonalar qayerda ulangan
 

@@ -1,16 +1,17 @@
 import { getRouteApi, Link, useNavigate } from '@tanstack/react-router'
 import { isAxiosError } from 'axios'
-import { HeartPulse } from 'lucide-react'
+import { Eye, EyeOff, HeartPulse, ShieldCheck } from 'lucide-react'
 import { useState, type SubmitEvent } from 'react'
 import { signIn } from '../../../../api/session'
 import { workspaces } from '../../../../components/workspaces'
 
-const inputClass = 'mt-2 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-base'
+const inputClass = 'mt-input mt-2'
 
 function loginError(error: unknown) {
   const status = isAxiosError(error) ? error.response?.status : undefined
   if (status === 401) return 'Login yoki parol noto‘g‘ri.'
-  if (status === 429) return 'Urinishlar soni oshib ketdi. Birozdan keyin qayta urinib ko‘ring.'
+  if (status === 429)
+    return 'Urinishlar soni oshib ketdi. Birozdan keyin qayta urinib ko‘ring.'
   return 'Kirish amalga oshmadi. Ulanishni tekshirib, qayta urinib ko‘ring.'
 }
 
@@ -19,6 +20,7 @@ const loginRoute = getRouteApi('/(auth)/login/')
 export function LoginForm() {
   const { expired } = loginRoute.useSearch()
   const navigate = useNavigate()
+  const [showPassword, setShowPassword] = useState(false)
   const [pending, setPending] = useState(false)
   const [error, setError] = useState('')
 
@@ -51,34 +53,94 @@ export function LoginForm() {
   }
 
   return (
-    <main className="grid min-h-dvh place-items-center bg-[#edf5f3] px-4 py-8 sm:py-12">
-      <div className="grid w-full max-w-4xl overflow-hidden rounded-2xl border border-[#c8dbd5] bg-white md:grid-cols-[2fr_3fr]">
-        <div className="flex flex-col justify-between gap-8 bg-[#123e37] px-6 py-7 text-white md:px-9 md:py-10">
-          <Link to="/" className="inline-flex w-fit items-center gap-3 rounded-sm text-lg font-semibold focus-visible:outline-white">
-            <HeartPulse size={24} aria-hidden="true" />
-            MedicineTrack
+    <main className="mt-theme mt-login">
+      <div className="mt-login-layout">
+        <div className="mt-login-story">
+          <Link to="/" className="mt-brand">
+            <span>
+              <HeartPulse size={29} aria-hidden="true" />
+            </span>
+            <strong>MedicineTrack</strong>
           </Link>
-          <p className="max-w-64 text-lg leading-snug text-[#dceee7]">
-            Statsionardan chiqarilgandan keyingi bemor kuzatuvi.
-          </p>
+          <div>
+            <h2>Har bir bemor e’tiborda.</h2>
+            <p>
+              Statsionardan chiqarilgandan keyingi bemor kuzatuvi va o‘z vaqtida
+              patronaj.
+            </p>
+          </div>
+          <div className="mt-login-note">
+            <ShieldCheck size={19} aria-hidden="true" />
+            Tibbiyot xodimlari uchun ishchi kabinet
+          </div>
         </div>
+        <div className="mt-login-form">
+          <h1>Kabinetga kirish</h1>
+          <p>Ish hisobingiz orqali tizimga kiring.</p>
+          {expired && (
+            <p className="mt-3 text-sm text-warning" role="status">
+              Sessiya tugadi. Qayta kiring.
+            </p>
+          )}
 
-        <div className="p-6 sm:p-10">
-          <h1 className="text-3xl font-semibold tracking-tight">Kabinetga kirish</h1>
-          {expired && <p className="mt-3 text-sm text-warning" role="status">Sessiya tugadi. Qayta kiring.</p>}
-
-          <form className="mt-6 space-y-5" onSubmit={handleSubmit} aria-busy={pending}>
+          <form
+            className="mt-6 space-y-5"
+            onSubmit={handleSubmit}
+            aria-busy={pending}
+          >
             <div>
-              <label htmlFor="username" className="text-sm font-medium">Login</label>
-              <input id="username" name="username" className={inputClass} autoComplete="username" maxLength={150} required />
+              <label htmlFor="username" className="text-sm font-medium">
+                Login
+              </label>
+              <input
+                id="username"
+                name="username"
+                className={inputClass}
+                autoComplete="username"
+                maxLength={150}
+                required
+              />
             </div>
             <div>
-              <label htmlFor="password" className="text-sm font-medium">Parol</label>
-              <input id="password" name="password" className={inputClass} type="password" autoComplete="current-password" required />
+              <label htmlFor="password" className="text-sm font-medium">
+                Parol
+              </label>
+              <div className="mt-password">
+                <input
+                  id="password"
+                  name="password"
+                  className={inputClass}
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="mt-button mt-icon-button"
+                  aria-label={
+                    showPassword ? 'Parolni yashirish' : 'Parolni ko‘rsatish'
+                  }
+                  aria-pressed={showPassword}
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff size={19} aria-hidden="true" />
+                  ) : (
+                    <Eye size={19} aria-hidden="true" />
+                  )}
+                </button>
+              </div>
             </div>
-            {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">{error}</p>}
+            {error && (
+              <p
+                className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800"
+                role="alert"
+              >
+                {error}
+              </p>
+            )}
             <button
-              className="min-h-11 w-full rounded-lg bg-[#0b6155] px-4 py-2.5 font-semibold text-white hover:bg-[#094e45] disabled:opacity-60"
+              className="mt-button mt-button-primary w-full"
               type="submit"
               disabled={pending}
             >

@@ -8,12 +8,18 @@ import { Activation, AiReview, DischargeForm, DischargeSummary, Login, NewPatien
 import { DoseHistory, MedicationDraft, MedicationReview, Medications } from './medication-screens'
 import { Admin, Chat, PatientHome, StatusUpdate, Unanswered, WorkSchedule } from './patient-screens'
 import { Discharges, DoctorReport, DoctorTasks, Patients, Queue, TaskDetail } from './workflow-screens'
+import { MedicineTrackPreview } from './medicinetrack/preview'
 import './design.css'
 
 const route = getRouteApi('/(app)/design/$variant/$screen/')
 const roleIcons = { access: LockKeyhole, hospital: Building2, coordinator: ClipboardList, doctor: Stethoscope, patient: UserRound, admin: Settings2 }
 
 export function DesignPreview() {
+  const { designVariant } = route.useRouteContext()
+  return designVariant === 'medicinetrack' ? <MedicineTrackPreview /> : <LegacyDesignPreview />
+}
+
+function LegacyDesignPreview() {
   const { designVariant: variant, designScreen: screen } = route.useRouteContext()
   const navigate = useNavigate()
   const title = useRef<HTMLHeadingElement>(null)

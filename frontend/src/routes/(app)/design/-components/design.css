@@ -34,7 +34,7 @@
 .d-gallery-count strong { color: #132723; }
 .d-gallery-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; }
 .d-gallery-card { grid-column: span 2; min-width: 0; border-radius: 18px; }
-.d-gallery-card:nth-child(n+4) { grid-column: span 3; }
+.d-gallery-card:nth-child(n+4) { grid-column: span 2; }
 .d-card-link {
   display: block; height: 100%; border: 1px solid #cad9d0; background: #fff; border-radius: inherit;
   transition: border-color .18s ease, box-shadow .18s ease; overflow: hidden;
