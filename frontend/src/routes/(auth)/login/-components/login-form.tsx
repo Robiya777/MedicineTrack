@@ -71,12 +71,12 @@ export function LoginForm() {
           </div>
           <div className="mt-login-note">
             <ShieldCheck size={19} aria-hidden="true" />
-            Tibbiyot xodimlari uchun ishchi kabinet
+            Bemorlar va tibbiyot xodimlari uchun
           </div>
         </div>
         <div className="mt-login-form">
           <h1>Kabinetga kirish</h1>
-          <p>Ish hisobingiz orqali tizimga kiring.</p>
+          <p>Hisobingiz orqali tizimga kiring.</p>
           {expired && (
             <p className="mt-3 text-sm text-warning" role="status">
               Sessiya tugadi. Qayta kiring.
@@ -147,6 +147,7 @@ export function LoginForm() {
               {pending ? 'Kirilmoqda…' : 'Kirish'}
             </button>
           </form>
+          <Link to="/faollashtirish" className="mt-link mt-5 inline-flex min-h-11 items-center text-sm text-action underline">Bemor hisobini faollashtirish</Link>
         </div>
       </div>
     </main>

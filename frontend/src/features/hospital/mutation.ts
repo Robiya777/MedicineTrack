@@ -6,6 +6,7 @@ export function useIdempotentMutation<Input, Result>(submit: (input: Input, key:
   const attempt = useRef<{ payload: string; key: string } | null>(null)
 
   return useMutation({
+    onSuccess: () => { attempt.current = null },
     mutationFn: (input: Input) => {
       const payload = JSON.stringify(input) ?? ''
       if (attempt.current?.payload !== payload) {

@@ -1,3 +1,4 @@
+import { PatientDashboard } from '../../../../../features/messaging/conversations'
 import { workspaces } from '../../../../../components/workspaces'
 import { useSessionStore } from '../../../../../state/session'
 import { TaskDashboard } from '../../../../../features/tasks/task-list'
@@ -6,6 +7,7 @@ import { HospitalDashboard } from './hospital-dashboard'
 export function WorkspacePage() {
   const user = useSessionStore((state) => state.user)
   if (!user) return null
+  if (user.role === 'PATIENT' && user.patient) return <PatientDashboard />
   if (user.role === 'HOSPITAL') return <HospitalDashboard />
   if (user.role === 'COORDINATOR' || user.role === 'DOCTOR') {
     return <TaskDashboard key={user.role} coordinator={user.role === 'COORDINATOR'} />

@@ -1,3 +1,4 @@
+import { PatientActivation } from '../../../../../../../features/messaging/activation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
 import { isAxiosError } from 'axios'
@@ -120,6 +121,7 @@ function DischargeSummary({ discharge }: { discharge: Discharge }) {
           </div>
         )}
       </section>
+      <PatientActivation patientId={discharge.patient} />
       {discharge.status === 'CONFIRMED' && <LinkedTask discharge={discharge} />}
     </>
   )

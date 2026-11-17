@@ -7,6 +7,7 @@ export function RootLayout() {
   const pathname = useLocation({ select: (location) => location.pathname })
 
   if (
+    pathname.startsWith('/faollashtirish') ||
     pathname === '/login' ||
     pathname === '/login/' ||
     pathname.startsWith('/kabinet/')

@@ -141,3 +141,26 @@ bazasi va lokal Django backend bilan Chromiumda bajarildi.
 
 Bu bosqich web dizayn integratsiyasini qamraydi. Avvalgi Android APK bilan
 bitta chaqiruvni yakunlash integratsiya sinovi haqidagi cheklov saqlanadi.
+
+## Funksional 4-bosqich — 2026-11-18
+
+Bemor aktivatsiyasi, bemor kabineti, chat, holat yuborish, koordinator ish
+jadvali va javobsiz murojaatlar real API bilan ulandi.
+
+- Statsionar → bir martalik kod → bemor faollashuvi → xabar/holat → shifokor
+  javobi → koordinator ustuvor navbati oqimi Chromiumda o‘tdi.
+- Xabar va holat POST javoblari server saqlagach uzildi; qayta yuborish ayni
+  Idempotency-Key bilan server replay qaytardi. Muvaffaqiyatli yuborishdan
+  keyin bir xil matnni yana yuborish yangi kalit va alohida yozuv yaratdi.
+- Qayta tayinlash eski shifokor ekranidan klinik ma’lumotni yashirdi. Bemorda
+  eski tarix saqlandi va yangi suhbat dastlabki javob muddatini oldi.
+  Patronaj yakunlangandan keyin ham faol biriktirish bilan chat ishladi.
+- Haftalik oraliqlar, tushlik tanaffusi, istisno kun va ustma-ust oraliqni
+  rad etish tekshirildi. Javob muddati backenddan olindi.
+- 1440/1024/768/360 px bemor kabineti, 1440/360 px suhbat, mobil menyu va
+  klaviatura fokusi tekshirildi. Koordinator jadvali va javobsizlar skrinshotlari
+  olindi. Gorizontal surilish aniqlanmadi.
+- Backenddagi auth/messaging regressiyasi: 22 passed. Lint, TypeScript va build o‘tdi.
+
+AT-24–AT-33 bo‘yicha dalillar va APK/HTTPS qabul chegarasi
+[4-bosqich qabul hisobotida](docs/STAGE4_ACCEPTANCE.md).
