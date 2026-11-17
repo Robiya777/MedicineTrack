@@ -222,6 +222,20 @@ function ConversationCard({
 export function ConversationPage() {
   const { conversationId, role } = route.useParams()
   const conversation = useQuery(conversationQuery(conversationId))
+  const client = useQueryClient()
+  useEffect(() => {
+    if (conversation.data?.status !== 'CLOSED') return
+    client.setQueryData(
+      messagingKeys.conversations,
+      (previous: Conversation[] | undefined) =>
+        previous?.map((item) =>
+          item.id === conversationId
+            ? { ...item, status: 'CLOSED' as const }
+            : item,
+        ),
+    )
+    void client.invalidateQueries({ queryKey: messagingKeys.conversations })
+  }, [conversation.data?.status, conversationId, client])
   return (
     <section className="mt-workflow space-y-5">
       <Link
@@ -233,7 +247,9 @@ export function ConversationPage() {
         <ArrowLeft size={17} aria-hidden="true" />
         Kabinetga qaytish
       </Link>
-      <h1 className="text-3xl font-semibold">Shifokor bilan suhbat</h1>
+      <h1 className="text-3xl font-semibold">
+        {role === 'shifokor' ? 'Bemor bilan suhbat' : 'Shifokor bilan suhbat'}
+      </h1>
       {conversation.isPending && <Notice>Suhbat yuklanmoqda…</Notice>}
       {conversation.isError && (
         <RequestError
@@ -256,7 +272,16 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
   const messages = useQuery(messagesQuery(conversation.id))
   const statuses = useQuery(statusesQuery(conversation.id))
   const doctor = useQuery(doctorNameQuery(conversation.doctor))
+  const patient = useQuery({ ...hospitalPatientQuery(conversation.patient), enabled: user.role === 'DOCTOR', retry: false })
   const lastRead = useRef('')
+  const [visible, setVisible] = useState(
+    () => document.visibilityState === 'visible',
+  )
+  useEffect(() => {
+    const update = () => setVisible(document.visibilityState === 'visible')
+    document.addEventListener('visibilitychange', update)
+    return () => document.removeEventListener('visibilitychange', update)
+  }, [])
   const incoming =
     messages.data
       ?.filter((m) => m.sender !== user.id && !m.read_at)
@@ -273,6 +298,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
   const { mutate: mark } = read
   useEffect(() => {
     if (
+      visible &&
       conversation.status === 'OPEN' &&
       incoming &&
       incoming !== lastRead.current &&
@@ -281,14 +307,14 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
       lastRead.current = incoming
       mark()
     }
-  }, [incoming, conversation.status, mark, messages.isError])
+  }, [incoming, conversation.status, mark, messages.isError, visible])
   const denied = messages.isError || statuses.isError
   const snapshot = conversation.work_schedule
   return (
     <>
       <section className="mt-card space-y-3 p-5">
         <h2 className="font-semibold">
-          {conversation.doctor
+          {user.role === 'DOCTOR' ? patient.data?.full_name || 'Bemor ' + conversation.patient.slice(0, 8) : conversation.doctor
             ? doctor.data || 'Mas’ul shifokor'
             : 'Mas’ul tayinlanmoqda'}
         </h2>
@@ -448,6 +474,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
 function MessageForm({ conversationId }: { conversationId: string }) {
   const client = useQueryClient()
   const [text, setText] = useState('')
+  const composer = useRef<HTMLTextAreaElement>(null)
   const mutation = useIdempotentMutation((input: string, key) =>
     sendMessage(conversationId, input, key),
   )
@@ -457,6 +484,9 @@ function MessageForm({ conversationId }: { conversationId: string }) {
     try {
       await mutation.mutateAsync(text.trim())
       setText('')
+      requestAnimationFrame(() =>
+        composer.current?.focus({ preventScroll: true }),
+      )
       await client.invalidateQueries({ queryKey: messagingKeys.all })
     } catch {
       /* Preserve text and retry key. */
@@ -475,6 +505,7 @@ function MessageForm({ conversationId }: { conversationId: string }) {
             className={inputStyle}
             rows={3}
             maxLength={4000}
+            ref={composer}
             value={text}
             onChange={(e) => setText(e.target.value)}
             disabled={mutation.isPending}

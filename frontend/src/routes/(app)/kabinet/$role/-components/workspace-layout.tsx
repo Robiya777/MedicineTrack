@@ -84,8 +84,8 @@ export function WorkspaceLayout() {
         <LayoutDashboard size={19} aria-hidden="true" />
         <span>{user.role === 'HOSPITAL' ? 'Chiqarishlar' : 'Ish stoli'}</span>
       </Link>
-      {['PATIENT','DOCTOR'].includes(user.role) && <Link to="/kabinet/$role/suhbat" params={{role:workspace.slug}} search={{}} onClick={() => setDrawer(false)}>Suhbatlar</Link>}
-      {user.role === 'COORDINATOR' && <><Link to="/kabinet/$role/ish-jadvali" params={{role:workspace.slug}} search={{}} onClick={() => setDrawer(false)}>Ish jadvali</Link><Link to="/kabinet/$role/murojaatlar" params={{role:workspace.slug}} search={{}} onClick={() => setDrawer(false)}>Javobsiz murojaatlar</Link></>}
+      {['PATIENT','DOCTOR'].includes(user.role) && <Link to="/kabinet/$role/suhbat" aria-current={pathname.includes('/suhbat') ? 'page' : undefined} params={{role:workspace.slug}} search={{}} onClick={() => setDrawer(false)}>Suhbatlar</Link>}
+      {user.role === 'COORDINATOR' && <><Link to="/kabinet/$role/ish-jadvali" aria-current={pathname.includes('/ish-jadvali') ? 'page' : undefined} params={{role:workspace.slug}} search={{}} onClick={() => setDrawer(false)}>Ish jadvali</Link><Link to="/kabinet/$role/murojaatlar" aria-current={pathname.includes('/murojaatlar') ? 'page' : undefined} params={{role:workspace.slug}} search={{}} onClick={() => setDrawer(false)}>Javobsiz murojaatlar</Link></>}
       {user.role === 'COORDINATOR' &&
         [
           ['unassigned', 'Mas’ulsiz chaqiruvlar'],

@@ -85,3 +85,32 @@ Ranglar, tipografiya va o‘lchamlar [dizayn asosida](docs/DESIGN_SYSTEM.md)
 yozilgan. Ishchi kabinetlar va preview `.mt-theme` tokenlari hamda umumiy
 komponentlardan foydalanadi. Production preview uchun mavjud
 `VITE_ENABLE_DESIGN_PREVIEW=true` sozlamasi ishlatiladi.
+
+## 4-bosqich: bemor aktivatsiyasi va aloqa
+
+Statsionar chiqarish tafsilotida bemor/vakil telefonini tekshirganini belgilab,
+**Aktivatsiya kodini olish**ni bosadi. Bemor UUIDsi va bir martalik kodni bemorga
+beradi. Yangi kod eski kodni bekor qiladi; kod 24 soat amal qiladi.
+Kod brauzerning doimiy xotirasi yoki URLiga yozilmaydi.
+
+Bemor `/faollashtirish` sahifasida UUID, kod va yangi parolni kiritadi. Server
+qaytargan login bilan `/login`dan kiradi. `/kabinet/bemor`da o‘z chiqarishlari,
+mas’ul shifokori va ochiq/yopiq suhbatlari ko‘rinadi. Xabarlar va bemor bildirgan
+holatlar server tasdiqlagach ko‘rsatiladi. Yuborish javobi yo‘qolsa, o‘sha
+ma’lumotni qayta yuborish ayni idempotency kalitini ishlatadi.
+
+Shifokor yon menyudagi **Suhbatlar** orqali bemor xabarlarini o‘qiydi va javob
+beradi. Ochiq suhbat, xabarlar va holatlar har 15 soniyada yangilanadi. Yopiq
+suhbatga yozib bo‘lmaydi. Qayta tayinlashda bemorning eski tarixi saqlanadi,
+eski shifokor kirishi yopiladi va bemorda yangi suhbat ochiladi.
+
+Koordinator **Ish jadvali**da haftalik oraliqlar, tanaffuslar va istisno kunlarni
+sozlaydi. **Javobsiz murojaatlar**da yomonlashgan va kechikkan murojaatlarni
+filtrlaydi. Bu ekranda shaxsiy suhbat matni ochilmaydi. Javob muddati backenddan
+olinadi; oldingi javobsiz davr muddati jadval o‘zgarganda uzaytirilmaydi.
+
+Fon eskalatsiyalari uchun backend worker/beat ishlashi kerak. Dockersiz lokal
+sinovda backend papkasida `python manage.py process_jobs` bir martalik siklni
+bajaradi. Ishchi serverni sozlash [backend yo‘riqnomasida](../backend/README.md).
+
+Qabul sinovlari [4-bosqich hisobotida](docs/STAGE4_ACCEPTANCE.md) keltirilgan.
