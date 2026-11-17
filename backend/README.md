@@ -150,3 +150,11 @@ saqlanadi. Refresh faqat tanlangan cookie’ni o‘qiydi, umumiy cookie’ga tus
 Logout tanasi ham shu `tab_id`ni qabul qilib, faqat shu cookie’ni o‘chiradi.
 CSRF, Secure/SameSite, token rotatsiyasi va qayta ishlatishni bloklash saqlanadi.
 `tab_id` berilmagan eski web mijozlar hamda Android token oqimi mos qoladi.
+
+### Dockersiz bildirishnomalar
+
+Boshqa terminalda `python manage.py process_notifications --watch`ni ishga
+tushiring. Har 15 soniyada chaqiruv/javob muddati tekshiriladi va outboxdagi
+in-app bildirishnomalar yetkaziladi. Bir martalik sikl uchun `--watch`ni olib
+tashlang. Bu buyruq AI/PDF ishlovini bajarmaydi. Productionda shu ishlarni
+mavjud Celery worker/beat bajaradi; lokal watch va Celeryni birga ishlatish shart emas.
