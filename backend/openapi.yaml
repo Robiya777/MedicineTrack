@@ -1,0 +1,3261 @@
+openapi: 3.0.3
+info:
+  title: MedicineTrack API
+  version: 0.1.0
+  description: Synthetic-data demo. Times are UTC; clients display Asia/Tashkent.
+paths:
+  /api/v1/ai-extractions/{id}:
+    get:
+      operationId: ai_extractions_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - ai-extractions
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Extraction'
+          description: ''
+  /api/v1/ai-extractions/{id}/review:
+    post:
+      operationId: ai_extractions_review_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - ai-extractions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AIReviewInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AIReviewInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AIReviewInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Extraction'
+          description: ''
+  /api/v1/attachments/{id}/download:
+    get:
+      operationId: attachments_download_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - attachments
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+          description: ''
+  /api/v1/auth/csrf:
+    get:
+      operationId: auth_csrf_retrieve
+      tags:
+      - auth
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/login:
+    post:
+      operationId: auth_login_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginInputRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenOutput'
+          description: ''
+  /api/v1/auth/logout:
+    post:
+      operationId: auth_logout_create
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/patient-activate:
+    post:
+      operationId: auth_patient_activate_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivationInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ActivationInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ActivationInputRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/refresh:
+    post:
+      operationId: auth_refresh_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RefreshInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RefreshInputRequest'
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenOutput'
+          description: ''
+  /api/v1/conversations:
+    get:
+      operationId: conversations_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - conversations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConversationList'
+          description: ''
+  /api/v1/conversations/{id}:
+    get:
+      operationId: conversations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - conversations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+          description: ''
+  /api/v1/conversations/{id}/messages:
+    get:
+      operationId: conversations_messages_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - conversations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMessageList'
+          description: ''
+    post:
+      operationId: conversations_messages_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - conversations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MessageInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MessageInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/v1/conversations/{id}/read:
+    post:
+      operationId: conversations_read_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - conversations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/conversations/{id}/status-updates:
+    get:
+      operationId: conversations_status_updates_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - conversations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStatusList'
+          description: ''
+    post:
+      operationId: conversations_status_updates_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - conversations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StatusInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StatusInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+          description: ''
+  /api/v1/dashboard/metrics:
+    get:
+      operationId: dashboard_metrics_retrieve
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/dashboard/unanswered:
+    get:
+      operationId: dashboard_unanswered_retrieve
+      tags:
+      - dashboard
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/discharges:
+    get:
+      operationId: discharges_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - discharges
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDischargeList'
+          description: ''
+    post:
+      operationId: discharges_create
+      tags:
+      - discharges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DischargeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DischargeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DischargeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discharge'
+          description: ''
+  /api/v1/discharges/{id}:
+    get:
+      operationId: discharges_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - discharges
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discharge'
+          description: ''
+    patch:
+      operationId: discharges_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - discharges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDischargeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDischargeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDischargeRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discharge'
+          description: ''
+  /api/v1/discharges/{id}/ai-extractions:
+    post:
+      operationId: discharges_ai_extractions_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - discharges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExtractionInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ExtractionInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ExtractionInputRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Extraction'
+          description: ''
+  /api/v1/discharges/{id}/attachments:
+    post:
+      operationId: discharges_attachments_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - discharges
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+          description: ''
+  /api/v1/discharges/{id}/confirm:
+    post:
+      operationId: discharges_confirm_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - discharges
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+          description: ''
+  /api/v1/discharges/{id}/corrections:
+    post:
+      operationId: discharges_corrections_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - discharges
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CorrectionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CorrectionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CorrectionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Correction'
+          description: ''
+  /api/v1/doctors/{id}/work-schedule:
+    get:
+      operationId: doctors_work_schedule_retrieve
+      description: Hold the key lock and business changes in the same database transaction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - doctors
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+          description: ''
+    put:
+      operationId: doctors_work_schedule_update
+      description: Hold the key lock and business changes in the same database transaction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - doctors
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ScheduleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ScheduleRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schedule'
+          description: ''
+  /api/v1/me:
+    get:
+      operationId: me_retrieve
+      tags:
+      - me
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/notifications:
+    get:
+      operationId: notifications_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationList'
+          description: ''
+  /api/v1/notifications/{id}/read:
+    post:
+      operationId: notifications_read_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/v1/patients:
+    get:
+      operationId: patients_list
+      parameters:
+      - in: query
+        name: id
+        schema:
+          type: string
+        description: Exact patient UUID; no global name or phone search
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - patients
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPatientList'
+          description: ''
+    post:
+      operationId: patients_create
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatientRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /api/v1/patients/{id}:
+    get:
+      operationId: patients_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - patients
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+    patch:
+      operationId: patients_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPatientRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+          description: ''
+  /api/v1/patients/{id}/activation:
+    post:
+      operationId: patients_activation_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivationIssueInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ActivationIssueInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ActivationIssueInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivationOutput'
+          description: ''
+  /api/v1/reference/accounts:
+    get:
+      operationId: reference_accounts_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - reference
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedStaffAccountList'
+          description: ''
+    post:
+      operationId: reference_accounts_create
+      tags:
+      - reference
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffAccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffAccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffAccountRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffAccount'
+          description: ''
+  /api/v1/reference/accounts/{id}:
+    get:
+      operationId: reference_accounts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - reference
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffAccount'
+          description: ''
+    patch:
+      operationId: reference_accounts_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - reference
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffAccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffAccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStaffAccountRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffAccount'
+          description: ''
+  /api/v1/reference/doctors:
+    get:
+      operationId: reference_doctors_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - reference
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDoctorList'
+          description: ''
+  /api/v1/reference/doctors/{id}:
+    get:
+      operationId: reference_doctors_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - reference
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doctor'
+          description: ''
+  /api/v1/reference/organizations:
+    get:
+      operationId: reference_organizations_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - reference
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationList'
+          description: ''
+    post:
+      operationId: reference_organizations_create
+      tags:
+      - reference
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrganizationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrganizationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: ''
+  /api/v1/reference/organizations/{id}:
+    get:
+      operationId: reference_organizations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - reference
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: ''
+    patch:
+      operationId: reference_organizations_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - reference
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedOrganizationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: ''
+  /api/v1/reference/territories:
+    get:
+      operationId: reference_territories_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - reference
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTerritoryList'
+          description: ''
+    post:
+      operationId: reference_territories_create
+      tags:
+      - reference
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TerritoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TerritoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TerritoryRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Territory'
+          description: ''
+  /api/v1/reference/territories/{id}:
+    get:
+      operationId: reference_territories_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - reference
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Territory'
+          description: ''
+    patch:
+      operationId: reference_territories_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - reference
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTerritoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTerritoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTerritoryRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Territory'
+          description: ''
+  /api/v1/schema:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - ug
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/tasks:
+    get:
+      operationId: tasks_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - tasks
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTaskList'
+          description: ''
+  /api/v1/tasks/{id}:
+    get:
+      operationId: tasks_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - tasks
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+          description: ''
+  /api/v1/tasks/{id}/accept:
+    post:
+      operationId: tasks_accept_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - tasks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VersionInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VersionInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+          description: ''
+  /api/v1/tasks/{id}/cancel:
+    post:
+      operationId: tasks_cancel_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - tasks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CancelInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CancelInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+          description: ''
+  /api/v1/tasks/{id}/complete:
+    post:
+      operationId: tasks_complete_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - tasks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompleteInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompleteInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+          description: ''
+  /api/v1/tasks/{id}/contact-attempts:
+    post:
+      operationId: tasks_contact_attempts_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - tasks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactAttemptInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ContactAttemptInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ContactAttemptInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+          description: ''
+  /api/v1/tasks/{id}/reassign:
+    post:
+      operationId: tasks_reassign_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - tasks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReassignInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReassignInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReassignInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+          description: ''
+  /api/v1/tasks/{id}/report-corrections:
+    post:
+      operationId: tasks_report_corrections_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - tasks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CorrectionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CorrectionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CorrectionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Correction'
+          description: ''
+components:
+  schemas:
+    AIReviewInputRequest:
+      type: object
+      properties:
+        summary:
+          type: string
+          nullable: true
+        diagnosis_text:
+          type: string
+          nullable: true
+        recommendations:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        follow_up_text:
+          type: string
+          nullable: true
+      required:
+      - diagnosis_text
+      - follow_up_text
+      - recommendations
+      - summary
+    ActivationInputRequest:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          minLength: 1
+          maxLength: 128
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - code
+      - password
+      - patient_id
+    ActivationIssueInputRequest:
+      type: object
+      properties:
+        phone_verified:
+          type: boolean
+      required:
+      - phone_verified
+    ActivationOutput:
+      type: object
+      properties:
+        patient_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - code
+      - expires_at
+      - patient_id
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        discharge:
+          type: string
+          format: uuid
+          readOnly: true
+        checksum:
+          type: string
+          readOnly: true
+        mime:
+          type: string
+          readOnly: true
+        size:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        download_url:
+          type: string
+          readOnly: true
+      required:
+      - checksum
+      - created_at
+      - discharge
+      - download_url
+      - id
+      - mime
+      - size
+    CancelInputRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        reason_code:
+          type: string
+          minLength: 1
+          maxLength: 64
+        reason:
+          type: string
+          minLength: 1
+      required:
+      - reason
+      - reason_code
+      - version
+    ClientEnum:
+      enum:
+      - web
+      - android
+      type: string
+      description: |-
+        * `web` - web
+        * `android` - android
+    CompleteInputRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        performed_at:
+          type: string
+          format: date-time
+        channel:
+          $ref: '#/components/schemas/ContactChannelEnum'
+        observation:
+          type: string
+          minLength: 1
+        actions:
+          type: string
+          minLength: 1
+        follow_up:
+          type: string
+          minLength: 1
+      required:
+      - actions
+      - channel
+      - follow_up
+      - observation
+      - performed_at
+      - version
+    ContactAttempt:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        channel:
+          $ref: '#/components/schemas/ContactChannelEnum'
+        result:
+          $ref: '#/components/schemas/ResultEnum'
+        attempted_at:
+          type: string
+          format: date-time
+        note:
+          type: string
+        next_action:
+          type: string
+        actor:
+          type: string
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actor
+      - attempted_at
+      - channel
+      - created_at
+      - id
+      - next_action
+      - note
+      - result
+    ContactAttemptInputRequest:
+      type: object
+      properties:
+        channel:
+          $ref: '#/components/schemas/ContactChannelEnum'
+        result:
+          $ref: '#/components/schemas/ResultEnum'
+        attempted_at:
+          type: string
+          format: date-time
+        note:
+          type: string
+          minLength: 1
+        next_action:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+          writeOnly: true
+      required:
+      - attempted_at
+      - channel
+      - next_action
+      - note
+      - result
+      - version
+    ContactChannelEnum:
+      enum:
+      - PHONE
+      - HOME_VISIT
+      type: string
+      description: |-
+        * `PHONE` - Telefon
+        * `HOME_VISIT` - Uyga tashrif
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        doctor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ConversationStatusEnum'
+          readOnly: true
+        response_due_at:
+          type: string
+          nullable: true
+          readOnly: true
+        first_unanswered_at:
+          type: string
+          nullable: true
+          readOnly: true
+        work_schedule:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+        response_policy:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - doctor
+      - first_unanswered_at
+      - id
+      - patient
+      - response_due_at
+      - response_policy
+      - status
+      - work_schedule
+    ConversationStatusEnum:
+      enum:
+      - OPEN
+      - CLOSED
+      type: string
+      description: |-
+        * `OPEN` - OPEN
+        * `CLOSED` - CLOSED
+    Correction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        field:
+          type: string
+          maxLength: 32
+        correction_text:
+          type: string
+        reason:
+          type: string
+        actor:
+          type: string
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actor
+      - correction_text
+      - created_at
+      - field
+      - id
+      - reason
+    CorrectionRequest:
+      type: object
+      properties:
+        field:
+          type: string
+          minLength: 1
+          maxLength: 32
+        correction_text:
+          type: string
+          minLength: 1
+        reason:
+          type: string
+          minLength: 1
+      required:
+      - correction_text
+      - field
+      - reason
+    Discharge:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient:
+          type: string
+          format: uuid
+        hospital:
+          type: string
+          format: uuid
+          readOnly: true
+        discharged_at:
+          type: string
+          format: date-time
+        confirmed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        recommendations:
+          type: string
+        follow_up_reason:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/DischargeStatusEnum'
+          readOnly: true
+        source_event_id:
+          type: string
+          format: uuid
+          nullable: true
+        replaces:
+          type: string
+          format: uuid
+          nullable: true
+        patient_snapshot:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        attachments:
+          type: array
+          items: {}
+          readOnly: true
+      required:
+      - attachments
+      - confirmed_at
+      - created_at
+      - discharged_at
+      - follow_up_reason
+      - hospital
+      - id
+      - patient
+      - patient_snapshot
+      - recommendations
+      - status
+    DischargeRequest:
+      type: object
+      properties:
+        patient:
+          type: string
+          format: uuid
+        discharged_at:
+          type: string
+          format: date-time
+        recommendations:
+          type: string
+          minLength: 1
+        follow_up_reason:
+          type: string
+          minLength: 1
+        source_event_id:
+          type: string
+          format: uuid
+          nullable: true
+        replaces:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - discharged_at
+      - follow_up_reason
+      - patient
+      - recommendations
+    DischargeStatusEnum:
+      enum:
+      - DRAFT
+      - CONFIRMED
+      type: string
+      description: |-
+        * `DRAFT` - Loyiha
+        * `CONFIRMED` - Tasdiqlangan
+    Doctor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        is_active:
+          type: boolean
+          readOnly: true
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+      required:
+      - first_name
+      - id
+      - is_active
+      - last_name
+      - organization
+      - username
+    Extraction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        discharge:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          type: string
+          readOnly: true
+        structured_result:
+          readOnly: true
+        reviewed_result:
+          readOnly: true
+        model_version:
+          type: string
+          readOnly: true
+        is_mock:
+          type: boolean
+          readOnly: true
+        error_code:
+          type: string
+          readOnly: true
+        processed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        reviewed_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        reviewed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - discharge
+      - error_code
+      - id
+      - is_mock
+      - model_version
+      - processed_at
+      - reviewed_at
+      - reviewed_by
+      - reviewed_result
+      - status
+      - structured_result
+    ExtractionInputRequest:
+      type: object
+      properties:
+        attachment_id:
+          type: string
+          format: uuid
+        text:
+          type: string
+          minLength: 1
+          maxLength: 100000
+    LoginInputRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        client:
+          allOf:
+          - $ref: '#/components/schemas/ClientEnum'
+          default: android
+      required:
+      - password
+      - username
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        conversation:
+          type: string
+          format: uuid
+          readOnly: true
+        sender:
+          type: string
+          format: uuid
+          readOnly: true
+        text:
+          type: string
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        kind:
+          type: string
+          readOnly: true
+        delivery_status:
+          type: string
+          readOnly: true
+        answered_at:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - answered_at
+      - conversation
+      - delivery_status
+      - id
+      - kind
+      - read_at
+      - sender
+      - sent_at
+      - text
+    MessageInputRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 4000
+      required:
+      - text
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        task:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        conversation:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        event_type:
+          type: string
+          readOnly: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - conversation
+      - created_at
+      - event_type
+      - id
+      - read_at
+      - task
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        territory:
+          type: string
+          format: uuid
+        active:
+          type: boolean
+      required:
+      - id
+      - name
+      - territory
+      - type
+    OrganizationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        territory:
+          type: string
+          format: uuid
+        active:
+          type: boolean
+      required:
+      - name
+      - territory
+      - type
+    PaginatedConversationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conversation'
+    PaginatedDischargeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Discharge'
+    PaginatedDoctorList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Doctor'
+    PaginatedMessageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+    PaginatedNotificationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    PaginatedOrganizationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
+    PaginatedPatientList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Patient'
+    PaginatedStaffAccountList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StaffAccount'
+    PaginatedStatusList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Status'
+    PaginatedTaskList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+    PaginatedTerritoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Territory'
+    PatchedDischargeRequest:
+      type: object
+      properties:
+        patient:
+          type: string
+          format: uuid
+        discharged_at:
+          type: string
+          format: date-time
+        recommendations:
+          type: string
+          minLength: 1
+        follow_up_reason:
+          type: string
+          minLength: 1
+        source_event_id:
+          type: string
+          format: uuid
+          nullable: true
+        replaces:
+          type: string
+          format: uuid
+          nullable: true
+    PatchedOrganizationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        territory:
+          type: string
+          format: uuid
+        active:
+          type: boolean
+    PatchedPatientRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 250
+        birth_date:
+          type: string
+          format: date
+        address:
+          type: string
+          minLength: 1
+        territory:
+          type: string
+          format: uuid
+        contact:
+          type: string
+          maxLength: 20
+        contact_is_representative:
+          type: boolean
+        no_phone_reason:
+          type: string
+          maxLength: 250
+    PatchedStaffAccountRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          $ref: '#/components/schemas/StaffAccountRoleEnum'
+        organization:
+          type: string
+          format: uuid
+          nullable: true
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+    PatchedTerritoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        parent:
+          type: string
+          format: uuid
+          nullable: true
+    Patient:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          maxLength: 250
+        birth_date:
+          type: string
+          format: date
+        address:
+          type: string
+        territory:
+          type: string
+          format: uuid
+        contact:
+          type: string
+          maxLength: 20
+        contact_is_representative:
+          type: boolean
+        no_phone_reason:
+          type: string
+          maxLength: 250
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - address
+      - birth_date
+      - created_at
+      - full_name
+      - id
+      - territory
+    PatientRequest:
+      type: object
+      properties:
+        full_name:
+          type: string
+          minLength: 1
+          maxLength: 250
+        birth_date:
+          type: string
+          format: date
+        address:
+          type: string
+          minLength: 1
+        territory:
+          type: string
+          format: uuid
+        contact:
+          type: string
+          maxLength: 20
+        contact_is_representative:
+          type: boolean
+        no_phone_reason:
+          type: string
+          maxLength: 250
+      required:
+      - address
+      - birth_date
+      - full_name
+      - territory
+    ReassignInputRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        doctor_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+      required:
+      - doctor_id
+      - reason
+      - version
+    RefreshInputRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+    Report:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        performed_at:
+          type: string
+          format: date-time
+          readOnly: true
+        channel:
+          type: string
+          readOnly: true
+        observation:
+          type: string
+          readOnly: true
+        actions:
+          type: string
+          readOnly: true
+        follow_up:
+          type: string
+          readOnly: true
+        author:
+          type: string
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actions
+      - author
+      - channel
+      - created_at
+      - follow_up
+      - id
+      - observation
+      - performed_at
+    ResultEnum:
+      enum:
+      - CONTACTED
+      - NO_ANSWER
+      - WRONG_NUMBER
+      - ADDRESS_NOT_FOUND
+      - REFUSED
+      type: string
+      description: |-
+        * `CONTACTED` - Bog‘lanildi
+        * `NO_ANSWER` - Javobsiz
+        * `WRONG_NUMBER` - Noto‘g‘ri raqam
+        * `ADDRESS_NOT_FOUND` - Manzil topilmadi
+        * `REFUSED` - Rad etdi
+    Schedule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        doctor:
+          type: string
+          format: uuid
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+        timezone:
+          type: string
+          maxLength: 80
+        shifts: {}
+        exceptions: {}
+        version:
+          type: integer
+          readOnly: true
+      required:
+      - doctor
+      - id
+      - organization
+      - version
+    ScheduleRequest:
+      type: object
+      properties:
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 80
+        shifts: {}
+        exceptions: {}
+    SelfReportedStateEnum:
+      enum:
+      - IMPROVED
+      - UNCHANGED
+      - WORSENED
+      type: string
+      description: |-
+        * `IMPROVED` - Yaxshilandi
+        * `UNCHANGED` - O‘zgarmadi
+        * `WORSENED` - Yomonlashdi
+    StaffAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          $ref: '#/components/schemas/StaffAccountRoleEnum'
+        organization:
+          type: string
+          format: uuid
+          nullable: true
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+      required:
+      - id
+      - role
+      - username
+    StaffAccountRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          $ref: '#/components/schemas/StaffAccountRoleEnum'
+        organization:
+          type: string
+          format: uuid
+          nullable: true
+        is_active:
+          type: boolean
+          title: Active
+          description: Designates whether this user should be treated as active. Unselect
+            this instead of deleting accounts.
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - role
+      - username
+    StaffAccountRoleEnum:
+      enum:
+      - ADMIN
+      - HOSPITAL
+      - DOCTOR
+      - COORDINATOR
+      type: string
+      description: |-
+        * `ADMIN` - ADMIN
+        * `HOSPITAL` - HOSPITAL
+        * `DOCTOR` - DOCTOR
+        * `COORDINATOR` - COORDINATOR
+    Status:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        conversation:
+          type: string
+          format: uuid
+          readOnly: true
+        message:
+          type: string
+          format: uuid
+          readOnly: true
+        self_reported_state:
+          allOf:
+          - $ref: '#/components/schemas/SelfReportedStateEnum'
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        observed_at:
+          type: string
+          format: date-time
+          readOnly: true
+        received_at:
+          type: string
+          format: date-time
+          readOnly: true
+        patient_reported:
+          type: boolean
+          readOnly: true
+          default: true
+      required:
+      - conversation
+      - id
+      - message
+      - note
+      - observed_at
+      - patient_reported
+      - received_at
+      - self_reported_state
+    StatusInputRequest:
+      type: object
+      properties:
+        self_reported_state:
+          $ref: '#/components/schemas/SelfReportedStateEnum'
+        note:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        observed_at:
+          type: string
+          format: date-time
+      required:
+      - note
+      - observed_at
+      - self_reported_state
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        discharge:
+          type: string
+          format: uuid
+          readOnly: true
+        patient:
+          readOnly: true
+        recommendations:
+          type: string
+          readOnly: true
+        discharged_at:
+          type: string
+          format: date-time
+          readOnly: true
+        assigned_doctor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        receiving_org:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/TaskStatusEnum'
+          readOnly: true
+        due_at:
+          type: string
+          format: date-time
+          readOnly: true
+        accepted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        version:
+          type: integer
+          readOnly: true
+        overdue:
+          type: boolean
+          readOnly: true
+        late_documented:
+          type: boolean
+          readOnly: true
+        report:
+          allOf:
+          - $ref: '#/components/schemas/Report'
+          readOnly: true
+        contact_attempts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactAttempt'
+          readOnly: true
+        corrections:
+          type: array
+          items: {}
+          readOnly: true
+        timeline:
+          type: array
+          items: {}
+          readOnly: true
+        first_contact_delay_seconds:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        attachments:
+          type: array
+          items: {}
+          readOnly: true
+        cancellation_code:
+          type: string
+          readOnly: true
+        cancellation_note:
+          type: string
+          readOnly: true
+        cancelled_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - accepted_at
+      - assigned_doctor
+      - attachments
+      - cancellation_code
+      - cancellation_note
+      - cancelled_at
+      - completed_at
+      - contact_attempts
+      - corrections
+      - created_at
+      - discharge
+      - discharged_at
+      - due_at
+      - first_contact_delay_seconds
+      - id
+      - late_documented
+      - overdue
+      - patient
+      - receiving_org
+      - recommendations
+      - report
+      - status
+      - timeline
+      - version
+    TaskStatusEnum:
+      enum:
+      - UNASSIGNED
+      - NEW
+      - ACCEPTED
+      - COMPLETED
+      - CANCELLED
+      type: string
+      description: |-
+        * `UNASSIGNED` - Mas’ulsiz
+        * `NEW` - Yangi
+        * `ACCEPTED` - Qabul qilingan
+        * `COMPLETED` - Bajarilgan
+        * `CANCELLED` - Bekor qilingan
+    Territory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        parent:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - id
+      - name
+    TerritoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        parent:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - name
+    TokenOutput:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+      - access
+      - user
+    TypeEnum:
+      enum:
+      - HOSPITAL
+      - CLINIC
+      type: string
+      description: |-
+        * `HOSPITAL` - Statsionar
+        * `CLINIC` - Poliklinika
+    UploadInputRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+      - file
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        role:
+          allOf:
+          - $ref: '#/components/schemas/UserRoleEnum'
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+      required:
+      - first_name
+      - id
+      - last_name
+      - organization
+      - patient
+      - role
+      - username
+    UserRoleEnum:
+      enum:
+      - HOSPITAL
+      - DOCTOR
+      - COORDINATOR
+      - ADMIN
+      - PATIENT
+      type: string
+      description: |-
+        * `HOSPITAL` - Statsionar xodimi
+        * `DOCTOR` - Oilaviy shifokor
+        * `COORDINATOR` - Koordinator
+        * `ADMIN` - Texnik admin
+        * `PATIENT` - Bemor
+    VersionInputRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+      required:
+      - version
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

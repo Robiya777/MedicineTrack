@@ -1,0 +1,42 @@
+from rest_framework import serializers
+
+from .models import User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "role", "organization", "patient"]
+        read_only_fields = fields
+
+
+class LoginInput(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+    client = serializers.ChoiceField(choices=["web", "android"], default="android")
+
+
+class RefreshInput(serializers.Serializer):
+    refresh = serializers.CharField(required=False)
+
+
+class TokenOutput(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField(required=False)
+    user = UserSerializer()
+
+
+class ActivationInput(serializers.Serializer):
+    patient_id = serializers.UUIDField()
+    code = serializers.CharField(max_length=128)
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+
+
+class ActivationIssueInput(serializers.Serializer):
+    phone_verified = serializers.BooleanField()
+
+
+class ActivationOutput(serializers.Serializer):
+    patient_id = serializers.UUIDField()
+    code = serializers.CharField()
+    expires_at = serializers.DateTimeField()

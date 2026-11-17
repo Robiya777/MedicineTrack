@@ -1,0 +1,39 @@
+[project]
+name = "medicinetrack-backend"
+version = "0.1.0"
+description = "MedicineTrack REST API and background workers"
+requires-python = ">=3.13,<3.15"
+dependencies = [
+  "django>=5.2.8,<5.3",
+  "djangorestframework>=3.16,<3.17",
+  "djangorestframework-simplejwt>=5.5,<6",
+  "drf-spectacular>=0.28,<0.30",
+  "django-cors-headers>=4.7,<5",
+  "dj-database-url>=3,<4",
+  "python-dotenv>=1.1,<2",
+  "psycopg[binary]>=3.2,<4",
+  "celery[redis]>=5.5,<6",
+  "django-redis>=6,<7",
+  "pypdf>=6,<7",
+  "gunicorn>=23,<26",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-django>=4.11,<5", "freezegun>=1.5,<2", "ruff>=0.12,<1"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = ["**/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]
