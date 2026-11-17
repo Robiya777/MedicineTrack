@@ -1,3 +1,4 @@
+import {MedicationTaskLink} from '../../../../../../../features/medications/entry'
 import { TaskStatus } from '../../../../../../../features/tasks/task-table'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
@@ -51,6 +52,7 @@ export function TaskDetail() {
       {task.data && !task.isError && (
         <>
           <TaskFacts task={task.data} />
+          {role === 'shifokor' && <MedicationTaskLink dischargeId={task.data.discharge}/>}
           {role === 'koordinator' ? (
             <CoordinatorActions task={task.data} />
           ) : (

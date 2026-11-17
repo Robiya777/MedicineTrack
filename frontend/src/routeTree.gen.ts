@@ -24,6 +24,7 @@ import { Route as appDesignVariantScreenRouteRouteImport } from './routes/(app)/
 import { Route as appKabinetRoleIndexRouteImport } from './routes/(app)/kabinet/$role/index'
 import { Route as appKabinetRoleChaqiruvRouteRouteImport } from './routes/(app)/kabinet/$role/chaqiruv/route'
 import { Route as appKabinetRoleChiqarishRouteRouteImport } from './routes/(app)/kabinet/$role/chiqarish/route'
+import { Route as appKabinetRoleDorilarRouteRouteImport } from './routes/(app)/kabinet/$role/dorilar/route'
 import { Route as appKabinetRoleIshJadvaliRouteRouteImport } from './routes/(app)/kabinet/$role/ish-jadvali/route'
 import { Route as appKabinetRoleMurojaatlarRouteRouteImport } from './routes/(app)/kabinet/$role/murojaatlar/route'
 import { Route as appKabinetRoleSuhbatRouteRouteImport } from './routes/(app)/kabinet/$role/suhbat/route'
@@ -33,6 +34,8 @@ import { Route as appKabinetRoleChaqiruvTaskIdRouteRouteImport } from './routes/
 import { Route as appKabinetRoleChiqarishIndexRouteImport } from './routes/(app)/kabinet/$role/chiqarish/index'
 import { Route as appKabinetRoleChiqarishDischargeIdRouteRouteImport } from './routes/(app)/kabinet/$role/chiqarish/$dischargeId/route'
 import { Route as appKabinetRoleChiqarishYangiRouteRouteImport } from './routes/(app)/kabinet/$role/chiqarish/yangi/route'
+import { Route as appKabinetRoleDorilarIndexRouteImport } from './routes/(app)/kabinet/$role/dorilar/index'
+import { Route as appKabinetRoleDorilarPatientIdRouteRouteImport } from './routes/(app)/kabinet/$role/dorilar/$patientId/route'
 import { Route as appKabinetRoleIshJadvaliIndexRouteImport } from './routes/(app)/kabinet/$role/ish-jadvali/index'
 import { Route as appKabinetRoleMurojaatlarIndexRouteImport } from './routes/(app)/kabinet/$role/murojaatlar/index'
 import { Route as appKabinetRoleSuhbatIndexRouteImport } from './routes/(app)/kabinet/$role/suhbat/index'
@@ -40,6 +43,7 @@ import { Route as appKabinetRoleSuhbatConversationIdRouteRouteImport } from './r
 import { Route as appKabinetRoleChaqiruvTaskIdIndexRouteImport } from './routes/(app)/kabinet/$role/chaqiruv/$taskId/index'
 import { Route as appKabinetRoleChiqarishDischargeIdIndexRouteImport } from './routes/(app)/kabinet/$role/chiqarish/$dischargeId/index'
 import { Route as appKabinetRoleChiqarishYangiIndexRouteImport } from './routes/(app)/kabinet/$role/chiqarish/yangi/index'
+import { Route as appKabinetRoleDorilarPatientIdIndexRouteImport } from './routes/(app)/kabinet/$role/dorilar/$patientId/index'
 import { Route as appKabinetRoleSuhbatConversationIdIndexRouteImport } from './routes/(app)/kabinet/$role/suhbat/$conversationId/index'
 
 const apphomeRouteRoute = apphomeRouteRouteImport.update({
@@ -119,6 +123,12 @@ const appKabinetRoleChiqarishRouteRoute =
     path: '/chiqarish',
     getParentRoute: () => appKabinetRoleRouteRoute,
   } as any)
+const appKabinetRoleDorilarRouteRoute =
+  appKabinetRoleDorilarRouteRouteImport.update({
+    id: '/dorilar',
+    path: '/dorilar',
+    getParentRoute: () => appKabinetRoleRouteRoute,
+  } as any)
 const appKabinetRoleIshJadvaliRouteRoute =
   appKabinetRoleIshJadvaliRouteRouteImport.update({
     id: '/ish-jadvali',
@@ -173,6 +183,18 @@ const appKabinetRoleChiqarishYangiRouteRoute =
     path: '/yangi',
     getParentRoute: () => appKabinetRoleChiqarishRouteRoute,
   } as any)
+const appKabinetRoleDorilarIndexRoute =
+  appKabinetRoleDorilarIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => appKabinetRoleDorilarRouteRoute,
+  } as any)
+const appKabinetRoleDorilarPatientIdRouteRoute =
+  appKabinetRoleDorilarPatientIdRouteRouteImport.update({
+    id: '/$patientId',
+    path: '/$patientId',
+    getParentRoute: () => appKabinetRoleDorilarRouteRoute,
+  } as any)
 const appKabinetRoleIshJadvaliIndexRoute =
   appKabinetRoleIshJadvaliIndexRouteImport.update({
     id: '/',
@@ -215,6 +237,12 @@ const appKabinetRoleChiqarishYangiIndexRoute =
     path: '/',
     getParentRoute: () => appKabinetRoleChiqarishYangiRouteRoute,
   } as any)
+const appKabinetRoleDorilarPatientIdIndexRoute =
+  appKabinetRoleDorilarPatientIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => appKabinetRoleDorilarPatientIdRouteRoute,
+  } as any)
 const appKabinetRoleSuhbatConversationIdIndexRoute =
   appKabinetRoleSuhbatConversationIdIndexRouteImport.update({
     id: '/',
@@ -235,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/design/$variant/$screen': typeof appDesignVariantScreenRouteRouteWithChildren
   '/kabinet/$role/chaqiruv': typeof appKabinetRoleChaqiruvRouteRouteWithChildren
   '/kabinet/$role/chiqarish': typeof appKabinetRoleChiqarishRouteRouteWithChildren
+  '/kabinet/$role/dorilar': typeof appKabinetRoleDorilarRouteRouteWithChildren
   '/kabinet/$role/ish-jadvali': typeof appKabinetRoleIshJadvaliRouteRouteWithChildren
   '/kabinet/$role/murojaatlar': typeof appKabinetRoleMurojaatlarRouteRouteWithChildren
   '/kabinet/$role/suhbat': typeof appKabinetRoleSuhbatRouteRouteWithChildren
@@ -243,16 +272,19 @@ export interface FileRoutesByFullPath {
   '/kabinet/$role/chaqiruv/$taskId': typeof appKabinetRoleChaqiruvTaskIdRouteRouteWithChildren
   '/kabinet/$role/chiqarish/$dischargeId': typeof appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren
   '/kabinet/$role/chiqarish/yangi': typeof appKabinetRoleChiqarishYangiRouteRouteWithChildren
+  '/kabinet/$role/dorilar/$patientId': typeof appKabinetRoleDorilarPatientIdRouteRouteWithChildren
   '/kabinet/$role/suhbat/$conversationId': typeof appKabinetRoleSuhbatConversationIdRouteRouteWithChildren
   '/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
   '/kabinet/$role/chaqiruv/': typeof appKabinetRoleChaqiruvIndexRoute
   '/kabinet/$role/chiqarish/': typeof appKabinetRoleChiqarishIndexRoute
+  '/kabinet/$role/dorilar/': typeof appKabinetRoleDorilarIndexRoute
   '/kabinet/$role/ish-jadvali/': typeof appKabinetRoleIshJadvaliIndexRoute
   '/kabinet/$role/murojaatlar/': typeof appKabinetRoleMurojaatlarIndexRoute
   '/kabinet/$role/suhbat/': typeof appKabinetRoleSuhbatIndexRoute
   '/kabinet/$role/chaqiruv/$taskId/': typeof appKabinetRoleChaqiruvTaskIdIndexRoute
   '/kabinet/$role/chiqarish/$dischargeId/': typeof appKabinetRoleChiqarishDischargeIdIndexRoute
   '/kabinet/$role/chiqarish/yangi/': typeof appKabinetRoleChiqarishYangiIndexRoute
+  '/kabinet/$role/dorilar/$patientId/': typeof appKabinetRoleDorilarPatientIdIndexRoute
   '/kabinet/$role/suhbat/$conversationId/': typeof appKabinetRoleSuhbatConversationIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -265,12 +297,14 @@ export interface FileRoutesByTo {
   '/design/$variant/$screen': typeof appDesignVariantScreenIndexRoute
   '/kabinet/$role/chaqiruv': typeof appKabinetRoleChaqiruvIndexRoute
   '/kabinet/$role/chiqarish': typeof appKabinetRoleChiqarishIndexRoute
+  '/kabinet/$role/dorilar': typeof appKabinetRoleDorilarIndexRoute
   '/kabinet/$role/ish-jadvali': typeof appKabinetRoleIshJadvaliIndexRoute
   '/kabinet/$role/murojaatlar': typeof appKabinetRoleMurojaatlarIndexRoute
   '/kabinet/$role/suhbat': typeof appKabinetRoleSuhbatIndexRoute
   '/kabinet/$role/chaqiruv/$taskId': typeof appKabinetRoleChaqiruvTaskIdIndexRoute
   '/kabinet/$role/chiqarish/$dischargeId': typeof appKabinetRoleChiqarishDischargeIdIndexRoute
   '/kabinet/$role/chiqarish/yangi': typeof appKabinetRoleChiqarishYangiIndexRoute
+  '/kabinet/$role/dorilar/$patientId': typeof appKabinetRoleDorilarPatientIdIndexRoute
   '/kabinet/$role/suhbat/$conversationId': typeof appKabinetRoleSuhbatConversationIdIndexRoute
 }
 export interface FileRoutesById {
@@ -288,6 +322,7 @@ export interface FileRoutesById {
   '/(app)/design/$variant/$screen': typeof appDesignVariantScreenRouteRouteWithChildren
   '/(app)/kabinet/$role/chaqiruv': typeof appKabinetRoleChaqiruvRouteRouteWithChildren
   '/(app)/kabinet/$role/chiqarish': typeof appKabinetRoleChiqarishRouteRouteWithChildren
+  '/(app)/kabinet/$role/dorilar': typeof appKabinetRoleDorilarRouteRouteWithChildren
   '/(app)/kabinet/$role/ish-jadvali': typeof appKabinetRoleIshJadvaliRouteRouteWithChildren
   '/(app)/kabinet/$role/murojaatlar': typeof appKabinetRoleMurojaatlarRouteRouteWithChildren
   '/(app)/kabinet/$role/suhbat': typeof appKabinetRoleSuhbatRouteRouteWithChildren
@@ -296,16 +331,19 @@ export interface FileRoutesById {
   '/(app)/kabinet/$role/chaqiruv/$taskId': typeof appKabinetRoleChaqiruvTaskIdRouteRouteWithChildren
   '/(app)/kabinet/$role/chiqarish/$dischargeId': typeof appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren
   '/(app)/kabinet/$role/chiqarish/yangi': typeof appKabinetRoleChiqarishYangiRouteRouteWithChildren
+  '/(app)/kabinet/$role/dorilar/$patientId': typeof appKabinetRoleDorilarPatientIdRouteRouteWithChildren
   '/(app)/kabinet/$role/suhbat/$conversationId': typeof appKabinetRoleSuhbatConversationIdRouteRouteWithChildren
   '/(app)/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
   '/(app)/kabinet/$role/chaqiruv/': typeof appKabinetRoleChaqiruvIndexRoute
   '/(app)/kabinet/$role/chiqarish/': typeof appKabinetRoleChiqarishIndexRoute
+  '/(app)/kabinet/$role/dorilar/': typeof appKabinetRoleDorilarIndexRoute
   '/(app)/kabinet/$role/ish-jadvali/': typeof appKabinetRoleIshJadvaliIndexRoute
   '/(app)/kabinet/$role/murojaatlar/': typeof appKabinetRoleMurojaatlarIndexRoute
   '/(app)/kabinet/$role/suhbat/': typeof appKabinetRoleSuhbatIndexRoute
   '/(app)/kabinet/$role/chaqiruv/$taskId/': typeof appKabinetRoleChaqiruvTaskIdIndexRoute
   '/(app)/kabinet/$role/chiqarish/$dischargeId/': typeof appKabinetRoleChiqarishDischargeIdIndexRoute
   '/(app)/kabinet/$role/chiqarish/yangi/': typeof appKabinetRoleChiqarishYangiIndexRoute
+  '/(app)/kabinet/$role/dorilar/$patientId/': typeof appKabinetRoleDorilarPatientIdIndexRoute
   '/(app)/kabinet/$role/suhbat/$conversationId/': typeof appKabinetRoleSuhbatConversationIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -323,6 +361,7 @@ export interface FileRouteTypes {
     | '/design/$variant/$screen'
     | '/kabinet/$role/chaqiruv'
     | '/kabinet/$role/chiqarish'
+    | '/kabinet/$role/dorilar'
     | '/kabinet/$role/ish-jadvali'
     | '/kabinet/$role/murojaatlar'
     | '/kabinet/$role/suhbat'
@@ -331,16 +370,19 @@ export interface FileRouteTypes {
     | '/kabinet/$role/chaqiruv/$taskId'
     | '/kabinet/$role/chiqarish/$dischargeId'
     | '/kabinet/$role/chiqarish/yangi'
+    | '/kabinet/$role/dorilar/$patientId'
     | '/kabinet/$role/suhbat/$conversationId'
     | '/design/$variant/$screen/'
     | '/kabinet/$role/chaqiruv/'
     | '/kabinet/$role/chiqarish/'
+    | '/kabinet/$role/dorilar/'
     | '/kabinet/$role/ish-jadvali/'
     | '/kabinet/$role/murojaatlar/'
     | '/kabinet/$role/suhbat/'
     | '/kabinet/$role/chaqiruv/$taskId/'
     | '/kabinet/$role/chiqarish/$dischargeId/'
     | '/kabinet/$role/chiqarish/yangi/'
+    | '/kabinet/$role/dorilar/$patientId/'
     | '/kabinet/$role/suhbat/$conversationId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -353,12 +395,14 @@ export interface FileRouteTypes {
     | '/design/$variant/$screen'
     | '/kabinet/$role/chaqiruv'
     | '/kabinet/$role/chiqarish'
+    | '/kabinet/$role/dorilar'
     | '/kabinet/$role/ish-jadvali'
     | '/kabinet/$role/murojaatlar'
     | '/kabinet/$role/suhbat'
     | '/kabinet/$role/chaqiruv/$taskId'
     | '/kabinet/$role/chiqarish/$dischargeId'
     | '/kabinet/$role/chiqarish/yangi'
+    | '/kabinet/$role/dorilar/$patientId'
     | '/kabinet/$role/suhbat/$conversationId'
   id:
     | '__root__'
@@ -375,6 +419,7 @@ export interface FileRouteTypes {
     | '/(app)/design/$variant/$screen'
     | '/(app)/kabinet/$role/chaqiruv'
     | '/(app)/kabinet/$role/chiqarish'
+    | '/(app)/kabinet/$role/dorilar'
     | '/(app)/kabinet/$role/ish-jadvali'
     | '/(app)/kabinet/$role/murojaatlar'
     | '/(app)/kabinet/$role/suhbat'
@@ -383,16 +428,19 @@ export interface FileRouteTypes {
     | '/(app)/kabinet/$role/chaqiruv/$taskId'
     | '/(app)/kabinet/$role/chiqarish/$dischargeId'
     | '/(app)/kabinet/$role/chiqarish/yangi'
+    | '/(app)/kabinet/$role/dorilar/$patientId'
     | '/(app)/kabinet/$role/suhbat/$conversationId'
     | '/(app)/design/$variant/$screen/'
     | '/(app)/kabinet/$role/chaqiruv/'
     | '/(app)/kabinet/$role/chiqarish/'
+    | '/(app)/kabinet/$role/dorilar/'
     | '/(app)/kabinet/$role/ish-jadvali/'
     | '/(app)/kabinet/$role/murojaatlar/'
     | '/(app)/kabinet/$role/suhbat/'
     | '/(app)/kabinet/$role/chaqiruv/$taskId/'
     | '/(app)/kabinet/$role/chiqarish/$dischargeId/'
     | '/(app)/kabinet/$role/chiqarish/yangi/'
+    | '/(app)/kabinet/$role/dorilar/$patientId/'
     | '/(app)/kabinet/$role/suhbat/$conversationId/'
   fileRoutesById: FileRoutesById
 }
@@ -511,6 +559,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appKabinetRoleChiqarishRouteRouteImport
       parentRoute: typeof appKabinetRoleRouteRoute
     }
+    '/(app)/kabinet/$role/dorilar': {
+      id: '/(app)/kabinet/$role/dorilar'
+      path: '/dorilar'
+      fullPath: '/kabinet/$role/dorilar'
+      preLoaderRoute: typeof appKabinetRoleDorilarRouteRouteImport
+      parentRoute: typeof appKabinetRoleRouteRoute
+    }
     '/(app)/kabinet/$role/ish-jadvali': {
       id: '/(app)/kabinet/$role/ish-jadvali'
       path: '/ish-jadvali'
@@ -574,6 +629,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appKabinetRoleChiqarishYangiRouteRouteImport
       parentRoute: typeof appKabinetRoleChiqarishRouteRoute
     }
+    '/(app)/kabinet/$role/dorilar/': {
+      id: '/(app)/kabinet/$role/dorilar/'
+      path: '/'
+      fullPath: '/kabinet/$role/dorilar/'
+      preLoaderRoute: typeof appKabinetRoleDorilarIndexRouteImport
+      parentRoute: typeof appKabinetRoleDorilarRouteRoute
+    }
+    '/(app)/kabinet/$role/dorilar/$patientId': {
+      id: '/(app)/kabinet/$role/dorilar/$patientId'
+      path: '/$patientId'
+      fullPath: '/kabinet/$role/dorilar/$patientId'
+      preLoaderRoute: typeof appKabinetRoleDorilarPatientIdRouteRouteImport
+      parentRoute: typeof appKabinetRoleDorilarRouteRoute
+    }
     '/(app)/kabinet/$role/ish-jadvali/': {
       id: '/(app)/kabinet/$role/ish-jadvali/'
       path: '/'
@@ -622,6 +691,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/kabinet/$role/chiqarish/yangi/'
       preLoaderRoute: typeof appKabinetRoleChiqarishYangiIndexRouteImport
       parentRoute: typeof appKabinetRoleChiqarishYangiRouteRoute
+    }
+    '/(app)/kabinet/$role/dorilar/$patientId/': {
+      id: '/(app)/kabinet/$role/dorilar/$patientId/'
+      path: '/'
+      fullPath: '/kabinet/$role/dorilar/$patientId/'
+      preLoaderRoute: typeof appKabinetRoleDorilarPatientIdIndexRouteImport
+      parentRoute: typeof appKabinetRoleDorilarPatientIdRouteRoute
     }
     '/(app)/kabinet/$role/suhbat/$conversationId/': {
       id: '/(app)/kabinet/$role/suhbat/$conversationId/'
@@ -797,6 +873,38 @@ const appKabinetRoleChiqarishRouteRouteWithChildren =
     appKabinetRoleChiqarishRouteRouteChildren,
   )
 
+interface appKabinetRoleDorilarPatientIdRouteRouteChildren {
+  appKabinetRoleDorilarPatientIdIndexRoute: typeof appKabinetRoleDorilarPatientIdIndexRoute
+}
+
+const appKabinetRoleDorilarPatientIdRouteRouteChildren: appKabinetRoleDorilarPatientIdRouteRouteChildren =
+  {
+    appKabinetRoleDorilarPatientIdIndexRoute:
+      appKabinetRoleDorilarPatientIdIndexRoute,
+  }
+
+const appKabinetRoleDorilarPatientIdRouteRouteWithChildren =
+  appKabinetRoleDorilarPatientIdRouteRoute._addFileChildren(
+    appKabinetRoleDorilarPatientIdRouteRouteChildren,
+  )
+
+interface appKabinetRoleDorilarRouteRouteChildren {
+  appKabinetRoleDorilarPatientIdRouteRoute: typeof appKabinetRoleDorilarPatientIdRouteRouteWithChildren
+  appKabinetRoleDorilarIndexRoute: typeof appKabinetRoleDorilarIndexRoute
+}
+
+const appKabinetRoleDorilarRouteRouteChildren: appKabinetRoleDorilarRouteRouteChildren =
+  {
+    appKabinetRoleDorilarPatientIdRouteRoute:
+      appKabinetRoleDorilarPatientIdRouteRouteWithChildren,
+    appKabinetRoleDorilarIndexRoute: appKabinetRoleDorilarIndexRoute,
+  }
+
+const appKabinetRoleDorilarRouteRouteWithChildren =
+  appKabinetRoleDorilarRouteRoute._addFileChildren(
+    appKabinetRoleDorilarRouteRouteChildren,
+  )
+
 interface appKabinetRoleIshJadvaliRouteRouteChildren {
   appKabinetRoleIshJadvaliIndexRoute: typeof appKabinetRoleIshJadvaliIndexRoute
 }
@@ -860,6 +968,7 @@ const appKabinetRoleSuhbatRouteRouteWithChildren =
 interface appKabinetRoleRouteRouteChildren {
   appKabinetRoleChaqiruvRouteRoute: typeof appKabinetRoleChaqiruvRouteRouteWithChildren
   appKabinetRoleChiqarishRouteRoute: typeof appKabinetRoleChiqarishRouteRouteWithChildren
+  appKabinetRoleDorilarRouteRoute: typeof appKabinetRoleDorilarRouteRouteWithChildren
   appKabinetRoleIshJadvaliRouteRoute: typeof appKabinetRoleIshJadvaliRouteRouteWithChildren
   appKabinetRoleMurojaatlarRouteRoute: typeof appKabinetRoleMurojaatlarRouteRouteWithChildren
   appKabinetRoleSuhbatRouteRoute: typeof appKabinetRoleSuhbatRouteRouteWithChildren
@@ -871,6 +980,7 @@ const appKabinetRoleRouteRouteChildren: appKabinetRoleRouteRouteChildren = {
     appKabinetRoleChaqiruvRouteRouteWithChildren,
   appKabinetRoleChiqarishRouteRoute:
     appKabinetRoleChiqarishRouteRouteWithChildren,
+  appKabinetRoleDorilarRouteRoute: appKabinetRoleDorilarRouteRouteWithChildren,
   appKabinetRoleIshJadvaliRouteRoute:
     appKabinetRoleIshJadvaliRouteRouteWithChildren,
   appKabinetRoleMurojaatlarRouteRoute:
