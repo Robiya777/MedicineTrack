@@ -35,7 +35,7 @@ const dischargeSchema = z.object({
   patient_snapshot: snapshotSchema,
 })
 
-const taskSchema = z.object({
+export const taskSchema = z.object({
   id: z.uuid(),
   discharge: z.uuid(),
   patient: snapshotSchema,
