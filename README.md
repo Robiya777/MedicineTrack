@@ -32,6 +32,10 @@ npm run build
 
 Demo muhitida `frontend/dist`ni HTTPS orqali tarqating. Shu origin ichida `/api/*` va `/health/*` so‘rovlarini backendga yo‘naltiring. Ilovaning boshqa sahifa URL’lariga `index.html` qaytaring. `API_PROXY_TARGET` Vite’ning lokal proksisi uchun ishlatiladi.
 
+### Web dizayn galereyasi
+
+`frontend` branchida dev serverni ishga tushiring va terminaldagi manzilga `/design` qo‘shing. Galereyada beshta variant va sintetik demo oqimlari bor. Ko‘rib chiqish uchun build kerak bo‘lsa, `VITE_ENABLE_DESIGN_PREVIEW=true npm run build` buyrug‘idan foydalaning.
+
 ### Kutubxonalar qayerda ulangan
 
 | Kutubxona | Joyi va vazifasi |

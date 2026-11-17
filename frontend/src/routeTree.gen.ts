@@ -10,10 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as apphomeRouteRouteImport } from './routes/(app)/(home)/route'
+import { Route as appDesignRouteRouteImport } from './routes/(app)/design/route'
 import { Route as apphomeIndexRouteImport } from './routes/(app)/(home)/index'
+import { Route as appDesignIndexRouteImport } from './routes/(app)/design/index'
+import { Route as appDesignVariantRouteRouteImport } from './routes/(app)/design/$variant/route'
+import { Route as appDesignVariantIndexRouteImport } from './routes/(app)/design/$variant/index'
+import { Route as appDesignVariantScreenRouteRouteImport } from './routes/(app)/design/$variant/$screen/route'
+import { Route as appDesignVariantScreenIndexRouteImport } from './routes/(app)/design/$variant/$screen/index'
 
 const apphomeRouteRoute = apphomeRouteRouteImport.update({
   id: '/(app)/(home)',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const appDesignRouteRoute = appDesignRouteRouteImport.update({
+  id: '/(app)/design',
+  path: '/design',
   getParentRoute: () => rootRouteImport,
 } as any)
 const apphomeIndexRoute = apphomeIndexRouteImport.update({
@@ -21,28 +32,87 @@ const apphomeIndexRoute = apphomeIndexRouteImport.update({
   path: '/',
   getParentRoute: () => apphomeRouteRoute,
 } as any)
+const appDesignIndexRoute = appDesignIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => appDesignRouteRoute,
+} as any)
+const appDesignVariantRouteRoute = appDesignVariantRouteRouteImport.update({
+  id: '/$variant',
+  path: '/$variant',
+  getParentRoute: () => appDesignRouteRoute,
+} as any)
+const appDesignVariantIndexRoute = appDesignVariantIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => appDesignVariantRouteRoute,
+} as any)
+const appDesignVariantScreenRouteRoute =
+  appDesignVariantScreenRouteRouteImport.update({
+    id: '/$screen',
+    path: '/$screen',
+    getParentRoute: () => appDesignVariantRouteRoute,
+  } as any)
+const appDesignVariantScreenIndexRoute =
+  appDesignVariantScreenIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => appDesignVariantScreenRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof apphomeIndexRoute
+  '/design': typeof appDesignRouteRouteWithChildren
+  '/design/$variant': typeof appDesignVariantRouteRouteWithChildren
+  '/design/': typeof appDesignIndexRoute
+  '/design/$variant/$screen': typeof appDesignVariantScreenRouteRouteWithChildren
+  '/design/$variant/': typeof appDesignVariantIndexRoute
+  '/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof apphomeIndexRoute
+  '/design': typeof appDesignIndexRoute
+  '/design/$variant': typeof appDesignVariantIndexRoute
+  '/design/$variant/$screen': typeof appDesignVariantScreenIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(app)/(home)': typeof apphomeRouteRouteWithChildren
+  '/(app)/design': typeof appDesignRouteRouteWithChildren
+  '/(app)/design/$variant': typeof appDesignVariantRouteRouteWithChildren
   '/(app)/(home)/': typeof apphomeIndexRoute
+  '/(app)/design/': typeof appDesignIndexRoute
+  '/(app)/design/$variant/$screen': typeof appDesignVariantScreenRouteRouteWithChildren
+  '/(app)/design/$variant/': typeof appDesignVariantIndexRoute
+  '/(app)/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/design'
+    | '/design/$variant'
+    | '/design/'
+    | '/design/$variant/$screen'
+    | '/design/$variant/'
+    | '/design/$variant/$screen/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/(app)/(home)' | '/(app)/(home)/'
+  to: '/' | '/design' | '/design/$variant' | '/design/$variant/$screen'
+  id:
+    | '__root__'
+    | '/(app)/(home)'
+    | '/(app)/design'
+    | '/(app)/design/$variant'
+    | '/(app)/(home)/'
+    | '/(app)/design/'
+    | '/(app)/design/$variant/$screen'
+    | '/(app)/design/$variant/'
+    | '/(app)/design/$variant/$screen/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   apphomeRouteRoute: typeof apphomeRouteRouteWithChildren
+  appDesignRouteRoute: typeof appDesignRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -54,12 +124,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof apphomeRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(app)/design': {
+      id: '/(app)/design'
+      path: '/design'
+      fullPath: '/design'
+      preLoaderRoute: typeof appDesignRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(app)/(home)/': {
       id: '/(app)/(home)/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof apphomeIndexRouteImport
       parentRoute: typeof apphomeRouteRoute
+    }
+    '/(app)/design/': {
+      id: '/(app)/design/'
+      path: '/'
+      fullPath: '/design/'
+      preLoaderRoute: typeof appDesignIndexRouteImport
+      parentRoute: typeof appDesignRouteRoute
+    }
+    '/(app)/design/$variant': {
+      id: '/(app)/design/$variant'
+      path: '/$variant'
+      fullPath: '/design/$variant'
+      preLoaderRoute: typeof appDesignVariantRouteRouteImport
+      parentRoute: typeof appDesignRouteRoute
+    }
+    '/(app)/design/$variant/': {
+      id: '/(app)/design/$variant/'
+      path: '/'
+      fullPath: '/design/$variant/'
+      preLoaderRoute: typeof appDesignVariantIndexRouteImport
+      parentRoute: typeof appDesignVariantRouteRoute
+    }
+    '/(app)/design/$variant/$screen': {
+      id: '/(app)/design/$variant/$screen'
+      path: '/$screen'
+      fullPath: '/design/$variant/$screen'
+      preLoaderRoute: typeof appDesignVariantScreenRouteRouteImport
+      parentRoute: typeof appDesignVariantRouteRoute
+    }
+    '/(app)/design/$variant/$screen/': {
+      id: '/(app)/design/$variant/$screen/'
+      path: '/'
+      fullPath: '/design/$variant/$screen/'
+      preLoaderRoute: typeof appDesignVariantScreenIndexRouteImport
+      parentRoute: typeof appDesignVariantScreenRouteRoute
     }
   }
 }
@@ -76,8 +188,53 @@ const apphomeRouteRouteWithChildren = apphomeRouteRoute._addFileChildren(
   apphomeRouteRouteChildren,
 )
 
+interface appDesignVariantScreenRouteRouteChildren {
+  appDesignVariantScreenIndexRoute: typeof appDesignVariantScreenIndexRoute
+}
+
+const appDesignVariantScreenRouteRouteChildren: appDesignVariantScreenRouteRouteChildren =
+  {
+    appDesignVariantScreenIndexRoute: appDesignVariantScreenIndexRoute,
+  }
+
+const appDesignVariantScreenRouteRouteWithChildren =
+  appDesignVariantScreenRouteRoute._addFileChildren(
+    appDesignVariantScreenRouteRouteChildren,
+  )
+
+interface appDesignVariantRouteRouteChildren {
+  appDesignVariantScreenRouteRoute: typeof appDesignVariantScreenRouteRouteWithChildren
+  appDesignVariantIndexRoute: typeof appDesignVariantIndexRoute
+}
+
+const appDesignVariantRouteRouteChildren: appDesignVariantRouteRouteChildren = {
+  appDesignVariantScreenRouteRoute:
+    appDesignVariantScreenRouteRouteWithChildren,
+  appDesignVariantIndexRoute: appDesignVariantIndexRoute,
+}
+
+const appDesignVariantRouteRouteWithChildren =
+  appDesignVariantRouteRoute._addFileChildren(
+    appDesignVariantRouteRouteChildren,
+  )
+
+interface appDesignRouteRouteChildren {
+  appDesignVariantRouteRoute: typeof appDesignVariantRouteRouteWithChildren
+  appDesignIndexRoute: typeof appDesignIndexRoute
+}
+
+const appDesignRouteRouteChildren: appDesignRouteRouteChildren = {
+  appDesignVariantRouteRoute: appDesignVariantRouteRouteWithChildren,
+  appDesignIndexRoute: appDesignIndexRoute,
+}
+
+const appDesignRouteRouteWithChildren = appDesignRouteRoute._addFileChildren(
+  appDesignRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   apphomeRouteRoute: apphomeRouteRouteWithChildren,
+  appDesignRouteRoute: appDesignRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

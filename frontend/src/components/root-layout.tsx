@@ -1,6 +1,13 @@
-import { Link, Outlet } from '@tanstack/react-router'
+import { Link, Outlet, useLocation } from '@tanstack/react-router'
 
 export function RootLayout() {
+  const pathname = useLocation({ select: (location) => location.pathname })
+
+  if ((import.meta.env.DEV || import.meta.env.VITE_ENABLE_DESIGN_PREVIEW === 'true') &&
+      (pathname === '/design' || pathname.startsWith('/design/'))) {
+    return <Outlet />
+  }
+
   return (
     <>
       <header className="border-b border-line bg-white">
