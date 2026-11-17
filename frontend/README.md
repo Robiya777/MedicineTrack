@@ -42,3 +42,25 @@ holati qayta olinadi. Tasdiqlangan yozuvda yakuniy bemor ma’lumotlari snapshot
 ko‘rsatiladi.
 
 Tekshiruv natijalari [VALIDATION.md](VALIDATION.md)da keltirilgan.
+
+## Koordinator va shifokor oqimi
+
+`demo.coordinator` uchun hududiy KPI, barcha chaqiruvlar, mas’ulsiz,
+keyingi 4 soatda muddati tugaydigan ochiq, kechikkan, bajarilgan va bekor
+qilingan chaqiruvlar ko‘rinadi. Shifokor va qabul qiluvchi muassasa filtrlari
+bor. Ro‘yxat va KPI har 30 soniyada yangilanadi.
+
+Chaqiruv tafsilotida koordinator faol shifokorni tanlab, sabab bilan tayinlaydi
+yoki qayta tayinlaydi. Qayta tayinlangan vazifa NEW holatiga qaytadi,
+yangi shifokor uni qabul qiladi va dastlabki muddat saqlanadi. Bekor qilishda
+sabab turi va izoh kiritiladi.
+
+`demo.doctor` o‘z ochiq chaqiruvlarini ko‘radi. Tafsilotda qabul qilish,
+aloqa urinishini qo‘shish va qabul qilingan vazifaga yakuniy natija yuborish
+mumkin. Aloqa va tashrif vaqtlari Toshkent vaqtida kiritiladi.
+Javobsiz qo‘ng‘iroq ochiq vazifaning aloqa tarixida qoladi.
+
+Natija, urinishlar va hodisalar chaqiruv tarixida ko‘rinadi.
+`409` konfliktida joriy vazifa qayta olinadi. Forma saqlangan holda
+**Joriy holat bilan davom etish** orqali yangi versiyani tekshirib davom etiladi.
+Eski shifokor ruxsati bekor bo‘lsa, tafsilot o‘rnida ruxsat xabari ko‘rsatiladi.

@@ -35,10 +35,44 @@ backend, alohida SQLite baza va Playwright boshqaruvidagi Chromium ishlatildi.
 
 ## Qolgan ishlar
 
-- 3-bosqichdagi koordinator boshqaruvi va shifokor natija yuborishi.
 - Webdan yaratilgan yangi chaqiruvni aynan shu ID bilan Androidda yakunlash.
 - Bemor aktivatsiyasi, chat, dori jadvallari va PDF/AI ishchi ekranlarini ulash.
 - Ommaviy HTTPS demo URL, fizik qurilma, turli brauzerlar va yuklama sinovlari.
 
 Backend API kontraktiga o‘zgartirish kiritilmadi. Ushbu qayd 2-bosqich tekshiruv
 hisoboti. To‘liq MVP qabulida qolgan ssenariylar ham tekshiriladi.
+
+## 3-bosqich tekshiruvi
+
+Lokal Django backend, alohida sintetik SQLite baza va Chromium bilan
+quyidagilar tekshirildi.
+
+- Koordinatorning hududiy KPI, mas’ulsiz va kechikkan navbatlari.
+  Keyingi 4 soatda muddati tugaydigan 22 ta ochiq vazifa ikki sahifada
+  ko‘rsatildi. Shu oraliqdagi COMPLETED va CANCELLED yozuvlar kirmadi.
+- Shifokor va muassasa filtrlari, filtr o‘zgarganda birinchi sahifaga qaytish.
+  Ma’lumotnomalar barcha server sahifalaridan olinadi.
+- Statsionar webda yangi bemor chiqarildi. Koordinator ayni task IDni
+  tayinladi. 360 px shifokor webida qabul qilinib, urinish va yakuniy natija
+  yuborildi. 1280 px koordinator panelida shu natija va yangilangan KPI ko‘rindi.
+- Accept faqat qabul holatini o‘zgartirdi. Javobsiz aloqa urinishidan keyin
+  task ochiq qoldi. COMPLETED faqat server yakuniy hisobotni saqlagach ko‘rindi.
+- Reassign, accept, contact-attempts, complete va cancel javoblari server
+  amali bajarilgach brauzerga sun’iy uzildi. Qayta so‘rovda bir xil kalit va
+  Idempotency-Replayed tasdiqlandi. Takroriy urinish va hisobot yaratilmadi.
+- ACCEPTED vazifa boshqa shifokorga tayinlanganda status NEW,
+  accepted_at null bo‘ldi. Dastlabki due_at saqlandi.
+  Oldingi shifokor yangilaganda API ruxsat bermadi va klinik tafsilot yashirildi.
+- Boshqa shifokorga tegishli task IDsi bilan kirishda ma’lumot ochilmadi.
+- Natija formasi ochiq paytda parallel aloqa urinishi server versiyasini
+  o‘zgartirdi. Eski complete 409 qaytardi. Matn yo‘qolmadi va foydalanuvchi
+  joriy holatni tasdiqlagach yangi versiya bilan yakunladi.
+- Kelajakdagi tashrif vaqti rad etildi. Cancel uchun sabab turi va izoh
+  yuborildi. Terminal vazifada o‘zgartirish tugmalari yopildi.
+- 360 px tayinlash dialogi, Escape bilan yopish, forma va tafsilotlar,
+  1280 px koordinator paneli tekshirildi. Skrinshotlar vizual ko‘rib chiqildi.
+- npm run lint, npm run build va TypeScript tekshiruvi o‘tdi.
+
+Bitta taskning webdan Android APKda yakunlanishi qolgan integratsiya sinovi.
+Ushbu kompyuterda sozlangan AVD va ishlaydigan Java muhiti aniqlanmadi.
+Uch rolning web orqali bir xil backend bilan ishlashi yuqorida tekshirildi.

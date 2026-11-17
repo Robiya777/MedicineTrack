@@ -76,7 +76,7 @@ function DoctorSelect({ assignedDoctor, error }: { assignedDoctor: string | null
     <div className="space-y-3">
       <Field label="Yangi mas’ul shifokor" error={error}>
         {(a11y) => (
-          <select {...a11y} name="doctor_id" className={inputStyle} defaultValue="" required disabled={doctors.isPending || doctors.isError}>
+          <select {...a11y} name="doctor_id" className={inputStyle} defaultValue="" required>
             <option value="" disabled>Shifokorni tanlang</option>
             {available.map((doctor) => <option key={doctor.id} value={doctor.id}>{doctorName(doctor)}</option>)}
           </select>

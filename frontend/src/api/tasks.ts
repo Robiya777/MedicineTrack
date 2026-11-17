@@ -113,7 +113,12 @@ export function taskListQuery(filters: TaskFilters, page: number) {
         const groups = await Promise.all(['UNASSIGNED', 'NEW', 'ACCEPTED'].map((status) => (
           fetchAll('/tasks', careTaskSchema, signal, { ...params, status })
         )))
-        const matching = groups.flat().sort((a, b) => (
+        const byId = new Map<string, CareTask>()
+        for (const task of groups.flat()) {
+          const previous = byId.get(task.id)
+          if (!previous || previous.version < task.version) byId.set(task.id, task)
+        }
+        const matching = [...byId.values()].sort((a, b) => (
           Date.parse(a.due_at) - Date.parse(b.due_at) || a.id.localeCompare(b.id)
         ))
         return {
