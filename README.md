@@ -19,6 +19,6 @@ Hozirgi repo bosqichi: texnik rejalashtirish. Ishlaydigan web, backend va APK ha
 
 ## MVP
 
-Bemorni chiqarish → avtomatik aktiv chaqiruv → oilaviy shifokor qabul qilishi → aloqa/tashrif → natijani tasdiqlash. Koordinator mas’ulsiz va kechikkan chaqiruvlarni nazorat qiladi. AI epikrizdan ma’lumot ajratadi; yakuniy tasdiq xodimda qoladi.
+Bemorni chiqarish → avtomatik aktiv chaqiruv → oilaviy shifokor qabul qilishi → aloqa/tashrif → natijani tasdiqlash. Koordinator mas’ulsiz va kechikkan chaqiruvlarni nazorat qiladi. Bemor kabinetida shifokorga yozish va holatini yuborish rejalashtirilgan; javob ish jadvali bo‘yicha beriladi. AI epikrizdan ma’lumot ajratadi; yakuniy tasdiq xodimda qoladi.
 
 Repo faqat sintetik bemor ma’lumotlarini saqlaydi. Haqiqiy tibbiy hujjatlar va maxfiy kalitlarni commit qilmang.

@@ -1,6 +1,6 @@
 # MedicineTrack — texnik topshiriq
 
-Versiya: 1.0 • Sana: 2026-11-17 • Holat: ishlab chiqish uchun bazaviy loyiha.
+Versiya: 1.1 • Sana: 2026-11-17 • Holat: ishlab chiqish uchun bazaviy loyiha.
 
 ## 1. Hujjat asosi va chegaralari
 
@@ -39,6 +39,7 @@ Handlelar foydalanuvchi bergan yozilishda kiritildi; GitHub akkauntlari yoki rep
 - Muddatdan oldin eslatma va muddatdan keyin eskalatsiya.
 - Web monitoring va Android shifokor oqimi.
 - Audit, demo dataset, API hujjati, ishga tushirish yo‘riqnomasi.
+- Bemor kabineti: mas’ul shifokorga matn yozish, holat yuborish va javobni ko‘rish (§23).
 
 ### P1 — xakatondagi AI moduli
 
@@ -46,7 +47,7 @@ Matnli PDF epikrizdan manbasi ko‘rsatilgan maydonlar va qisqa xulosa loyihasin
 
 ### Keyingi bosqich
 
-Davlat tibbiy tizimlari, haqiqiy SMS/push provayderi, skan PDF uchun OCR, to‘liq offline sinxronizatsiya, bemor kabineti, elektron imzo va ko‘p tillilik. MVPda davlat bazalariga mavjud bo‘lmagan ulanish va’da qilinmaydi. Dori tayinlash, tashxis qo‘yish va tez yordam dispetcherligi scopega kirmaydi.
+Davlat tibbiy tizimlari, haqiqiy SMS/push provayderi, skan PDF uchun OCR, to‘liq offline sinxronizatsiya, elektron imzo va ko‘p tillilik. MVPda davlat bazalariga mavjud bo‘lmagan ulanish va’da qilinmaydi. Dori tayinlash, tashxis qo‘yish va tez yordam dispetcherligi scopega kirmaydi.
 
 ## 5. Rollar va kirish matritsasi
 
@@ -366,3 +367,73 @@ Birinchi integratsiyagacha backend login, task response, error schema va seed ak
 | Muddat talabi va haqiqiy ish jarayoni | Pilotdan oldin hamkor muassasa bilan kelishish | PM |
 
 Bu ochiq savollar MVP ishlab chiqishni to‘xtatmaydi; belgilangan demo qarorlari bilan davom etiladi. Real pilot qarorlari tasdiqlanmaguncha demo siyosati klinik amaliyot qoidasi sifatida qo‘llanmaydi.
+
+
+## 23. Bemor–shifokor aloqasi va holat yuborish
+
+### 23.1. Maqsad va xizmat chegarasi
+
+Bemor chiqarilgandan keyin o‘ziga biriktirilgan shifokorga yozishi, holati haqida ma’lumot yuborishi va javoblarni ko‘rishi mumkin. Xabarlar sutkaning istalgan vaqtida qabul qilinadi; bu shifokor 24/7 onlayn yoki darhol javob beradi degani emas. Shifokorning ish jadvali va javob berish muddati suhbat ekranida ko‘rsatiladi. Ushbu aloqa dastlabki 24 soatlik patronaj topshirig‘ini almashtirmaydi yoki avtomatik yopmaydi.
+
+MVP uchun javob siyosati: xabar ish vaqtida kelganda 4 ish soati ichida javob maqsadi; ish vaqtidan tashqarida kelganda vaqt keyingi smena boshidan hisoblanadi. Jadval, bayramlar va vaqt zonasi koordinator tomonidan sozlanadi. Bu klinik kafolat emas, demo operatsion sozlamasi; real pilotda hamkor tasdiqlaydi. Shifokor javob bermasa koordinatorga ogohlantirish chiqadi, avtomatik tibbiy javob yuborilmaydi. Jadval sozlanmagan bo‘lsa bemorga “Javob vaqti belgilanmagan” ko‘rsatiladi va koordinatorga konfiguratsiya xatosi chiqadi.
+
+### 23.2. Bemor kirishi va vakolat
+
+- Bemor uchun PATIENT roli va User.patient_id orqali aynan bitta bemor kartasiga bog‘lanish qo‘shiladi. U faqat o‘z chiqarishlari, suhbatlari va yuborgan holatlarini ko‘radi.
+- Vakolatli statsionar xodimi bemor va telefonni tekshirgach bir martalik, 24 soat amal qiladigan aktivatsiya kodi beradi. Kod bazada xeshlangan, 5 xato urinishdan keyin bloklanadi; qayta berish oldingisini bekor qiladi. Aktivatsiyada bemor parol o‘rnatadi. Public demo kodlari faqat sintetik akkauntlar uchun.
+- Real pilotda telefon egasi va bemor shaxsi tekshiruvi, akkauntni tiklash jarayoni alohida tasdiqlanadi. Bemor IDsi yoki telefonni bilishning o‘zi kirish huquqi bermaydi.
+- Vakil akkaunti MVPga kirmaydi. Umumiy oilaviy telefon orqali boshqa bemorning kartasiga avtomatik ruxsat berilmaydi.
+- Aloqa huquqi task yopilgach ham faol PatientAssignment asosida davom etadi. Faol biriktirish yo‘q bo‘lsa xabar xavfsiz navbatda saqlanadi, bemorga “Mas’ul tayinlanmoqda”, koordinatorga istisno ko‘rsatiladi; boshqa shifokorga tasodifiy yuborilmaydi.
+
+### 23.3. Xabarlar va holat formasi
+
+- Matnli suhbat: 1–4000 belgi; fayl, audio, video va qo‘ng‘iroq MVPdan tashqarida.
+- Holat yuborish: “Yaxshilandi / O‘zgarmadi / Yomonlashdi”, majburiy izoh (1–4000 belgi), kuzatuv vaqti. Kuzatuv vaqti kelajakda bo‘lmaydi; server qabul vaqti alohida saqlanadi. Bular bemor bildirgan ma’lumot deb belgilanadi, shifokor tekshirgan fakt hisoblanmaydi.
+- Xabar holatlari: serverga yuborildi, shifokor ko‘rdi, javob berildi. Server tasdig‘isiz yuborildi belgisi chiqmaydi. “Ko‘rildi” bemor tekshirildi yoki vazifa bajarildi degani emas.
+- “Yomonlashdi” koordinatordagi ustuvor navbatga ham chiqadi. UI shoshilinch yordam kerak bo‘lsa chat javobini kutmaslik va mahalliy shoshilinch yordam xizmatiga murojaat qilish haqida doimiy eslatma ko‘rsatadi. Tizim tashxis yoki avtomatik klinik triage bermaydi.
+- Har bir suhbatda javobsiz davr birinchi javobsiz bemor xabaridan boshlanadi; ketma-ket xabarlar deadline’ni yangilamaydi. Shifokor javobi shu paytgacha kelgan xabarlarni qamrab oladi; keyingi xabar yangi davrni boshlaydi.
+- Shifokor qayta biriktirilganda eski suhbat yozish uchun yopiladi, yangi shifokor bilan yangi suhbat ochiladi. Bemor eski tarixini ko‘radi; oldingi shifokorning kirishi bekor qilinadi. Yangi shifokorga to‘liq eski chat avtomatik ochilmaydi; zarur handover xulosasi koordinator tomonidan audit bilan beriladi. Javobsiz davr muddatini qayta biriktirish yangilamaydi.
+- Xabarlar yuborilgach tahrir/o‘chirish o‘rniga yangi tuzatish xabari yuboriladi. Klinik matn push yoki oddiy logga yozilmaydi.
+
+### 23.4. Ekranlar va jamoa vazifalari
+
+- Web @nuraziz07: bemor kabineti, holat formasi, chat, javob muddati va koordinator javobsizlar navbati.
+- APK @akashishunichiro: PATIENT va DOCTOR roliga mos navigatsiya, chat, holat yuborish/ko‘rish, tarmoq xatolari va in-app yangilanish. Real-time websocket shart emas; foreground polling/refresh yetarli.
+- Backend @sunnatila: patient auth, suhbat ruxsatlari, xabar/holat API, jadval va ish soati hisobi, dedupe, bildirishnoma va eskalatsiya.
+- PM @robiya777: javob jadvali, monitoring davri va klinik hamkor siyosatini kelishish; demo ssenariysiga bemor xabarini qo‘shish.
+
+Bu modul P0 scopega qo‘shiladi. Uch kunlik rejada 2-kuni backend kontrakti va asosiy chat, 3-kuni ikki klient integratsiyasi va qabul sinovi bajariladi; sig‘masa PM qo‘shimcha funksiyalarni qisqartiradi, tugallanmagan modulni tayyor deb ko‘rsatmaydi.
+
+### 23.5. Model va API kengaytmasi
+
+Yangi modellar: Conversation(patient_id, assignment_id, doctor_id, status); Message(conversation_id, sender_id, text, sent_at, read_at); PatientStatusUpdate(conversation_id, self_reported_state, note, observed_at, received_at); WorkSchedule(organization_id/doctor_id, timezone, shifts, exceptions); ResponseEpisode(conversation_id, first_unanswered_at, response_due_at, responded_at, escalation_at). PatientStatusUpdate yaratilganda shu suhbatga bog‘langan hodisa ham yoziladi. Javobsiz epizod navbatdagi shifokorga ko‘chirilganda dastlabki deadline saqlanadi. Ish kalendari versiyasi epizodga yoziladi, jadval o‘zgarishi mavjud muddatni jim o‘zgartirmaydi.
+
+| Metod va yo‘l | Ruxsat / vazifa |
+|---|---|
+| POST /patients/{id}/activation | Vakolatli statsionar xodimi, bir martalik kod |
+| POST /auth/patient-activate | Kodni tekshirish va parol o‘rnatish; rate limit |
+| GET /conversations | Faqat o‘z bemori yoki faol biriktirilgan shifokor suhbatlari |
+| GET/POST /conversations/{id}/messages | Taraflar; yopiq suhbatga POST mumkin emas |
+| POST /conversations/{id}/read | Faqat boshqa taraf xabarlariga o‘qish belgisi |
+| GET/POST /conversations/{id}/status-updates | Bemor yaratadi, bemor va faol shifokor ko‘radi |
+| GET /dashboard/unanswered | Koordinator, faqat vakolat doirasida |
+| GET/PUT /doctors/{id}/work-schedule | Ko‘rish tegishli taraflar, tahrir koordinator |
+
+Yangi POSTlarda umumiy idempotency talabi amal qiladi. Chat ro‘yxatlari pagination bilan, xabar limiti foydalanuvchiga 20/daqiqa. Polling oralig‘i 15 soniya; bildirishnoma kelmasa ma’lumot refreshda tiklanadi. Eskalatsiya scheduleri overdue epizodni 60 soniya ichida aniqlaydi. Koordinatorning javobsizlar ro‘yxati bemor/task identifikatori, mas’ul va vaqtni ko‘rsatadi; chatning klinik matnini ko‘rishga qo‘shimcha ruxsat bermaydi.
+
+### 23.6. Qo‘shimcha qabul sinovlari
+
+| ID | Sinov | Kutiladigan natija |
+|---|---|---|
+| AT-24 | Bemor boshqa bemor suhbat IDsini ochadi | Ruxsat yo‘q, xabar/holat sizib chiqmaydi |
+| AT-25 | Aktivatsiya kodi qayta yoki 24 soatdan keyin ishlatiladi | Rad etiladi; noto‘g‘ri urinishlar cheklangan |
+| AT-26 | Bemor matn va holat yuboradi | Shifokorda ko‘rinadi, server vaqti va bemor bildirganligi belgisi bor |
+| AT-27 | Kechasi xabar keladi | Ish jadvali va keyingi smenadan hisoblangan deadline ko‘rinadi; 24/7 javob va’dasi yo‘q |
+| AT-28 | Shifokor xabarni o‘qiydi | Read belgisi bor, patronaj taski yopilmaydi |
+| AT-29 | 4 ish soati javob yo‘q | Koordinatorga bitta eskalatsiya; yangi xabar deadline’ni uzaytirmaydi |
+| AT-30 | Task bajarilgan, biriktirish faol | Bemor shifokorga yozishda davom etadi |
+| AT-31 | Shifokor qayta biriktirildi | Eski kirish bekor, yangi suhbat, javobsiz muddat saqlanadi |
+| AT-32 | Tarmoq xatosidan keyin qayta yuborish | Bitta xabar, yolg‘on yuborildi belgisi yo‘q |
+| AT-33 | Bemor “Yomonlashdi” yuboradi | Ustuvor navbat va kutmaslik eslatmasi; avtomatik tashxis yo‘q |
+
+DoDga bemor aktivatsiyasi, xabar → shifokor javobi, holat yuborish hamda AT-24…AT-33 tekshiruvi qo‘shiladi. Bu TZdagi talablar; funksiyalar kodda implementatsiya qilingani degani emas.
