@@ -1,10 +1,10 @@
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { dischargePageQuery, hospitalPatientQuery } from '../../../../../api/hospital'
 import { dischargeStatusLabels, formatTashkentDateTime } from '../../../../../features/hospital/format'
-import { Notice, RequestError, secondaryButton } from '../../../../../features/hospital/ui'
+import { Notice, primaryButton, RequestError, secondaryButton } from '../../../../../features/hospital/ui'
 
 export function HospitalDashboard() {
   const [page, setPage] = useState(1)
@@ -20,8 +20,12 @@ export function HospitalDashboard() {
 
   return (
     <section aria-labelledby="workspace-title" className="space-y-6">
-      <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 id="workspace-title" className="text-3xl font-semibold tracking-tight">Statsionar kabineti</h1>
+        <Link to="/kabinet/$role/chiqarish/yangi" params={{ role: 'statsionar' }} className={primaryButton}>
+          <Plus size={18} aria-hidden="true" />
+          Yangi chiqarish
+        </Link>
       </div>
       <section aria-labelledby="discharges-title" className="overflow-hidden rounded-xl border border-line bg-white">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-4 sm:px-6">

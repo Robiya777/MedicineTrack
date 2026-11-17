@@ -24,7 +24,9 @@ import { Route as appKabinetRoleChiqarishRouteRouteImport } from './routes/(app)
 import { Route as appDesignVariantScreenIndexRouteImport } from './routes/(app)/design/$variant/$screen/index'
 import { Route as appKabinetRoleChiqarishIndexRouteImport } from './routes/(app)/kabinet/$role/chiqarish/index'
 import { Route as appKabinetRoleChiqarishDischargeIdRouteRouteImport } from './routes/(app)/kabinet/$role/chiqarish/$dischargeId/route'
+import { Route as appKabinetRoleChiqarishYangiRouteRouteImport } from './routes/(app)/kabinet/$role/chiqarish/yangi/route'
 import { Route as appKabinetRoleChiqarishDischargeIdIndexRouteImport } from './routes/(app)/kabinet/$role/chiqarish/$dischargeId/index'
+import { Route as appKabinetRoleChiqarishYangiIndexRouteImport } from './routes/(app)/kabinet/$role/chiqarish/yangi/index'
 
 const apphomeRouteRoute = apphomeRouteRouteImport.update({
   id: '/(app)/(home)',
@@ -105,11 +107,23 @@ const appKabinetRoleChiqarishDischargeIdRouteRoute =
     path: '/$dischargeId',
     getParentRoute: () => appKabinetRoleChiqarishRouteRoute,
   } as any)
+const appKabinetRoleChiqarishYangiRouteRoute =
+  appKabinetRoleChiqarishYangiRouteRouteImport.update({
+    id: '/yangi',
+    path: '/yangi',
+    getParentRoute: () => appKabinetRoleChiqarishRouteRoute,
+  } as any)
 const appKabinetRoleChiqarishDischargeIdIndexRoute =
   appKabinetRoleChiqarishDischargeIdIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => appKabinetRoleChiqarishDischargeIdRouteRoute,
+  } as any)
+const appKabinetRoleChiqarishYangiIndexRoute =
+  appKabinetRoleChiqarishYangiIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => appKabinetRoleChiqarishYangiRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -125,9 +139,11 @@ export interface FileRoutesByFullPath {
   '/design/$variant/': typeof appDesignVariantIndexRoute
   '/kabinet/$role/': typeof appKabinetRoleIndexRoute
   '/kabinet/$role/chiqarish/$dischargeId': typeof appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren
+  '/kabinet/$role/chiqarish/yangi': typeof appKabinetRoleChiqarishYangiRouteRouteWithChildren
   '/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
   '/kabinet/$role/chiqarish/': typeof appKabinetRoleChiqarishIndexRoute
   '/kabinet/$role/chiqarish/$dischargeId/': typeof appKabinetRoleChiqarishDischargeIdIndexRoute
+  '/kabinet/$role/chiqarish/yangi/': typeof appKabinetRoleChiqarishYangiIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof apphomeIndexRoute
@@ -138,6 +154,7 @@ export interface FileRoutesByTo {
   '/design/$variant/$screen': typeof appDesignVariantScreenIndexRoute
   '/kabinet/$role/chiqarish': typeof appKabinetRoleChiqarishIndexRoute
   '/kabinet/$role/chiqarish/$dischargeId': typeof appKabinetRoleChiqarishDischargeIdIndexRoute
+  '/kabinet/$role/chiqarish/yangi': typeof appKabinetRoleChiqarishYangiIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -154,9 +171,11 @@ export interface FileRoutesById {
   '/(app)/design/$variant/': typeof appDesignVariantIndexRoute
   '/(app)/kabinet/$role/': typeof appKabinetRoleIndexRoute
   '/(app)/kabinet/$role/chiqarish/$dischargeId': typeof appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren
+  '/(app)/kabinet/$role/chiqarish/yangi': typeof appKabinetRoleChiqarishYangiRouteRouteWithChildren
   '/(app)/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
   '/(app)/kabinet/$role/chiqarish/': typeof appKabinetRoleChiqarishIndexRoute
   '/(app)/kabinet/$role/chiqarish/$dischargeId/': typeof appKabinetRoleChiqarishDischargeIdIndexRoute
+  '/(app)/kabinet/$role/chiqarish/yangi/': typeof appKabinetRoleChiqarishYangiIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -173,9 +192,11 @@ export interface FileRouteTypes {
     | '/design/$variant/'
     | '/kabinet/$role/'
     | '/kabinet/$role/chiqarish/$dischargeId'
+    | '/kabinet/$role/chiqarish/yangi'
     | '/design/$variant/$screen/'
     | '/kabinet/$role/chiqarish/'
     | '/kabinet/$role/chiqarish/$dischargeId/'
+    | '/kabinet/$role/chiqarish/yangi/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -186,6 +207,7 @@ export interface FileRouteTypes {
     | '/design/$variant/$screen'
     | '/kabinet/$role/chiqarish'
     | '/kabinet/$role/chiqarish/$dischargeId'
+    | '/kabinet/$role/chiqarish/yangi'
   id:
     | '__root__'
     | '/(app)/(home)'
@@ -201,9 +223,11 @@ export interface FileRouteTypes {
     | '/(app)/design/$variant/'
     | '/(app)/kabinet/$role/'
     | '/(app)/kabinet/$role/chiqarish/$dischargeId'
+    | '/(app)/kabinet/$role/chiqarish/yangi'
     | '/(app)/design/$variant/$screen/'
     | '/(app)/kabinet/$role/chiqarish/'
     | '/(app)/kabinet/$role/chiqarish/$dischargeId/'
+    | '/(app)/kabinet/$role/chiqarish/yangi/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -320,12 +344,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appKabinetRoleChiqarishDischargeIdRouteRouteImport
       parentRoute: typeof appKabinetRoleChiqarishRouteRoute
     }
+    '/(app)/kabinet/$role/chiqarish/yangi': {
+      id: '/(app)/kabinet/$role/chiqarish/yangi'
+      path: '/yangi'
+      fullPath: '/kabinet/$role/chiqarish/yangi'
+      preLoaderRoute: typeof appKabinetRoleChiqarishYangiRouteRouteImport
+      parentRoute: typeof appKabinetRoleChiqarishRouteRoute
+    }
     '/(app)/kabinet/$role/chiqarish/$dischargeId/': {
       id: '/(app)/kabinet/$role/chiqarish/$dischargeId/'
       path: '/'
       fullPath: '/kabinet/$role/chiqarish/$dischargeId/'
       preLoaderRoute: typeof appKabinetRoleChiqarishDischargeIdIndexRouteImport
       parentRoute: typeof appKabinetRoleChiqarishDischargeIdRouteRoute
+    }
+    '/(app)/kabinet/$role/chiqarish/yangi/': {
+      id: '/(app)/kabinet/$role/chiqarish/yangi/'
+      path: '/'
+      fullPath: '/kabinet/$role/chiqarish/yangi/'
+      preLoaderRoute: typeof appKabinetRoleChiqarishYangiIndexRouteImport
+      parentRoute: typeof appKabinetRoleChiqarishYangiRouteRoute
     }
   }
 }
@@ -413,8 +451,24 @@ const appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren =
     appKabinetRoleChiqarishDischargeIdRouteRouteChildren,
   )
 
+interface appKabinetRoleChiqarishYangiRouteRouteChildren {
+  appKabinetRoleChiqarishYangiIndexRoute: typeof appKabinetRoleChiqarishYangiIndexRoute
+}
+
+const appKabinetRoleChiqarishYangiRouteRouteChildren: appKabinetRoleChiqarishYangiRouteRouteChildren =
+  {
+    appKabinetRoleChiqarishYangiIndexRoute:
+      appKabinetRoleChiqarishYangiIndexRoute,
+  }
+
+const appKabinetRoleChiqarishYangiRouteRouteWithChildren =
+  appKabinetRoleChiqarishYangiRouteRoute._addFileChildren(
+    appKabinetRoleChiqarishYangiRouteRouteChildren,
+  )
+
 interface appKabinetRoleChiqarishRouteRouteChildren {
   appKabinetRoleChiqarishDischargeIdRouteRoute: typeof appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren
+  appKabinetRoleChiqarishYangiRouteRoute: typeof appKabinetRoleChiqarishYangiRouteRouteWithChildren
   appKabinetRoleChiqarishIndexRoute: typeof appKabinetRoleChiqarishIndexRoute
 }
 
@@ -422,6 +476,8 @@ const appKabinetRoleChiqarishRouteRouteChildren: appKabinetRoleChiqarishRouteRou
   {
     appKabinetRoleChiqarishDischargeIdRouteRoute:
       appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren,
+    appKabinetRoleChiqarishYangiRouteRoute:
+      appKabinetRoleChiqarishYangiRouteRouteWithChildren,
     appKabinetRoleChiqarishIndexRoute: appKabinetRoleChiqarishIndexRoute,
   }
 

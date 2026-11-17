@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { hospitalErrorMessage } from '../../api/hospital'
 
 export const primaryButton =
@@ -34,5 +34,33 @@ export function Facts({ items }: { items: { label: string; value: ReactNode }[] 
         </div>
       ))}
     </dl>
+  )
+}
+
+export const inputStyle =
+  'mt-1 w-full min-w-0 rounded-lg border border-line bg-white px-3 py-2.5 text-base aria-invalid:border-red-500'
+
+export function Field({ label, error, hint, children }: {
+  label: string
+  error?: string
+  hint?: string
+  children: (props: {
+    id: string
+    'aria-invalid': boolean
+    'aria-describedby': string | undefined
+  }) => ReactNode
+}) {
+  const id = useId()
+  const message = error || hint
+  return (
+    <div className="min-w-0">
+      <label htmlFor={id} className="text-sm font-semibold">{label}</label>
+      {children({ id, 'aria-invalid': Boolean(error), 'aria-describedby': message ? id + '-message' : undefined })}
+      {message && (
+        <p id={id + '-message'} role={error ? 'alert' : undefined} className={`mt-1 text-sm ${error ? 'text-red-800' : 'text-muted'}`}>
+          {message}
+        </p>
+      )}
+    </div>
   )
 }

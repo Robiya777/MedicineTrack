@@ -4,6 +4,13 @@ import { z } from 'zod'
 import { apiClient } from './client'
 
 const dateTime = z.iso.datetime({ offset: true })
+const snapshotSchema = z.object({
+  full_name: z.string().optional(),
+  address: z.string().optional(),
+  contact: z.string().optional(),
+  no_phone_reason: z.string().optional(),
+  contact_is_representative: z.boolean().optional(),
+})
 export const dischargeStatuses = ['DRAFT', 'CONFIRMED'] as const
 
 const patientSchema = z.object({
@@ -25,18 +32,13 @@ const dischargeSchema = z.object({
   recommendations: z.string(),
   follow_up_reason: z.string(),
   status: z.enum(dischargeStatuses),
-  patient_snapshot: z.object({
-    full_name: z.string().optional(),
-    address: z.string().optional(),
-    contact: z.string().optional(),
-    no_phone_reason: z.string().optional(),
-    contact_is_representative: z.boolean().optional(),
-  }),
+  patient_snapshot: snapshotSchema,
 })
 
 const taskSchema = z.object({
   id: z.uuid(),
   discharge: z.uuid(),
+  patient: snapshotSchema,
   assigned_doctor: z.uuid().nullable(),
   status: z.enum(['UNASSIGNED', 'NEW', 'ACCEPTED', 'COMPLETED', 'CANCELLED']),
   due_at: dateTime,
@@ -61,6 +63,8 @@ function pageSchema<T extends z.ZodType>(item: T) {
 export type Discharge = z.infer<typeof dischargeSchema>
 export type HospitalPatient = z.infer<typeof patientSchema>
 export type HospitalTask = z.infer<typeof taskSchema>
+export type PatientInput = Omit<HospitalPatient, 'id'>
+export type DischargeInput = Pick<Discharge, 'discharged_at' | 'recommendations' | 'follow_up_reason'>
 
 export const hospitalQueryKeys = {
   discharges: ['hospital', 'discharges'] as const,
@@ -133,6 +137,40 @@ export function dischargeTaskQuery(discharge: Discharge) {
       }
     },
   })
+}
+
+export function territoriesQuery() {
+  return queryOptions({
+    queryKey: ['hospital', 'territories'],
+    queryFn: async ({ signal }) => {
+      const { data } = await apiClient.get('/reference/territories', { signal })
+      return pageSchema(z.object({ id: z.uuid(), name: z.string() })).parse(data).results
+    },
+  })
+}
+
+export async function createPatient(input: PatientInput, key: string) {
+  const { data } = await apiClient.post('/patients', input, { headers: { 'Idempotency-Key': key } })
+  return patientSchema.parse(data)
+}
+
+export async function saveDischarge(
+  input: DischargeInput,
+  resource: { patient: string } | { id: string },
+  key: string,
+) {
+  const headers = { 'Idempotency-Key': key }
+  const { data } = 'id' in resource
+    ? await apiClient.patch(`/discharges/${resource.id}`, input, { headers })
+    : await apiClient.post('/discharges', { ...input, patient: resource.patient }, { headers })
+  return dischargeSchema.parse(data)
+}
+
+export async function confirmDischarge(id: string, key: string) {
+  const { data } = await apiClient.post(`/discharges/${id}/confirm`, {}, {
+    headers: { 'Idempotency-Key': key },
+  })
+  return taskSchema.parse(data)
 }
 
 export function hospitalErrorMessage(error: unknown) {
