@@ -1,6 +1,6 @@
 # MedicineTrack — texnik topshiriq
 
-Versiya: 1.1 • Sana: 2026-11-17 • Holat: ishlab chiqish uchun bazaviy loyiha.
+Versiya: 1.2 • Sana: 2026-11-17 • Holat: ishlab chiqish uchun bazaviy loyiha.
 
 ## 1. Hujjat asosi va chegaralari
 
@@ -40,6 +40,7 @@ Handlelar foydalanuvchi bergan yozilishda kiritildi; GitHub akkauntlari yoki rep
 - Web monitoring va Android shifokor oqimi.
 - Audit, demo dataset, API hujjati, ishga tushirish yo‘riqnomasi.
 - Bemor kabineti: mas’ul shifokorga matn yozish, holat yuborish va javobni ko‘rish (§23).
+- Shifokor tasdiqlagan dori jadvali, Android lokal eslatmalari va bemor qayd etgan qabul tarixi (§24).
 
 ### P1 — xakatondagi AI moduli
 
@@ -47,7 +48,7 @@ Matnli PDF epikrizdan manbasi ko‘rsatilgan maydonlar va qisqa xulosa loyihasin
 
 ### Keyingi bosqich
 
-Davlat tibbiy tizimlari, haqiqiy SMS/push provayderi, skan PDF uchun OCR, to‘liq offline sinxronizatsiya, elektron imzo va ko‘p tillilik. MVPda davlat bazalariga mavjud bo‘lmagan ulanish va’da qilinmaydi. Dori tayinlash, tashxis qo‘yish va tez yordam dispetcherligi scopega kirmaydi.
+Davlat tibbiy tizimlari, haqiqiy SMS/push provayderi, skan PDF uchun OCR, to‘liq offline sinxronizatsiya, elektron imzo va ko‘p tillilik. MVPda davlat bazalariga mavjud bo‘lmagan ulanish va’da qilinmaydi. Yangi dori tayinlash, avtomatik doza tanlash, tashxis qo‘yish va tez yordam dispetcherligi scopega kirmaydi. Mavjud shifokor ko‘rsatmasi asosidagi qabul jadvali va eslatmalar §24ga kiradi.
 
 ## 5. Rollar va kirish matritsasi
 
@@ -437,3 +438,102 @@ Yangi POSTlarda umumiy idempotency talabi amal qiladi. Chat ro‘yxatlari pagina
 | AT-33 | Bemor “Yomonlashdi” yuboradi | Ustuvor navbat va kutmaslik eslatmasi; avtomatik tashxis yo‘q |
 
 DoDga bemor aktivatsiyasi, xabar → shifokor javobi, holat yuborish hamda AT-24…AT-33 tekshiruvi qo‘shiladi. Bu TZdagi talablar; funksiyalar kodda implementatsiya qilingani degani emas.
+
+
+## 24. Uy sharoitida dori qabulini eslatish
+
+### 24.1. Maqsad va chegaralar
+
+Bemor uyga qaytgach shifokor yozgan dorilarni belgilangan vaqtda qabul qilishni eslatish va bemorning o‘zi belgilagan qabul tarixini ko‘rsatish. Modul yangi dori, doza yoki davolash tartibi tayinlamaydi. “Ichdim” — bemorning o‘z qaydi, dori haqiqatda qabul qilinganining mustaqil isboti emas. Eslatmani ko‘rish yoki yopish qabul qilinganlik hisoblanmaydi; patronaj taskini avtomatik yopmaydi.
+
+### 24.2. Jadval yaratish va tasdiqlash
+
+- Vakolatli statsionar xodimi epikrizdagi mavjud ko‘rsatmadan jadval loyihasini kiritadi. Oilaviy shifokor faqat o‘ziga faol biriktirilgan bemor uchun loyihani tekshiradi va tasdiqlaydi. Statsionarda DOCTOR roliga ega vakolatli klinik xodim ham o‘zi yaratgan chiqarish uchun tasdiqlashi mumkin; operatorning o‘zi tasdiqlay olmaydi. Backendda alohida `can_approve_medication_schedule` klinik ruxsati talab qilinadi.
+- Majburiy maydonlar: dori nomi, yozilgan doza matni, qabul yo‘li, kurs boshlanish/tugash sanasi, aniq mahalliy qabul vaqtlari, vaqt zonasi, ko‘rsatma manbasi va tasdiqlovchi shifokor. Qo‘shimcha izoh, masalan ovqatga bog‘liq ko‘rsatma, faqat manbada bo‘lsa kiritiladi.
+- MVP faqat aniq vaqtli, cheklangan muddatli jadvalni qo‘llaydi. “Zarurat bo‘lsa”, o‘zgaruvchan doza yoki noaniq ko‘rsatma avtomatik jadvalga aylantirilmaydi; qo‘lda klinik aniqlashtirish talab qilinadi. “Kuniga 3 mahal”dan AI o‘zi soat tanlamaydi.
+- AI dori ma’lumotlarini epikrizdan manba parchasi bilan DRAFT sifatida ajratishi mumkin. Doza, vaqt yoki kurs noaniq bo‘lsa null/tekshirish kerak; shifokor to‘ldirib tasdiqlamaguncha eslatma yoqilmaydi.
+- Holatlar: DRAFT → ACTIVE → COMPLETED yoki STOPPED. Bemor jadvaldagi dori, doza yoki vaqtni o‘zgartira olmaydi. ACTIVE jadval tahriri yangi versiya va qayta klinik tasdiq orqali bajariladi; oldingi versiya va tasdiq auditda qoladi.
+- Bekor qilish va yangi versiya kelajakdagi eslatmalarni almashtiradi, tarixiy qabul yozuvlarini o‘zgartirmaydi. Kurs muddati tugagach yangi eslatma yaratilmaydi. Jadvalda tanaffus va murakkab sikllar keyingi bosqich.
+
+### 24.3. Bemor oqimi va qabul tarixi
+
+1. Bemor “Dorilarim” ekranida tasdiqlangan dori, doza, vaqt va kursni ko‘radi.
+2. Android tasdiqlangan jadvalni yuklab, lokal eslatmalarni rejalashtiradi.
+3. Belgilangan vaqtda eslatma keladi; bosilganda ilovadagi tegishli qabul oynasi ochiladi.
+4. Bemor “Ichdim” yoki “O‘tkazib yubordim”ni tanlaydi; ikkinchisiga ixtiyoriy sabab yozadi. Qabul qilingan vaqt va qaydning serverga yetgan vaqti alohida saqlanadi.
+5. Javob bo‘lmasa “Qayd kiritilmagan” ko‘rsatiladi, avtomatik “O‘tkazib yubordi” deb hisoblanmaydi. Bemor kech qayd kiritsa shunday belgilanadi.
+6. Noto‘g‘ri qaydni tuzatish append-only correction orqali; original saqlanadi. Bir qabul uchun bitta joriy natija bor, qayta yuborish dublikat yaratmaydi.
+
+Qabul belgisini dori jadvalidan oldingi occurrencega yoki kelajakdagi qabulga yozish mumkin emas. Tasodifiy ikki bosish idempotent. Tizim o‘tkazib yuborilgan dozani qoplash, ikki doza ichish yoki davoni o‘zgartirishni maslahat bermaydi; savol tug‘ilsa shifokorga yozish imkonini beradi. Bu yerda klinik yo‘riqnoma emas, mavjud retseptni eslatish talabi belgilanmoqda.
+
+### 24.4. Android eslatma va offline xatti-harakati
+
+- MVPda Android lokal notification ishlatiladi; push provayderiga bog‘liq emas. Webda “Bugungi dorilar” ro‘yxati mavjud, yopiq brauzerda fon eslatmasi kafolatlanmaydi.
+- Telefon bildirishnoma/alarm ruxsatlari rad etilsa yoki batareya cheklovi bo‘lsa bemorga holat va sozlamaga o‘tish yo‘li ko‘rsatiladi. Bildirishnoma kelishi kafolatlangandek yozilmaydi. Ishlayotgan APKning Android versiyasiga mos scheduling API va ruxsatlari implementatsiya vaqtida rasmiy Android hujjatlari asosida tanlanadi.
+- Offline eslatma uchun minimal medication jadvali va yuborilmagan qabul qaydlari qurilmada Keystore bilan himoyalangan kalit orqali shifrlab saqlanadi. Bu §10dagi doimiy klinik kesh talab qilinmasligiga faqat dori moduli uchun istisno; epikriz/chat offline keshga qo‘shilmaydi.
+- Rebootdan keyin rejalash tiklanadi; bir occurrence uchun bir eslatma. Ilova tizim tomonidan force-stop qilingan holatda cheklov tushuntiriladi va keyingi ochilishda tiklanadi. Eski bildirishnomalar to‘planib ketmasligi kerak.
+- Schedule versiyasi, occurrence ID va serverga yuborish idempotency key saqlanadi. Tarmoq qaytganda navbatdagi qaydlar sinxronlanadi; server javobisiz “Sinxronlandi” belgisi chiqmaydi.
+- Qurilma offline paytida shifokor jadvalni to‘xtatsa eski lokal eslatma darhol bekor bo‘lmasligi mumkin. Shu sabab jadvalning oxirgi sinxron vaqti ko‘rinadi, 24 soatdan eski keshda “Jadval eskirgan bo‘lishi mumkin, yangilang” ogohlantirishi chiqadi; bu cheklov demo/pilotda ko‘rsatiladi. Aloqa tiklanganda kelajakdagi eski eslatmalar bekor qilinadi. Bekor qilingan versiyaga offline yuborilgan belgi tarix uchun saqlanadi, faol jadvalni qayta yoqmaydi.
+- Bemor boshqa vaqt zonasiga o‘tsa jadval soatlari o‘z-o‘zidan ko‘chirilmaydi; jadvalning Asia/Tashkent yoki tasdiqlangan zonasi aniq yoziladi va shifokor bilan aniqlashtirish talab qilinadi.
+- Logout yoki akkaunt almashtirishda oldingi bemorning lokal eslatmalari bekor, kesh/tokenlari tozalanadi. Sinxronlanmagan qaydlar borligi logoutdan oldin ko‘rsatiladi.
+- Lock screen matni standart holatda umumiy: “Dori qabul qilish vaqti”. Dori nomi/doza faqat autentifikatsiyadan keyin ko‘rinadi.
+
+### 24.5. Shifokor nazorati va ma’lumotlar modeli
+
+Shifokor o‘z bemorining tasdiqlangan jadvali, “Ichdim”, “O‘tkazib yubordim”, “Qayd kiritilmagan” va kech kiritilgan qaydlarini ko‘radi. Qabul qaydi yo‘qligidan avtomatik klinik xavf bahosi yoki tashxis chiqarilmaydi. Bemor yozuvini shifokor o‘z nomidan “Ichdim” qilib belgilamaydi.
+
+Yangi modellar:
+
+- MedicationPlan: patient_id, discharge_id, version, status, approved_by, approved_at, supersedes_id, stopped_at, stop_reason.
+- MedicationItem: plan_id, name, prescribed_dose_text, route, instructions, source_reference, start_date, end_date, timezone, local_times[].
+- DoseOccurrence: item_id, plan_version, scheduled_at; (item_id, plan_version, scheduled_at) UNIQUE. Kursning har kuni/vaqti uchun deterministik ID, shu kun va zonada yaratiladi. Qisqa kursning occurrence ro‘yxati serverdan klientga yuboriladi.
+- DoseRecord: occurrence_id UNIQUE, patient_user_id, result(TAKEN/SKIPPED), reported_taken_at nullable, client_recorded_at, server_received_at, note. TAKENda reported_taken_at kelajakda va rejalashtirilgan vaqtdan oldin bo‘lishi mumkin emas; SKIPPEDda null.
+- DoseRecordCorrection: record_id, yangi qiymat, sabab, actor_id, timestamp; oldingi qiymat saqlanadi.
+
+MVP jadvali maksimum 90 kun, har item uchun sutkada 8 ta vaqt, bir planda 20 ta item; limitlar klinik me’yor emas, prototip resurs cheklovi. Tasdiqlash tranzaksiyasi overlap/duplicate vaqtlarni tekshiradi va bir bemor uchun bir xil versiya occurrence’larini ikki marta yaratmaydi. Operatsion ko‘rinishlar faqat bemor bildirgan qabulni ifodalaydi; haqiqiy adherence isboti deb taqdim etilmaydi.
+
+### 24.6. API va mas’ullar
+
+| Metod va yo‘l | Ruxsat / vazifa |
+|---|---|
+| POST /patients/{id}/medication-plans | Vakolatli statsionar yoki faol biriktirilgan shifokor; DRAFT |
+| PATCH /medication-plans/{id} | Vakolatli klinik xodim, faqat DRAFT |
+| POST /medication-plans/{id}/approve | Alohida klinik tasdiq ruxsati; ACTIVE va occurrences |
+| POST /medication-plans/{id}/revisions | Vakolatli shifokor; yangi DRAFT, faol versiya tasdiqqacha qoladi |
+| POST /medication-plans/{id}/stop | Vakolatli shifokor; sabab majburiy |
+| GET /patients/{id}/medication-plans | O‘zi yoki vakolatli shifokor |
+| GET /medication-plans/{id}/occurrences | Ruxsatli bemor/shifokor, sana filtri va plan_version |
+| POST /dose-occurrences/{id}/record | Faqat tegishli bemor; idempotent TAKEN/SKIPPED |
+| POST /dose-records/{id}/corrections | Faqat shu bemor, auditli tuzatish |
+| GET /patients/{id}/medication-history | O‘zi yoki faol biriktirilgan shifokor; pagination |
+
+Umumiy RBAC, error schema, version conflict va idempotency talablari amal qiladi. Texnik admin va koordinatorga dori/klinika matni avtomatik ochilmaydi. Statsionar klinik ruxsati discharge muassasasiga cheklangan; qo‘shimcha ruxsat boshqa bemorlarga yo‘l ochmaydi.
+
+- Backend @sunnatila: model, validatsiya, versiyalash, occurrences, API va audit.
+- Web @nuraziz07: jadval kiritish/tasdiqlash, bemor dorilari va shifokor tarixi.
+- APK @akashishunichiro: lokal eslatmalar, ruxsatlar, shifrlangan offline navbat, qaydlar va sync.
+- PM @robiya777: dori ko‘rsatmasi shaklini klinik hamkor bilan kelishish va fizik qurilmadagi demo qabulini tekshirish.
+
+Bu modul P0ga qo‘shildi. Ish hajmi oshgani sabab uch kunlik reja kafolat emas: 2-kuni kontrakt/model/web jadval, 3-kuni APK eslatma va asosiy qabul sinovi; to‘liq offline/reboot tekshiruvi tugamasa cheklov aniq qayd qilinadi va modul tayyor deb belgilanmaydi.
+
+### 24.7. Qabul mezonlari va DoD kengaytmasi
+
+| ID | Sinov | Kutiladigan natija |
+|---|---|---|
+| AT-34 | DRAFT yoki AI loyihasi bor | Tasdiqsiz eslatma yaratilmaydi |
+| AT-35 | Operator approve qilishga urinadi | Klinik ruxsatsiz rad etiladi |
+| AT-36 | Shifokor to‘liq jadvalni tasdiqlaydi | To‘g‘ri zona/kun/vaqtlarda bitta occurrence |
+| AT-37 | Belgilangan vaqt keldi | Ruxsatlar yoqilgan fizik qurilmada lokal notification, dori ekrani ochiladi |
+| AT-38 | Bemor Ichdim/O‘tkazib yubordim deydi | O‘z qaydi sifatida saqlanadi, shifokorda ko‘rinadi |
+| AT-39 | Hech qanday tugma bosilmaydi | Qayd kiritilmagan; avtomatik SKIPPED/COMPLETED yo‘q |
+| AT-40 | Offline qayd va takroriy sync | Bitta record; serverga yetish holati to‘g‘ri |
+| AT-41 | Kurs tugadi yoki yangi versiya/stop keldi | Syncdan so‘ng kelajakdagi eski eslatmalar yo‘q; tarix saqlanadi |
+| AT-42 | Notification ruxsati rad etildi | UI aniq cheklov va sozlamaga o‘tishni ko‘rsatadi |
+| AT-43 | Reboot va ilovani qayta ochish | Amaldagi jadval tiklanadi, dublikat yo‘q |
+| AT-44 | Boshqa bemor occurrence IDsini yuborish | Ruxsat yo‘q; shifokor ham bemor o‘rniga qayd kiritmaydi |
+| AT-45 | Noaniq doza/vaqtli epikriz | AI taxmin qilmaydi, tasdiq uchun aniqlashtirish talab qilinadi |
+| AT-46 | Logout/akkaunt almashishi | Eski bemor eslatmasi va klinik kesh qolmaydi |
+| AT-47 | Offline paytda stop, keyin sync | Eski jadval eskirganligi ko‘rinadi; syncdan so‘ng bekor; kech record tarix sifatida |
+| AT-48 | Kelajakdagi qabulni TAKEN qilish | 400; muddatidan oldin qabulni tasdiqlab bo‘lmaydi |
+
+DoDga AT-34…AT-48, fizik qurilmada fon/reboot/ruxsat rad etilishi, jadval-versiya-sync sinovi va demo bemorining eslatma → qayd → shifokor tarixi ssenariysi qo‘shiladi. 24 soat patronaj, chatga javob muddati va dori vaqtlari uchta alohida jarayon; biri boshqasini yopmaydi. Bu hujjatdagi talablar, hali implementatsiya qilingan funksiyalar emas.
