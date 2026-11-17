@@ -5,6 +5,8 @@ import { doctorNameQuery } from '../../../../../../../api/hospital'
 import { taskDetailQuery, type CareTask } from '../../../../../../../api/tasks'
 import { formatTashkentDateTime, taskStatusLabels } from '../../../../../../../features/hospital/format'
 import { Facts, Notice, RequestError, secondaryButton } from '../../../../../../../features/hospital/ui'
+import { CoordinatorActions } from '../../../../../../../features/tasks/coordinator-actions'
+import { DoctorActions } from '../../../../../../../features/tasks/doctor-actions'
 import { TaskHistory } from '../../../../../../../features/tasks/task-history'
 
 const route = getRouteApi('/(app)/kabinet/$role/chaqiruv/$taskId/')
@@ -26,6 +28,7 @@ export function TaskDetail() {
       {task.data && !task.isError && (
         <>
           <TaskFacts task={task.data} />
+          {role === 'koordinator' ? <CoordinatorActions task={task.data} /> : <DoctorActions task={task.data} />}
           <TaskHistory task={task.data} />
         </>
       )}
