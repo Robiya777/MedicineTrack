@@ -1,2 +1,2 @@
-export { Dialog } from './ui/dialog'
+export { Dialog } from '@/components/ui/dialog'
 

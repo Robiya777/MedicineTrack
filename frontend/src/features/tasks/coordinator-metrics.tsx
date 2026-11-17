@@ -5,8 +5,8 @@ import {
   ShieldCheck,
   UserRoundX,
 } from 'lucide-react'
-import { metricsQuery } from '../../api/tasks'
-import { Notice, RequestError } from '../../components/ui'
+import { metricsQuery } from '@/api/tasks'
+import { Notice, RequestError } from '@/components/ui'
 
 export function CoordinatorMetrics() {
   const metrics = useQuery(metricsQuery())

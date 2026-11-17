@@ -1,16 +1,16 @@
-import { MedicationTaskLink } from '../../../../../../../features/medications/entry'
+import { MedicationTaskLink } from '@/features/medications/entry'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { taskDetailQuery } from '../../../../../../../api/tasks'
+import { taskDetailQuery } from '@/api/tasks'
 import {
   Notice,
   PageHeader,
   RequestError,
   secondaryButton,
-} from '../../../../../../../components/ui'
-import { CoordinatorActions } from '../../../../../../../features/tasks/coordinator-actions'
-import { DoctorActions } from '../../../../../../../features/tasks/doctor-actions'
-import { TaskHistory } from '../../../../../../../features/tasks/task-history'
+} from '@/components/ui'
+import { CoordinatorActions } from '@/features/tasks/coordinator-actions'
+import { DoctorActions } from '@/features/tasks/doctor-actions'
+import { TaskHistory } from '@/features/tasks/task-history'
 import { TaskFacts } from './task-facts'
 
 const route = getRouteApi('/(app)/kabinet/$role/chaqiruv/$taskId/')

@@ -4,10 +4,10 @@ import {
   doctorNameQuery,
   type Discharge,
   type HospitalTask,
-} from '../../../../../../../api/hospital'
-import { formatTashkentDateTime } from '../../../../../../../lib/date'
-import { Facts, Notice, RequestError } from '../../../../../../../components/ui'
-import { taskStatusLabels } from '../../../../../../../features/hospital/format'
+} from '@/api/hospital'
+import { formatTashkentDateTime } from '@/lib/date'
+import { Facts, Notice, RequestError } from '@/components/ui'
+import { taskStatusLabels } from '@/features/hospital/format'
 
 export interface LinkedCareTaskProps {
   discharge: Discharge

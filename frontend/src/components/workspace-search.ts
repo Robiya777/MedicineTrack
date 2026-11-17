@@ -1,1 +1,1 @@
-export * from '../lib/workspace-search'
+export * from '@/lib/workspace-search'

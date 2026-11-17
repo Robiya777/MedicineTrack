@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useSessionStore } from '../../state/session'
-import { channelSchema, contactResultSchema, type CareTask, type TaskCommand } from '../../api/tasks'
-import { parseTashkentInput, tashkentInputValue } from '../../lib/date'
-import { Field, inputStyle, primaryButton, secondaryButton } from '../../components/ui'
+import { useSessionStore } from '@/state/session'
+import { channelSchema, contactResultSchema, type CareTask, type TaskCommand } from '@/api/tasks'
+import { parseTashkentInput, tashkentInputValue } from '@/lib/date'
+import { Field, inputStyle, primaryButton, secondaryButton } from '@/components/ui'
 import { TaskActionForm } from './action-form'
 import { channelLabels, contactResultLabels, taskIsOpen } from './labels'
 

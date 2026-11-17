@@ -1,10 +1,10 @@
-import type { Discharge, HospitalTask } from '../../api/hospital'
+import type { Discharge, HospitalTask } from '@/api/hospital'
 
 export {
   formatTashkentDateTime,
   parseTashkentInput,
   tashkentInputValue,
-} from '../../lib/date'
+} from '@/lib/date'
 
 export const dischargeStatusLabels: Record<Discharge['status'], string> = {
   DRAFT: 'Loyiha',

@@ -1,4 +1,4 @@
-import type { UserRole } from '../state/session'
+import type { UserRole } from '@/state/session'
 
 export const workspaces = {
   HOSPITAL: { slug: 'statsionar', title: 'Statsionar kabineti', label: 'Statsionar xodimi' },

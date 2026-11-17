@@ -6,11 +6,11 @@ import {
   notificationKey,
   notificationsQuery,
   readNotification,
-} from '../api/notifications'
-import { useSessionStore } from '../state/session'
-import { workspaces } from '../lib/workspaces'
-import { Dialog, Notice, RequestError, secondaryButton } from './ui'
-import { formatTashkentDateTime } from '../lib/date'
+} from '@/api/notifications'
+import { useSessionStore } from '@/state/session'
+import { workspaces } from '@/lib/workspaces'
+import { Dialog, Notice, RequestError, secondaryButton } from '@/components/ui'
+import { formatTashkentDateTime } from '@/lib/date'
 
 const labels: Record<string, string> = {
   TASK_CREATED: 'Sizga yangi chaqiruv biriktirildi',

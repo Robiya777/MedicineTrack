@@ -1,1 +1,1 @@
-export * from '../lib/workspaces'
+export * from '@/lib/workspaces'

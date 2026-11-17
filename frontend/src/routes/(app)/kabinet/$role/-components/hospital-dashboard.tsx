@@ -5,14 +5,14 @@ import { useState } from 'react'
 import {
   dischargePageQuery,
   hospitalPatientQuery,
-} from '../../../../../api/hospital'
+} from '@/api/hospital'
 import {
   Notice,
   PageHeader,
   Pagination,
   RequestError,
   primaryButton,
-} from '../../../../../components/ui'
+} from '@/components/ui'
 import { DischargeTable } from './hospital/discharge-table'
 import { DischargeCardList } from './hospital/discharge-card-list'
 

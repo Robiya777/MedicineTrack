@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { signOut } from '../api/session'
+import { signOut } from '@/api/session'
 
 export function useLogout() {
   const navigate = useNavigate()

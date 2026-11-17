@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight, Clock3 } from 'lucide-react'
-import type { CareTask } from '../../api/tasks'
-import { formatTashkentDateTime } from '../../lib/date'
+import type { CareTask } from '@/api/tasks'
+import { formatTashkentDateTime } from '@/lib/date'
 import { taskStatusLabels } from './labels'
 
 export function TaskStatus({ task }: { task: CareTask }) {

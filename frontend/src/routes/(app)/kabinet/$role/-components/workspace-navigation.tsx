@@ -1,7 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { LayoutDashboard } from 'lucide-react'
-import type { UserRole } from '../../../../../state/session'
-import type { WorkspaceConfig } from '../../../../../lib/workspaces'
+import type { UserRole } from '@/state/session'
+import type { WorkspaceConfig } from '@/lib/workspaces'
 
 export interface WorkspaceNavigationProps {
   role: UserRole

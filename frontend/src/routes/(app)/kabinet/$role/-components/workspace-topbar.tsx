@@ -1,7 +1,7 @@
 import { Building2, Menu } from 'lucide-react'
-import { NotificationBell } from '../../../../../components/notification-bell'
-import { Avatar } from '../../../../../components/ui'
-import type { WorkspaceConfig } from '../../../../../lib/workspaces'
+import { NotificationBell } from '@/components/notification-bell'
+import { Avatar } from '@/components/ui'
+import type { WorkspaceConfig } from '@/lib/workspaces'
 
 export interface WorkspaceTopbarProps {
   workspace: WorkspaceConfig

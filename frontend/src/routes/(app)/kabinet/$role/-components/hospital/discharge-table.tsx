@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { ChevronRight } from 'lucide-react'
-import type { Discharge } from '../../../../../../api/hospital'
-import { formatTashkentDateTime } from '../../../../../../lib/date'
-import { DischargeStatusBadge } from '../../../../../../features/hospital/discharge-status-badge'
+import type { Discharge } from '@/api/hospital'
+import { formatTashkentDateTime } from '@/lib/date'
+import { DischargeStatusBadge } from '@/features/hospital/discharge-status-badge'
 
 export interface DischargeTableProps {
   rows: Discharge[]

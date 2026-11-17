@@ -1,14 +1,14 @@
 import { useState, type SubmitEvent } from 'react'
-import type { ItemInput } from '../../api/medications'
+import type { ItemInput } from '@/api/medications'
 import {
   Field,
   inputStyle,
   primaryButton,
   secondaryButton,
   RequestError,
-} from '../../components/ui'
-import { useIdempotentMutation } from '../../hooks/use-idempotent-mutation'
-import { responseFieldErrors } from '../../lib/errors'
+} from '@/components/ui'
+import { useIdempotentMutation } from '@/hooks/use-idempotent-mutation'
+import { responseFieldErrors } from '@/lib/errors'
 export function MedicationEditor({
   initial,
   save,

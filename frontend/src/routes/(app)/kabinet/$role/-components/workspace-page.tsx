@@ -1,7 +1,7 @@
-import { PatientDashboard } from '../../../../../features/messaging/conversations'
-import { workspaces } from '../../../../../lib/workspaces'
-import { useSessionStore } from '../../../../../state/session'
-import { TaskDashboard } from '../../../../../features/tasks/task-list'
+import { PatientDashboard } from '@/features/messaging/conversations'
+import { workspaces } from '@/lib/workspaces'
+import { useSessionStore } from '@/state/session'
+import { TaskDashboard } from '@/features/tasks/task-list'
 import { HospitalDashboard } from './hospital-dashboard'
 
 export function WorkspacePage() {

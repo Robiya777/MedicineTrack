@@ -1,4 +1,4 @@
-import { extractApiErrorMessage } from '../../lib/errors'
+import { extractApiErrorMessage } from '@/lib/errors'
 import { secondaryButton } from './button'
 
 export function RequestError({

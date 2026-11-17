@@ -1,4 +1,4 @@
-import type { CareTask } from '../../api/tasks'
+import type { CareTask } from '@/api/tasks'
 
 export const taskStatusLabels: Record<CareTask['status'], string> = {
   UNASSIGNED: 'Mas’ul biriktirilmagan',

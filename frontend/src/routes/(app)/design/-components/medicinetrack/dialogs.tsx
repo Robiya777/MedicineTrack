@@ -1,6 +1,6 @@
 import { Building2, Check, Copy, MapPin, UserRound } from 'lucide-react'
 import { useState } from 'react'
-import { Dialog as PreviewDialog } from '../../../../../components/ui/dialog'
+import { Dialog as PreviewDialog } from '@/components/ui/dialog'
 export { PreviewDialog }
 import { previewDate, previewDoctors, previewFacilities, type PreviewTask } from './data'
 import { TaskStatus } from './task-table'

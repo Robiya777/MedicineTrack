@@ -1,11 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useState, type ReactNode, type SubmitEvent } from 'react'
-import { hospitalQueryKeys } from '../../api/hospital'
-import { sendTaskCommand, taskKeys, type CareTask, type TaskCommand } from '../../api/tasks'
-import { responseFieldErrors } from '../../lib/errors'
-import { useIdempotentMutation } from '../../hooks/use-idempotent-mutation'
-import { primaryButton, RequestError, secondaryButton } from '../../components/ui'
+import { hospitalQueryKeys } from '@/api/hospital'
+import { sendTaskCommand, taskKeys, type CareTask, type TaskCommand } from '@/api/tasks'
+import { responseFieldErrors } from '@/lib/errors'
+import { useIdempotentMutation } from '@/hooks/use-idempotent-mutation'
+import { primaryButton, RequestError, secondaryButton } from '@/components/ui'
 
 export function TaskActionForm({ task, submitLabel, cancel, onSaved, build, check, children, onPending, destructive = false }: {
   task: CareTask

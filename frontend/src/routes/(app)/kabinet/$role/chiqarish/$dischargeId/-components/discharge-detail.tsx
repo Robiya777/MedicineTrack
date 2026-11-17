@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import { dischargeQuery } from '../../../../../../../api/hospital'
+import { dischargeQuery } from '@/api/hospital'
 import {
   Notice,
   PageHeader,
   RequestError,
-} from '../../../../../../../components/ui'
+} from '@/components/ui'
 import { DischargeSummary } from './discharge-summary'
 
 const detailRoute = getRouteApi('/(app)/kabinet/$role/chiqarish/$dischargeId/')

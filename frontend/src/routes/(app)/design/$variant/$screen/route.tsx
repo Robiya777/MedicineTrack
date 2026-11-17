@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, notFound, redirect } from '@tanstack/react-router'
-import { isScreenId } from '../../-components/catalog'
+import { isScreenId } from '@/routes/(app)/design/-components/catalog'
 
 export const Route = createFileRoute('/(app)/design/$variant/$screen')({
   beforeLoad: ({ params, context }) => {

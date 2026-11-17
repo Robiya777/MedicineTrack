@@ -1,13 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type SubmitEvent } from 'react'
-import { doctorName, doctorsQuery } from '../../api/tasks'
-import { doctorNameQuery, hospitalPatientQuery } from '../../api/hospital'
+import { doctorName, doctorsQuery } from '@/api/tasks'
+import { doctorNameQuery, hospitalPatientQuery } from '@/api/hospital'
 import {
   saveSchedule,
   scheduleQuery,
   unansweredQuery,
   type ScheduleInput,
-} from '../../api/messaging'
+} from '@/api/messaging'
 import {
   Field,
   inputStyle,
@@ -15,14 +15,14 @@ import {
   primaryButton,
   RequestError,
   secondaryButton,
-} from '../../components/ui'
+} from '@/components/ui'
 import {
   responseFieldErrors,
-} from '../../lib/errors'
+} from '@/lib/errors'
 import {
   useIdempotentMutation,
-} from '../../hooks/use-idempotent-mutation'
-import { formatTashkentDateTime } from '../../lib/date'
+} from '@/hooks/use-idempotent-mutation'
+import { formatTashkentDateTime } from '@/lib/date'
 const weekdays = [
   'Dushanba',
   'Seshanba',

@@ -14,24 +14,24 @@ import {
   statusesQuery,
   type Conversation,
   type StatusInput,
-} from '../../api/messaging'
+} from '@/api/messaging'
 import {
   dischargePageQuery,
   doctorNameQuery,
   hospitalPatientQuery,
-} from '../../api/hospital'
-import { useSessionStore } from '../../state/session'
+} from '@/api/hospital'
+import { useSessionStore } from '@/state/session'
 import {
   formatTashkentDateTime,
   parseTashkentInput,
   tashkentInputValue,
-} from '../../lib/date'
+} from '@/lib/date'
 import {
   responseFieldErrors,
-} from '../../lib/errors'
+} from '@/lib/errors'
 import {
   useIdempotentMutation,
-} from '../../hooks/use-idempotent-mutation'
+} from '@/hooks/use-idempotent-mutation'
 import {
   Facts,
   Field,
@@ -40,7 +40,7 @@ import {
   primaryButton,
   RequestError,
   secondaryButton,
-} from '../../components/ui'
+} from '@/components/ui'
 
 const route = getRouteApi('/(app)/kabinet/$role/suhbat/$conversationId/')
 const delivery = {

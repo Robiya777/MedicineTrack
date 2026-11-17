@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-import { doctorNameQuery } from '../../../../../../../api/hospital'
-import type { CareTask } from '../../../../../../../api/tasks'
-import { formatTashkentDateTime } from '../../../../../../../lib/date'
-import { Facts } from '../../../../../../../components/ui'
-import { TaskStatus } from '../../../../../../../features/tasks/task-table'
+import { doctorNameQuery } from '@/api/hospital'
+import type { CareTask } from '@/api/tasks'
+import { formatTashkentDateTime } from '@/lib/date'
+import { Facts } from '@/components/ui'
+import { TaskStatus } from '@/features/tasks/task-table'
 
 export interface TaskFactsProps {
   task: CareTask

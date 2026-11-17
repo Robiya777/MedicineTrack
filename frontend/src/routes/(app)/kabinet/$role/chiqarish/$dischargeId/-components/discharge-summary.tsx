@@ -7,20 +7,20 @@ import {
   hospitalPatientQuery,
   hospitalQueryKeys,
   type Discharge,
-} from '../../../../../../../api/hospital'
-import { formatTashkentDateTime } from '../../../../../../../lib/date'
-import { responseFieldErrors } from '../../../../../../../lib/errors'
-import { useIdempotentMutation } from '../../../../../../../hooks/use-idempotent-mutation'
+} from '@/api/hospital'
+import { formatTashkentDateTime } from '@/lib/date'
+import { responseFieldErrors } from '@/lib/errors'
+import { useIdempotentMutation } from '@/hooks/use-idempotent-mutation'
 import {
   Facts,
   RequestError,
   primaryButton,
   secondaryButton,
-} from '../../../../../../../components/ui'
-import { dischargeStatusLabels } from '../../../../../../../features/hospital/format'
-import { DischargeForm } from '../../../../../../../features/hospital/discharge-form'
-import { PatientActivation } from '../../../../../../../features/messaging/activation'
-import { MedicationPanel } from '../../../../../../../features/medications/patient-medications'
+} from '@/components/ui'
+import { dischargeStatusLabels } from '@/features/hospital/format'
+import { DischargeForm } from '@/features/hospital/discharge-form'
+import { PatientActivation } from '@/features/messaging/activation'
+import { MedicationPanel } from '@/features/medications/patient-medications'
 import { LinkedCareTask } from './linked-care-task'
 
 export interface DischargeSummaryProps {

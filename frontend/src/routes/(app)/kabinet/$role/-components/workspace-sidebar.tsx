@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { HeartPulse, LogOut, ShieldCheck } from 'lucide-react'
-import type { UserRole } from '../../../../../state/session'
-import type { WorkspaceConfig } from '../../../../../lib/workspaces'
-import { secondaryButton } from '../../../../../components/ui'
+import type { UserRole } from '@/state/session'
+import type { WorkspaceConfig } from '@/lib/workspaces'
+import { secondaryButton } from '@/components/ui'
 import { WorkspaceNavigation } from './workspace-navigation'
 
 export interface WorkspaceSidebarProps {

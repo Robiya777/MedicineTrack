@@ -9,7 +9,7 @@ import {
   isoDateTimeSchema,
   patientSnapshotSchema,
 } from './types'
-import { extractApiErrorMessage } from '../lib/errors'
+import { extractApiErrorMessage } from '@/lib/errors'
 
 export const dischargeStatuses = ['DRAFT', 'CONFIRMED'] as const
 

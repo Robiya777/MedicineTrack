@@ -9,7 +9,7 @@ import {
   taskListQuery,
   type TaskFilters,
   type TaskSegment,
-} from '../../api/tasks'
+} from '@/api/tasks'
 import { TaskTable } from './task-table'
 import { CoordinatorMetrics } from './coordinator-metrics'
 import {
@@ -20,7 +20,7 @@ import {
   RequestError,
   inputStyle,
   secondaryButton,
-} from '../../components/ui'
+} from '@/components/ui'
 
 const coordinatorSegments: { value: TaskSegment; label: string }[] = [
   { value: 'all', label: 'Barchasi' },
