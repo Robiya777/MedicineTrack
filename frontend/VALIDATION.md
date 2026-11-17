@@ -187,3 +187,11 @@ Record javobi yo‘qolganda bir xil payload va kalit bilan retry o‘tdi.
 Backend medication regressiyasi: 36 passed, 3 PostgreSQL-specific skipped.
 Web/API dalillari va APK bilan qolgan sinovlar
 [5-bosqich hisobotida](docs/STAGE5_ACCEPTANCE.md) ajratilgan.
+
+## In-app bildirishnomalar — 2026-11-18
+
+Lokal backenddagi navbatda qolgan hodisalar yetkazildi. 360 px doctor kabinetida
+qo‘ng‘iroq ochildi, bildirishnomadan biriktirilgan task tafsilotiga o‘tildi,
+o‘qilganlik POSTi 200 qaytardi va chaqiruv bilan ishlash amallari ko‘rindi. Dialog hamda
+sahifada gorizontal surilish va React xatosi aniqlanmadi. Lint/build o‘tdi.
+Bildirishnoma bemorni avtomatik tayinlamaydi; UNASSIGNED uchun koordinator amali kerak.
