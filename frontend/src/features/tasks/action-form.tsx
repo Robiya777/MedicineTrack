@@ -6,9 +6,10 @@ import { sendTaskCommand, taskKeys, type CareTask, type TaskCommand } from '../.
 import { responseFieldErrors, useIdempotentMutation } from '../hospital/mutation'
 import { primaryButton, RequestError, secondaryButton } from '../hospital/ui'
 
-export function TaskActionForm({ task, submitLabel, cancel, onSaved, build, check, children, onPending }: {
+export function TaskActionForm({ task, submitLabel, cancel, onSaved, build, check, children, onPending, destructive = false }: {
   task: CareTask
   submitLabel: string
+  destructive?: boolean
   cancel: () => void
   onSaved: () => void
   build: (form: FormData, version: number) => TaskCommand
@@ -72,7 +73,7 @@ export function TaskActionForm({ task, submitLabel, cancel, onSaved, build, chec
         </div>
       ) : mutation.error && <RequestError error={mutation.error} />}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" className={primaryButton} disabled={mutation.isPending || conflict}>
+        <button type="submit" className={destructive ? 'mt-button mt-button-danger' : primaryButton} disabled={mutation.isPending || conflict}>
           {mutation.isPending ? 'Yuborilmoqda…' : submitLabel}
         </button>
         <button type="button" className={secondaryButton} onClick={cancel} disabled={mutation.isPending}>Bekor qilish</button>

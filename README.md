@@ -7,7 +7,7 @@ Statsionardan chiqarilgan og‘ir bemorni hududiy oilaviy shifokorga avtomatik t
 - [Batafsil texnik topshiriq — TZ (o‘zbekcha)](docs/TECHNICAL_SPEC_UZ.md)
 - [Nurazizning uch kunlik frontend rejasi](docs/FRONTEND_PLAN_UZ.md)
 
-Repo tarkibida web frontend asosi va backend ulanishini tekshiradigan boshlang‘ich sahifa bor. Statsionar, koordinator va shifokor kabinetlari, backend hamda APK rejalashtirish bosqichida.
+Bu frontend branchida backendga ulangan login, statsionar chiqarishlari, koordinator va shifokor ishchi kabinetlari mavjud. Login va asosiy ish oqimlariga teal/mint dizayn ulangan. Backend va Android kodi `main` branchida saqlanadi.
 
 ## Frontendni ishga tushirish
 
@@ -34,7 +34,7 @@ Demo muhitida `frontend/dist`ni HTTPS orqali tarqating. Shu origin ichida `/api/
 
 ### Web dizayn galereyasi
 
-`frontend` branchida dev serverni ishga tushiring va terminaldagi manzilga `/design` qo‘shing. Galereyada beshta variant va sintetik demo oqimlari bor. Ko‘rib chiqish uchun build kerak bo‘lsa, `VITE_ENABLE_DESIGN_PREVIEW=true npm run build` buyrug‘idan foydalaning.
+`frontend` branchida dev serverni ishga tushiring va terminaldagi manzilga `/design` qo‘shing. Galereyada oltita variant va sintetik demo oqimlari bor. Ko‘rib chiqish uchun build kerak bo‘lsa, `VITE_ENABLE_DESIGN_PREVIEW=true npm run build` buyrug‘idan foydalaning.
 
 ### Kutubxonalar qayerda ulangan
 

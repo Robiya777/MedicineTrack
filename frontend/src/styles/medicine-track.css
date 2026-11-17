@@ -42,7 +42,7 @@
 .mt-theme button,
 .mt-theme input,
 .mt-theme select {
-  font: inherit;
+  font-family: inherit;
 }
 .mt-theme button,
 .mt-theme a,

@@ -312,3 +312,15 @@
   flex: none;
   accent-color: var(--mt-primary);
 }
+
+.mt-live .mt-mobile-task .mt-row-action > span {
+  display: inline;
+}
+@media (max-width: 639px) {
+  .mt-live .mt-filter-fields {
+    display: none;
+  }
+  .mt-live .mt-filter-fields-open {
+    display: grid;
+  }
+}

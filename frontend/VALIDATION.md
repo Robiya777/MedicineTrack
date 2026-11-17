@@ -102,3 +102,42 @@ Teal va mint koordinator preview’si sintetik ma’lumot bilan Chromiumda teksh
 
 Bu dizaynni ko‘rib kelishish uchun alohida preview. Ishchi kabinetlarga
 dizayn integratsiyasi keyingi bosqichning qabul ssenariylari bilan tekshiriladi.
+
+## Dizayn 3–4-bosqich — 2026-11-18
+
+Tasdiqlangan teal/mint uslub haqiqiy API bilan ishlaydigan login, statsionar,
+koordinator va shifokor ekranlariga ulandi. Tekshiruvlar alohida sintetik SQLite
+bazasi va lokal Django backend bilan Chromiumda bajarildi.
+
+- Statsionar → koordinator → 360 px shifokor → koordinator oqimi bitta task
+  IDsi bilan o‘tdi. Yangi bemor, chiqarish, tayinlash, qabul qilish, aloqa
+  urinishi, yakuniy natija va KPI ro‘yxati tekshirildi.
+- Tayinlash, qabul qilish, aloqa urinishi, natija va bekor qilish javobi server
+  saqlagach sun’iy uzildi. Takroriy so‘rov bir xil Idempotency-Key ishlatdi,
+  server Idempotency-Replayed qaytardi; qo‘shimcha yozuv yaralmadi.
+- Parallel o‘zgarishdagi haqiqiy 409 forma matnini saqladi. Foydalanuvchi
+  yangi versiyani tasdiqlagach natija saqlandi. Qayta tayinlash eski shifokor
+  ruxsatini yopdi; 403/404 holatida klinik tafsilotlar yashirildi.
+- 22 ta yaqin muddatli ochiq chaqiruv ikki sahifada ko‘rindi. Yakunlangan va
+  bekor qilingan yozuvlar bu navbatga kirmadi. Shifokor/muassasa filtri hamda
+  filtr o‘zgarganda birinchi sahifaga qaytish tekshirildi.
+- UUID bilan bemor tanlash, topilmagan UUID, yangi bemorda telefon yo‘qligi,
+  draftni qayta ochish/tahrirlash, kelajak vaqtini rad etish, Toshkent vaqtini
+  boshqa brauzer vaqt zonasidan yuborish va serverning +24 soat muddati o‘tdi.
+- URL filtrlari va ikkinchi sahifa tafsilotdan qaytganda saqlandi. Noto‘g‘ri
+  query qiymatlari standart ro‘yxatni ochdi. Shifokorning statsionar route’iga
+  kirishi o‘z kabinetiga qaytardi. Chiqish login sahifasiga olib bordi.
+- Haqiqiy ro‘yxatning yuklanish, bo‘sh va 503 xato holatlari ko‘rsatildi;
+  qayta urinish ro‘yxatni tikladi. Mobil filtrlarni ochish/yopish ishladi.
+- 1440, 1024, 768, 360 px va 800×360 landscape tekshirildi. Login, ro‘yxatlar,
+  bemor formasi, tafsilot, tayinlash dialogi va hisobot skrinshotlari olindi
+  va vizual ko‘rib chiqildi. Gorizontal surilish aniqlanmadi.
+- Mahalliy DM Sans, parolni ko‘rsatish/yashirish, native modal/drawer ichidagi
+  fokus, Escape va boshlang‘ich tugmaga fokus qaytishi tekshirildi.
+  Ko‘rinadigan menyu va filtr boshqaruvlari kamida 44 px.
+- Sintetik preview galereyasi, filtrlari, saralashi, ID nusxalash, loading/empty/
+  error/retry, reduced motion va avvalgi clinical varianti qayta tekshirildi.
+- `npm run lint`, `npm run build` va build ichidagi TypeScript tekshiruvi o‘tdi.
+
+Bu bosqich web dizayn integratsiyasini qamraydi. Avvalgi Android APK bilan
+bitta chaqiruvni yakunlash integratsiya sinovi haqidagi cheklov saqlanadi.

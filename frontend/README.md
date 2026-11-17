@@ -65,6 +65,14 @@ Natija, urinishlar va hodisalar chaqiruv tarixida ko‘rinadi.
 **Joriy holat bilan davom etish** orqali yangi versiyani tekshirib davom etiladi.
 Eski shifokor ruxsati bekor bo‘lsa, tafsilot o‘rnida ruxsat xabari ko‘rsatiladi.
 
+## Ishchi teal va mint dizayn
+
+Login, statsionar ro‘yxati, bemor/chiqarish formalari, koordinator KPI va navbati,
+shifokor navbati, chaqiruv tafsiloti, tayinlash/bekor qilish dialoglari va
+hisobot tarixi umumiy dizayndan foydalanadi. Desktopda jadval, mobil ekranda
+kartalar, yig‘iladigan filtrlar va yon menyu mavjud. Ro‘yxat filtrlari va
+sahifasi URLda saqlanadi.
+
 ## Yangi teal va mint dizayn preview’si
 
 Dev serverda `/design/medicinetrack/queue`ni oching. Bu 1–2-dizayn bosqichi
@@ -74,6 +82,6 @@ Mobil menyu kichik ekranda ochiladi. **Preview holatlari** orqali yuklanish,
 bo‘sh ro‘yxat va xato ko‘rinishlarini sinang.
 
 Ranglar, tipografiya va o‘lchamlar [dizayn asosida](docs/DESIGN_SYSTEM.md)
-yozilgan. CSS `.mt-preview` konteyneriga tegishli. Kelishilgan preview keyingi
-bosqichda ishchi kabinetlarga ulanadi. Production preview uchun mavjud
+yozilgan. Ishchi kabinetlar va preview `.mt-theme` tokenlari hamda umumiy
+komponentlardan foydalanadi. Production preview uchun mavjud
 `VITE_ENABLE_DESIGN_PREVIEW=true` sozlamasi ishlatiladi.

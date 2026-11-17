@@ -1,9 +1,11 @@
+import { useId, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
 import {
   Activity,
   Clock3,
   RefreshCw,
+  SlidersHorizontal,
   ShieldCheck,
   UserRoundX,
 } from 'lucide-react'
@@ -43,6 +45,8 @@ const doctorSegments: { value: TaskSegment; label: string }[] = [
 const workspaceRoute = getRouteApi('/(app)/kabinet/$role')
 
 export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const filtersId = useId()
   const search = workspaceRoute.useSearch()
   const navigate = workspaceRoute.useNavigate()
   const segments = coordinator ? coordinatorSegments : doctorSegments
@@ -105,12 +109,12 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
           disabled={tasks.isFetching}
           onClick={() => void tasks.refetch()}
         >
-          <RefreshCw size={16} aria-hidden="true" />
+          <RefreshCw size={16} className={tasks.isFetching ? 'mt-spin' : undefined} aria-hidden="true" />
           Yangilash
         </button>
       </div>
       {coordinator && <CoordinatorMetrics />}
-      <section aria-label="Chaqiruvlar" className="mt-card mt-queue">
+      <section aria-label="Chaqiruvlar" aria-busy={tasks.isFetching} className="mt-card mt-queue">
         <div>
           <div className="mt-queue-summary">
             <h2 className="text-lg font-semibold">Chaqiruvlar</h2>
@@ -141,7 +145,32 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
             </p>
           )}
           {coordinator && (
-            <div className="mt-filter-fields">
+            <div className="mt-filter-mobile-heading">
+              <p>
+                {Number(Boolean(filters.doctorId)) +
+                  Number(Boolean(filters.organizationId))}{' '}
+                ta faol filtr
+              </p>
+              <button
+                type="button"
+                className="mt-button"
+                aria-expanded={filtersOpen}
+                aria-controls={filtersId}
+                onClick={() => setFiltersOpen(!filtersOpen)}
+              >
+                <SlidersHorizontal size={16} aria-hidden="true" />
+                Filtrlar
+              </button>
+            </div>
+          )}
+          {coordinator && (
+            <div
+              id={filtersId}
+              className={
+                'mt-filter-fields' +
+                (filtersOpen ? ' mt-filter-fields-open' : '')
+              }
+            >
               <Field label="Shifokor">
                 {(a11y) => (
                   <select
@@ -241,6 +270,19 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
         {tasks.data && tasks.data.results.length === 0 && (
           <div className="p-4">
             <Notice>Tanlangan filtrlarda chaqiruv yo‘q.</Notice>
+            <button
+              type="button"
+              className="mt-button mt-3"
+              onClick={() =>
+                updateFilters({
+                  segment: coordinator ? 'all' : 'open',
+                  doctorId: '',
+                  organizationId: '',
+                })
+              }
+            >
+              Barcha chaqiruvlarni ko‘rish
+            </button>
           </div>
         )}
         {tasks.data && (

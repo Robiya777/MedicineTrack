@@ -33,7 +33,7 @@ export function CoordinatorActions({ task }: { task: CareTask }) {
       </button>
       <button
         type="button"
-        className={secondaryButton + ' text-red-800'}
+        className={secondaryButton + ' mt-button-danger'}
         onClick={() => setAction('cancel')}
       >
         Chaqiruvni bekor qilish
@@ -51,6 +51,7 @@ export function CoordinatorActions({ task }: { task: CareTask }) {
             <TaskActionForm
               key={action}
               task={task}
+              destructive={action === 'cancel'}
               submitLabel={
                 action === 'cancel' ? 'Bekor qilishni tasdiqlash' : 'Tayinlash'
               }
