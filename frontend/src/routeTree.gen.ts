@@ -11,11 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as apphomeRouteRouteImport } from './routes/(app)/(home)/route'
 import { Route as appDesignRouteRouteImport } from './routes/(app)/design/route'
+import { Route as authLoginRouteRouteImport } from './routes/(auth)/login/route'
 import { Route as apphomeIndexRouteImport } from './routes/(app)/(home)/index'
 import { Route as appDesignIndexRouteImport } from './routes/(app)/design/index'
 import { Route as appDesignVariantRouteRouteImport } from './routes/(app)/design/$variant/route'
+import { Route as appKabinetRoleRouteRouteImport } from './routes/(app)/kabinet/$role/route'
+import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
 import { Route as appDesignVariantIndexRouteImport } from './routes/(app)/design/$variant/index'
 import { Route as appDesignVariantScreenRouteRouteImport } from './routes/(app)/design/$variant/$screen/route'
+import { Route as appKabinetRoleIndexRouteImport } from './routes/(app)/kabinet/$role/index'
 import { Route as appDesignVariantScreenIndexRouteImport } from './routes/(app)/design/$variant/$screen/index'
 
 const apphomeRouteRoute = apphomeRouteRouteImport.update({
@@ -25,6 +29,11 @@ const apphomeRouteRoute = apphomeRouteRouteImport.update({
 const appDesignRouteRoute = appDesignRouteRouteImport.update({
   id: '/(app)/design',
   path: '/design',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authLoginRouteRoute = authLoginRouteRouteImport.update({
+  id: '/(auth)/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const apphomeIndexRoute = apphomeIndexRouteImport.update({
@@ -42,6 +51,16 @@ const appDesignVariantRouteRoute = appDesignVariantRouteRouteImport.update({
   path: '/$variant',
   getParentRoute: () => appDesignRouteRoute,
 } as any)
+const appKabinetRoleRouteRoute = appKabinetRoleRouteRouteImport.update({
+  id: '/(app)/kabinet/$role',
+  path: '/kabinet/$role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authLoginIndexRoute = authLoginIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => authLoginRouteRoute,
+} as any)
 const appDesignVariantIndexRoute = appDesignVariantIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -53,6 +72,11 @@ const appDesignVariantScreenRouteRoute =
     path: '/$screen',
     getParentRoute: () => appDesignVariantRouteRoute,
   } as any)
+const appKabinetRoleIndexRoute = appKabinetRoleIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => appKabinetRoleRouteRoute,
+} as any)
 const appDesignVariantScreenIndexRoute =
   appDesignVariantScreenIndexRouteImport.update({
     id: '/',
@@ -63,27 +87,37 @@ const appDesignVariantScreenIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof apphomeIndexRoute
   '/design': typeof appDesignRouteRouteWithChildren
+  '/login': typeof authLoginRouteRouteWithChildren
   '/design/$variant': typeof appDesignVariantRouteRouteWithChildren
+  '/kabinet/$role': typeof appKabinetRoleRouteRouteWithChildren
   '/design/': typeof appDesignIndexRoute
+  '/login/': typeof authLoginIndexRoute
   '/design/$variant/$screen': typeof appDesignVariantScreenRouteRouteWithChildren
   '/design/$variant/': typeof appDesignVariantIndexRoute
+  '/kabinet/$role/': typeof appKabinetRoleIndexRoute
   '/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof apphomeIndexRoute
   '/design': typeof appDesignIndexRoute
+  '/login': typeof authLoginIndexRoute
   '/design/$variant': typeof appDesignVariantIndexRoute
+  '/kabinet/$role': typeof appKabinetRoleIndexRoute
   '/design/$variant/$screen': typeof appDesignVariantScreenIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(app)/(home)': typeof apphomeRouteRouteWithChildren
   '/(app)/design': typeof appDesignRouteRouteWithChildren
+  '/(auth)/login': typeof authLoginRouteRouteWithChildren
   '/(app)/design/$variant': typeof appDesignVariantRouteRouteWithChildren
+  '/(app)/kabinet/$role': typeof appKabinetRoleRouteRouteWithChildren
   '/(app)/(home)/': typeof apphomeIndexRoute
   '/(app)/design/': typeof appDesignIndexRoute
+  '/(auth)/login/': typeof authLoginIndexRoute
   '/(app)/design/$variant/$screen': typeof appDesignVariantScreenRouteRouteWithChildren
   '/(app)/design/$variant/': typeof appDesignVariantIndexRoute
+  '/(app)/kabinet/$role/': typeof appKabinetRoleIndexRoute
   '/(app)/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
 }
 export interface FileRouteTypes {
@@ -91,28 +125,44 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/design'
+    | '/login'
     | '/design/$variant'
+    | '/kabinet/$role'
     | '/design/'
+    | '/login/'
     | '/design/$variant/$screen'
     | '/design/$variant/'
+    | '/kabinet/$role/'
     | '/design/$variant/$screen/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/design' | '/design/$variant' | '/design/$variant/$screen'
+  to:
+    | '/'
+    | '/design'
+    | '/login'
+    | '/design/$variant'
+    | '/kabinet/$role'
+    | '/design/$variant/$screen'
   id:
     | '__root__'
     | '/(app)/(home)'
     | '/(app)/design'
+    | '/(auth)/login'
     | '/(app)/design/$variant'
+    | '/(app)/kabinet/$role'
     | '/(app)/(home)/'
     | '/(app)/design/'
+    | '/(auth)/login/'
     | '/(app)/design/$variant/$screen'
     | '/(app)/design/$variant/'
+    | '/(app)/kabinet/$role/'
     | '/(app)/design/$variant/$screen/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   apphomeRouteRoute: typeof apphomeRouteRouteWithChildren
   appDesignRouteRoute: typeof appDesignRouteRouteWithChildren
+  authLoginRouteRoute: typeof authLoginRouteRouteWithChildren
+  appKabinetRoleRouteRoute: typeof appKabinetRoleRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -129,6 +179,13 @@ declare module '@tanstack/react-router' {
       path: '/design'
       fullPath: '/design'
       preLoaderRoute: typeof appDesignRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/login': {
+      id: '/(auth)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof authLoginRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(app)/(home)/': {
@@ -152,6 +209,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appDesignVariantRouteRouteImport
       parentRoute: typeof appDesignRouteRoute
     }
+    '/(app)/kabinet/$role': {
+      id: '/(app)/kabinet/$role'
+      path: '/kabinet/$role'
+      fullPath: '/kabinet/$role'
+      preLoaderRoute: typeof appKabinetRoleRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/login/': {
+      id: '/(auth)/login/'
+      path: '/'
+      fullPath: '/login/'
+      preLoaderRoute: typeof authLoginIndexRouteImport
+      parentRoute: typeof authLoginRouteRoute
+    }
     '/(app)/design/$variant/': {
       id: '/(app)/design/$variant/'
       path: '/'
@@ -165,6 +236,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/design/$variant/$screen'
       preLoaderRoute: typeof appDesignVariantScreenRouteRouteImport
       parentRoute: typeof appDesignVariantRouteRoute
+    }
+    '/(app)/kabinet/$role/': {
+      id: '/(app)/kabinet/$role/'
+      path: '/'
+      fullPath: '/kabinet/$role/'
+      preLoaderRoute: typeof appKabinetRoleIndexRouteImport
+      parentRoute: typeof appKabinetRoleRouteRoute
     }
     '/(app)/design/$variant/$screen/': {
       id: '/(app)/design/$variant/$screen/'
@@ -232,9 +310,34 @@ const appDesignRouteRouteWithChildren = appDesignRouteRoute._addFileChildren(
   appDesignRouteRouteChildren,
 )
 
+interface authLoginRouteRouteChildren {
+  authLoginIndexRoute: typeof authLoginIndexRoute
+}
+
+const authLoginRouteRouteChildren: authLoginRouteRouteChildren = {
+  authLoginIndexRoute: authLoginIndexRoute,
+}
+
+const authLoginRouteRouteWithChildren = authLoginRouteRoute._addFileChildren(
+  authLoginRouteRouteChildren,
+)
+
+interface appKabinetRoleRouteRouteChildren {
+  appKabinetRoleIndexRoute: typeof appKabinetRoleIndexRoute
+}
+
+const appKabinetRoleRouteRouteChildren: appKabinetRoleRouteRouteChildren = {
+  appKabinetRoleIndexRoute: appKabinetRoleIndexRoute,
+}
+
+const appKabinetRoleRouteRouteWithChildren =
+  appKabinetRoleRouteRoute._addFileChildren(appKabinetRoleRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   apphomeRouteRoute: apphomeRouteRouteWithChildren,
   appDesignRouteRoute: appDesignRouteRouteWithChildren,
+  authLoginRouteRoute: authLoginRouteRouteWithChildren,
+  appKabinetRoleRouteRoute: appKabinetRoleRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
