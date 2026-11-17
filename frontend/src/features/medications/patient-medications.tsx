@@ -159,7 +159,7 @@ export function MedicationPanel({
             <PlanCard
               key={plan.id}
               plan={plan}
-              day={user.role === 'PATIENT' ? day : ''}
+              day={day}
               refresh={refresh}
             />
           ))}
@@ -250,13 +250,13 @@ function PlanCard({
           )}
           {item.missing_fields.length > 0 && (
             <p className="text-sm text-warning">
-              To‘ldirilmagan maydonlar: {item.missing_fields.join(', ')}
+              To‘ldirilmagan maydonlar: {item.missing_fields.map(field => (({name:'Dori nomi',prescribed_dose_text:'Doza',route:'Qabul yo‘li',source_reference:'Manba',start_date:'Boshlanish sanasi',end_date:'Tugash sanasi',timezone:'Vaqt zonasi',local_times:'Qabul vaqtlari'} as Record<string,string>)[field] || 'Ko‘rsatma')).join(', ')}
             </p>
           )}
         </section>
       ))}
       {plan.stop_reason && (
-        <p className="text-sm">To‘xtatish sababi: {plan.stop_reason}</p>
+        <p className="text-sm">To‘xtatish sababi: {plan.stop_reason === 'SUPERSEDED' ? 'Yangi versiya bilan almashtirilgan' : plan.stop_reason}</p>
       )}
       {user.role !== 'PATIENT' && (
         <div className="flex flex-wrap gap-3">
@@ -481,7 +481,7 @@ function OccurrenceCard({
         <span className="mt-status">{doseStatuses[item.status]}</span>
       </div>
       <p className="text-sm">
-        {new Intl.DateTimeFormat('uz-UZ', {
+        {new Intl.DateTimeFormat('sv-SE', {
           dateStyle: 'medium',
           timeStyle: 'short',
           timeZone: item.item_details.timezone,

@@ -88,7 +88,6 @@ async function pages<T extends z.ZodType>(
   params: Record<string, string | number> = {},
 ) {
   const rows: z.infer<T>[] = []
-  let serverTime = ''
   for (let page = 1; ; page++) {
     const response = await apiClient.get(path, {
       signal,
@@ -102,7 +101,7 @@ async function pages<T extends z.ZodType>(
       })
       .parse(response.data)
     rows.push(...data.results)
-    serverTime = data.server_time
+    const serverTime = data.server_time
     if (!data.next) return { rows, serverTime }
   }
 }
