@@ -1,11 +1,28 @@
 import { create } from 'zustand'
 
-type SessionState = {
-  accessToken: string | null
-  setAccessToken: (token: string | null) => void
+export type UserRole = 'HOSPITAL' | 'COORDINATOR' | 'DOCTOR' | 'PATIENT' | 'ADMIN'
+
+export type SessionUser = {
+  id: string
+  username: string
+  first_name: string
+  last_name: string
+  role: UserRole
+  organization: string | null
+  patient: string | null
+  can_approve_medication_schedule: boolean
 }
 
-export const useSessionStore = create<SessionState>()((set) => ({
+type SessionState = {
+  accessToken: string | null
+  user: SessionUser | null
+  checked: boolean
+  revision: number
+}
+
+export const useSessionStore = create<SessionState>()(() => ({
   accessToken: null,
-  setAccessToken: (accessToken) => set({ accessToken }),
+  user: null,
+  checked: false,
+  revision: 0,
 }))
