@@ -46,7 +46,7 @@ final class Api {
             .toString());
   }
 
-  void login(String url, String username, String password) throws Exception {
+  void configure(String url) throws Exception {
     URI uri = new URI(url.trim());
     boolean local =
         BuildConfig.DEBUG
@@ -60,6 +60,10 @@ final class Api {
         || !("https".equals(uri.getScheme()) || (local && "http".equals(uri.getScheme()))))
       throw new IOException("HTTPS server manzilini kiriting. Lokal HTTP faqat debug uchun.");
     base = url.trim().replaceAll("/+$", "");
+  }
+
+  void login(String url, String username, String password) throws Exception {
+    configure(url);
     access = "";
     refresh = "";
     JSONObject tokens =
@@ -87,6 +91,13 @@ final class Api {
     } catch (Failure e) {
       if (e.status != 401 || refresh.isEmpty()) throw e;
       try {
+        String latest = vault.get("session");
+        if (!latest.isEmpty()) {
+          JSONObject stored = new JSONObject(latest);
+          if (stored.optString("base").equals(base)
+              && stored.getJSONObject("user").optString("id").equals(user.optString("id")))
+            refresh = stored.getString("refresh");
+        }
         JSONObject tokens =
             raw("POST", "/auth/refresh", new JSONObject().put("refresh", refresh), null);
         access = tokens.getString("access");
@@ -121,7 +132,7 @@ final class Api {
       if (rows == null) throw new IOException("API ro‘yxat shakli mos emas");
       for (int i = 0; i < rows.length(); i++) all.put(rows.get(i));
       if (out.isNull("next") || out.optString("next").isEmpty()) return all;
-      if (++page > 100) throw new IOException("Ro‘yxat juda katta. Filtrni toraytiring.");
+      if (++page > 1000) throw new IOException("Ro‘yxat juda katta. Filtrni toraytiring.");
     }
   }
 

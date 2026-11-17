@@ -1,4 +1,4 @@
-# MedicineTrack Android 0.1.0
+# MedicineTrack Android 0.2.0
 
 Bemor va oilaviy shifokor uchun backendga ulangan birinchi native Android prototip. Package: `uz.medicinetrack.app`; Android 8.0+ (API 26), target/compile 34. Play uchun tayyor release emas.
 
@@ -8,9 +8,19 @@ Bemor va oilaviy shifokor uchun backendga ulangan birinchi native Android protot
 - Shifokor: barcha sahifalardan chaqiruvlar, tafsilot, telefon terish oynasi, qabul qilish, aloqa urinishi va yakuniy natija.
 - Bemor/shifokor: suhbatlar, xabar yuborish, o‘qilganlik, javob siyosati. Bemor: holat yuborish. Foreground chat 15 soniyada yangilanadi; matn yozilayotganda polling ekran matnini almashtirmaydi.
 - Bemor: tasdiqlangan dori jadvallari, qabul vaqtlari, Ichdim/SKIPPED qaydlari; shifokor biriktirilgan bemorning jadvali va qaydini ko‘radi.
-- Lokal **inexact** AlarmManager eslatmalari, notification permission, bootdan keyin qayta rejalash kodi. Keyingi qabul vaqti rejalashtiriladi; receiver undan keyingisini ulaydi.
-- Minimal dori keshi va yuborilmagan qabul qaydlari shifrlanadi. Offline qayd navbatda qoladi, keyingi qo‘lda yangilashda ayni payload/kalit bilan yuboriladi. Server tasdig‘isiz sinxronlandi deyilmaydi.
+- AlarmManager eslatmalari: Android maxsus ruxsati bo‘lsa exact, aks holda inexact fallback va UI ogohlantirishi. Notification ruxsati, rebootdan keyingi qayta rejalash. Keyingi vaqt rejalashtiriladi; receiver keyingisini ulaydi.
+- Minimal dori keshi va yuborilmagan qabul qaydlari shifrlanadi. Offline qayd navbatda qoladi, qo‘lda yangilash yoki Android fon vazifasida ayni payload/kalit bilan yuboriladi. Server tasdig‘isiz sinxronlandi deyilmaydi.
 - Private notification matni, release screenshot himoyasi, backup/transferdan chiqarish, logoutda kesh va eslatmalarni tozalash.
+
+## 0.2.0da qo‘shildi
+
+- Bir martalik kod bilan bemor aktivatsiyasi va avtomatik bemor sessiyasi.
+- Shifokorda ko‘p dorili DRAFT yaratish/tahrirlash, klinik ruxsat bilan approve, yangi versiya va sabab bilan stop. Jadval dori nomi, doza, qabul yo‘li, manba, kurs, vaqtlar va zonani talab qiladi; hech biri AI tomonidan taxmin qilinmaydi.
+- Bemorning dori qaydiga sababli correction va shifokorning o‘z yakuniy hisobotiga append-only correction.
+- Yuborilmagan qaydlar: xatoni ko‘rish, qayta yuborish, alohida tasdiq bilan qurilmadan olib tashlash. Bitta server xatosi keyingi qaydlarni va jadval yangilanishini to‘smaydi.
+- Shifrlangan chat va forma matni chernoviklari; tegishli formani qayta ochganda tiklash. Forma konteksti user/patient/task/plan versiyasiga bog‘langan, muvaffaqiyatli yuborilganda tozalanadi. Parol va aktivatsiya kodi chernovikka yozilmaydi. Offline sessiyada lokal kabinet va dori keshi ochilishi mumkin; server vakolati tarmoq qaytganda tekshiriladi.
+- In-app bildirishnomalar ro‘yxati, o‘qilganlik va tegishli chaqiruv/suhbatga o‘tish.
+- JobScheduler 15 daqiqalik eng qisqa interval bilan tarmoqqa bog‘langan periodic sync rejalashtiradi. OS ishni kechiktirishi mumkin: bu aniq 15 daqiqalik kafolat emas. Fon va UI API ishlari bitta serial workerda; token rotatsiyasi oxirgi shifrlangan sessiyadan olinadi. Logout job va alarmni bekor qiladi.
 
 ## Build
 
@@ -55,14 +65,15 @@ Test API sessiyalari, JSON kontrakti, dublikat himoyasi, encrypted roundtrip, in
 
 Android reference: [alarm scheduling](https://developer.android.com/develop/background-work/services/alarms), [notification permission](https://developer.android.com/develop/ui/views/notifications/notification-permission).
 
-## Qolgan ish va cheklovlar
+## Qolgan tashqi ish va cheklovlar
 
-- Bu to‘liq TZ bajarildi degani emas: aktivatsiya, dori jadvali yaratish/tasdiqlash, correction va murakkab klinik boshqaruv uchun APK formalari hali yo‘q; backend/webdan foydalaniladi.
-- Exact-alarm ruxsati olinmaydi. Eslatma kechikishi mumkin; aniq minutda yoki barcha fizik qurilmada ishlash kafolati yo‘q. Force-stopdan so‘ng app ochilishi kerak. Reboot handler mavjud, ammo to‘liq reboot E2E alohida tekshiriladi.
-- Push, background server sync va doimiy chat yetkazish yo‘q. Jadval stop/revision holati navbatdagi yangilashda olinadi; offline eski eslatma qolishi mumkin. Oxirgi sync va eskirganlik ko‘rsatiladi.
-- Offline navbat faqat dori qaydlari uchun. Server 400/409 bilan rad etgan yozuv navbatda saqlanadi, xatosi ko‘rsatiladi; alohida conflict resolution UI hali kerak. Yangi jadvalni olish bunday xato bilan to‘silmaydi.
-- Chat/forma loyihalari rotation/process deathdan tiklanmaydi. Login ekranidan offline sessiyani tiklab kabinetga kirish hozircha yo‘q; avvalgi ochiq sessiyada dori keshi ko‘riladi.
-- Dori TAKEN vaqti hozirgi vaqt bilan yoziladi; orqaga vaqt tanlash/correction UI yo‘q. Qayd bemor aytgan ma’lumot, haqiqiy ichganlik dalili emas.
-- Lokal logout internet bo‘lmasa serverdagi sessiyani bekor qilolmaydi; lokal sirlar o‘chiriladi, server sessiyasi muddati tugaguncha qolishi mumkin.
-- API 34 lint target ogohlantirishi bor. Play tarqatishdan oldin target yangilash, edge-to-edge, accessibility, fizik telefon QA va release signing zarur.
-- APK release signing, public backend deploy va klinik tekshiruv ushbu versiyada bajarilmagan. Debug build faqat sintetik ma’lumot uchun: QA screenshotlari ochiq; release esa FLAG_SECURE ishlatadi.
+- Ommaviy HTTPS backend, release signing, Play talablari va fizik telefon/batareya QA hali yo‘q. Hozir sintetik bemorli lokal demo; real tibbiy ma’lumotlar uchun tasdiqlangan muhit kerak.
+- Target 34 emulatorda tekshirilgan; Play uchun target/edge-to-edge yangilanishi zarur. Lint: 0 error, 3 warning (target, ortiqcha v26 qualifier, tarjima resursi).
+- Fon sync Android tomonidan kechiktirilishi mumkin; offline jadval stop/revisioni darhol olinmaydi. Oxirgi yangilanish va 24 soatdan eski kesh belgisi bor. Push/SMS integratsiyasi yo‘q.
+- Rebootdan keyin alarm va periodic job tiklanishi emulatorda ko‘rildi; fizik qurilma yoki barcha ishlab chiqaruvchilar uchun kafolat emas. Force-stopdan keyin ilova qayta ochilishi kerak. Exact permission foydalanuvchi tomonidan beriladi; ruxsatsiz fallback ishlaydi, aniq vaqtli yo‘lning fizik qurilma tekshiruvi qolgan.
+- Matnli chernoviklar forma qayta ochilganda tiklanadi. Oxirgi ekran avtomatik qayta ochilmaydi; spinner/checkbox holati saqlanmaydi. Bu saqlangan klinik jadval emas, qayta tekshiriladigan lokal loyiha.
+- Qabulning yangi TAKEN vaqti hozirgi vaqt; oldingi vaqt kerak bo‘lsa saqlangan qayd correction formasida tuzatiladi. Bemor qaydi haqiqiy ichganlikning mustaqil dalili emas.
+- Internet bo‘lmagan logout server sessiyasini bekor qilolmasligi mumkin; lokal sessiya, kesh, chernovik, job va alarm tozalanadi. Server sessiyasi muddatigacha qolishi mumkin.
+- Debug build QA screenshotlariga ruxsat beradi, faqat sintetik ma’lumotda ishlating; release FLAG_SECURE ishlatadi. Generativ AI va tashqi klinik integratsiya mavjudligi da’vo qilinmaydi.
+
+Yakuniy tekshiruvda lokal backend 8013 portda, kirish ekranidan moslanadi. Bu TZdagi barcha production/klinik talablar bajarilganining tasdig‘i emas. [Validation](VALIDATION.md).

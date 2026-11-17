@@ -61,6 +61,36 @@ public final class FlowChecks extends Instrumentation {
     check(ok[0], "Missing screen text: " + text);
   }
 
+  android.view.View find(android.view.View root, String text) {
+    if (root instanceof android.widget.Button
+        && ((android.widget.Button) root).getText().toString().equals(text)) return root;
+    if (root instanceof android.view.ViewGroup) {
+      android.view.ViewGroup group = (android.view.ViewGroup) root;
+      for (int i = 0; i < group.getChildCount(); i++) {
+        android.view.View found = find(group.getChildAt(i), text);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
+
+  void click(String text) {
+    ui(
+        () -> {
+          android.view.View v = find(activity.root, text);
+          if (v == null) throw new AssertionError("Button missing: " + text);
+          v.performClick();
+        });
+  }
+
+  void fields(android.view.View root, java.util.List<android.widget.EditText> result) {
+    if (root instanceof android.widget.EditText) result.add((android.widget.EditText) root);
+    if (root instanceof android.view.ViewGroup) {
+      android.view.ViewGroup group = (android.view.ViewGroup) root;
+      for (int i = 0; i < group.getChildCount(); i++) fields(group.getChildAt(i), result);
+    }
+  }
+
   void screenshot(String name) throws Exception {
     Thread.sleep(400);
     Bitmap b = getUiAutomation().takeScreenshot();
@@ -328,6 +358,204 @@ public final class FlowChecks extends Instrumentation {
       check(
           doctor.list("/patients/" + patientId + "/medication-plans").length() > 0,
           "Doctor sees patient medication plans");
+      JSONObject completedTask = doctor.get("/tasks/" + taskId);
+      if (!completedTask.isNull("report")) {
+        ui(() -> new ClinicalUi(activity).reportCorrection(completedTask));
+        ui(
+            () -> {
+              java.util.ArrayList<EditText> input = new java.util.ArrayList<>();
+              fields(activity.root, input);
+              input.get(0).setText("Android hisobot tuzatishi");
+              input.get(1).setText("Sintetik sabab");
+            });
+        click("Tuzatishni yuborish");
+        idle();
+        visible("Android hisobot tuzatishi");
+      }
+      String discharge =
+          doctor
+              .list("/patients/" + patientId + "/medication-plans")
+              .getJSONObject(0)
+              .getString("discharge");
+      ui(() -> new ClinicalUi(activity).edit(patientId, discharge, null));
+      ui(
+          () -> {
+            java.util.ArrayList<EditText> input = new java.util.ArrayList<>();
+            fields(activity.root, input);
+            input.get(0).setText("Sintetik jadval chernovigi");
+            activity.saveFormDraft();
+            activity.home();
+          });
+      ui(() -> new ClinicalUi(activity).edit(patientId, discharge, null));
+      visible("Sintetik jadval chernovigi");
+      String day = java.time.LocalDate.now(java.time.ZoneId.of("Asia/Tashkent")).toString();
+      ui(
+          () -> {
+            java.util.ArrayList<EditText> input = new java.util.ArrayList<>();
+            fields(activity.root, input);
+            String[] values = {
+              "Android sinov dori",
+              "Sintetik doza",
+              "Sintetik yo‘l",
+              "Sintetik epikriz",
+              day,
+              day,
+              "08:00, 20:00",
+              "Asia/Tashkent",
+              "Sintetik ko‘rsatma"
+            };
+            for (int i = 0; i < values.length; i++) input.get(i).setText(values[i]);
+          });
+      click("Loyihani saqlash");
+      idle();
+      visible("Dori jadvallarini boshqarish");
+      visible("Android sinov dori");
+      JSONArray newPlans = doctor.list("/patients/" + patientId + "/medication-plans");
+      JSONObject draft = newPlans.getJSONObject(0);
+      check(draft.getString("status").equals("DRAFT"), "Plan form creates server draft");
+      JSONObject active =
+          doctor.post(
+              "/medication-plans/" + draft.getString("id") + "/approve",
+              MainActivity.json(
+                  "version", draft.getInt("version"), "lock_version", draft.getInt("lock_version")),
+              Api.key());
+      check(active.getString("status").equals("ACTIVE"), "Clinical plan approval");
+      JSONObject revision =
+          doctor.post(
+              "/medication-plans/" + active.getString("id") + "/revisions",
+              MainActivity.json(
+                  "version",
+                  active.getInt("version"),
+                  "lock_version",
+                  active.getInt("lock_version")),
+              Api.key());
+      check(
+          revision.getInt("version") == 2
+              && doctor
+                  .get("/medication-plans/" + active.getString("id"))
+                  .getString("status")
+                  .equals("ACTIVE"),
+          "Revision leaves active plan until approval");
+      ui(() -> new ClinicalUi(activity).edit(patientId, discharge, revision));
+      visible("Loyihani saqlash");
+      screenshot("08-plan-form");
+      JSONObject revised =
+          doctor.post(
+              "/medication-plans/" + revision.getString("id") + "/approve",
+              MainActivity.json(
+                  "version",
+                  revision.getInt("version"),
+                  "lock_version",
+                  revision.getInt("lock_version")),
+              Api.key());
+      JSONObject stopped =
+          doctor.post(
+              "/medication-plans/" + revised.getString("id") + "/stop",
+              MainActivity.json(
+                  "version",
+                  revised.getInt("version"),
+                  "lock_version",
+                  revised.getInt("lock_version"),
+                  "reason",
+                  "Synthetic Android test"),
+              Api.key());
+      check(stopped.getString("status").equals("STOPPED"), "Plan stop");
+      ui(
+          () -> {
+            activity.api = patient;
+            new ClinicalUi(activity).queue();
+          });
+      idle();
+      visible("Yuborilmagan qaydlar");
+      JSONArray history = patient.list("/patients/" + patientId + "/medication-history");
+      JSONObject recorded = null;
+      for (int i = 0; i < history.length(); i++)
+        if (!history.getJSONObject(i).isNull("record")) {
+          recorded = history.getJSONObject(i);
+          break;
+        }
+      check(recorded != null, "Patient history includes dose record");
+      if (recorded != null) {
+        JSONObject dose = recorded;
+        ui(() -> new ClinicalUi(activity).correction(dose, patientId));
+        visible("Tuzatishni saqlash");
+        JSONObject r = dose.getJSONObject("record");
+        JSONObject correction =
+            MainActivity.json(
+                "version",
+                r.getInt("version"),
+                "plan_version",
+                dose.getInt("plan_version"),
+                "result",
+                "SKIPPED",
+                "reported_taken_at",
+                JSONObject.NULL,
+                "client_recorded_at",
+                Instant.now().toString(),
+                "note",
+                "Sintetik tuzatish",
+                "reason",
+                "Sintetik tekshiruv");
+        JSONObject corrected =
+            patient.post(
+                "/dose-records/" + r.getString("id") + "/corrections", correction, Api.key());
+        check(corrected.getInt("version") == r.getInt("version") + 1, "Dose correction version");
+      }
+      // Staff issues a one-use activation code; the patient-facing form performs activation.
+      Api staff = new Api(vault);
+      staff.configure(base);
+      JSONObject staffTokens =
+          staff.post(
+              "/auth/login",
+              MainActivity.json(
+                  "username", "demo.hospital", "password", password, "client", "android"),
+              null);
+      staff.access = staffTokens.getString("access");
+      staff.refresh = staffTokens.getString("refresh");
+      staff.user = staffTokens.getJSONObject("user");
+      String territory = staff.list("/reference/territories").getJSONObject(0).getString("id");
+      JSONObject newPatient =
+          staff.post(
+              "/patients",
+              MainActivity.json(
+                  "full_name",
+                  "Synthetic Android Activation",
+                  "birth_date",
+                  "2000-01-01",
+                  "address",
+                  "Synthetic demo address",
+                  "territory",
+                  territory,
+                  "contact",
+                  "+998900000000"),
+              Api.key());
+      JSONObject code =
+          staff.post(
+              "/patients/" + newPatient.getString("id") + "/activation",
+              MainActivity.json("phone_verified", true),
+              null);
+      ui(() -> new ClinicalUi(activity).activation());
+      ui(
+          () -> {
+            java.util.ArrayList<EditText> input = new java.util.ArrayList<>();
+            fields(activity.root, input);
+            input.get(0).setText(base);
+            input.get(1).setText(newPatient.optString("id"));
+            input.get(2).setText(code.optString("code"));
+            input.get(3).setText(password);
+            input.get(4).setText(password);
+          });
+      click("Hisobni aktivlashtirish");
+      idle();
+      visible("Uyda ham yolg‘iz emassiz.");
+      check(
+          activity.api.user.optString("patient").equals(newPatient.getString("id")),
+          "Activation form creates patient session");
+      ui(
+          () -> {
+            activity.api = doctor;
+            activity.home();
+          });
       doctor.post(
           "/conversations/" + id + "/messages",
           MainActivity.json("text", "Sintetik shifokor javobi olindi."),
@@ -341,6 +569,39 @@ public final class FlowChecks extends Instrumentation {
       ui(
           () -> {
             activity.api = patient;
+            activity.home();
+          });
+      ui(
+          () ->
+              activity.execute(
+                  () -> {
+                    MedicationSync.sync(activity);
+                    return true;
+                  },
+                  v -> activity.home()));
+      idle();
+      check(!vault.get("doses").isEmpty(), "Background-sync repository restores patient reminders");
+      check(
+          getTargetContext()
+                  .getSystemService(android.app.job.JobScheduler.class)
+                  .getPendingJob(SyncJobService.ID)
+              != null,
+          "Periodic network sync job registered");
+      ui(() -> activity.chat(id, true));
+      idle();
+      ui(
+          () -> {
+            if (activity.chatInput != null)
+              activity.chatInput.setText("Sintetik saqlangan chernovik");
+            activity.saveChatDraft();
+            activity.home();
+          });
+      ui(() -> activity.chat(id, true));
+      idle();
+      visible("Sintetik saqlangan chernovik");
+      ui(
+          () -> {
+            activity.clearChatDraft();
             activity.home();
           });
       screenshot("07-final-home");

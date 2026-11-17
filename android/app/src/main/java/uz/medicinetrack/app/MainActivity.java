@@ -23,7 +23,7 @@ public final class MainActivity extends Activity {
       MUTED = 0xff61756d,
       BG = 0xfff4f7f5,
       LINE = 0xffdce6e0;
-  final ExecutorService worker = Executors.newSingleThreadExecutor();
+  final ExecutorService worker = SyncJobService.WORK;
   final Handler handler = new Handler(Looper.getMainLooper());
   Vault vault;
   Api api;
@@ -34,6 +34,31 @@ public final class MainActivity extends Activity {
   int generation = 0;
   JSONArray doses = new JSONArray();
   String medicationSyncWarning = "";
+  EditText chatInput;
+  String chatDraftKey = "";
+  final Runnable draftSaver =
+      () -> {
+        saveChatDraft();
+        saveFormDraft();
+      };
+
+  void saveChatDraft() {
+    if (chatInput != null && !api.access.isEmpty() && !chatDraftKey.isEmpty()) {
+      String value = chatInput.getText().toString(), key = chatDraftKey;
+      try {
+        vault.put(key, value);
+      } catch (Exception ignored) {
+      }
+    }
+  }
+
+  void clearChatDraft() {
+    if (chatInput != null) chatInput.setText("");
+    try {
+      if (!chatDraftKey.isEmpty()) vault.put(chatDraftKey, "");
+    } catch (Exception ignored) {
+    }
+  }
 
   interface Job {
     Object run() throws Exception;
@@ -66,8 +91,13 @@ public final class MainActivity extends Activity {
         () -> {
           api.restore();
           if (!api.access.isEmpty()) {
-            api.user = api.get("/me");
-            api.save();
+            try {
+              api.user = api.get("/me");
+              api.save();
+            } catch (java.io.IOException offline) {
+              if (offline instanceof Api.Failure) throw offline;
+              return true;
+            }
           }
           return !api.access.isEmpty();
         },
@@ -84,18 +114,29 @@ public final class MainActivity extends Activity {
   protected void onResume() {
     super.onResume();
     paused = false;
+    SyncJobService.schedule(this);
+    if (vault != null && !worker.isShutdown())
+      worker.execute(
+          () -> {
+            try {
+              Reminders.schedule(this);
+            } catch (Exception ignored) {
+            }
+          });
   }
 
   @Override
   protected void onPause() {
     paused = true;
+    saveChatDraft();
+    saveFormDraft();
     super.onPause();
   }
 
   @Override
   protected void onDestroy() {
     handler.removeCallbacksAndMessages(null);
-    worker.shutdown();
+    // Shared serial worker also serves the OS medication sync job.
     super.onDestroy();
   }
 
@@ -103,6 +144,39 @@ public final class MainActivity extends Activity {
   protected void onNewIntent(Intent i) {
     super.onNewIntent(i);
     if (!api.access.isEmpty() && "Dorilar".equals(i.getStringExtra("screen"))) medications();
+  }
+
+  final java.util.LinkedHashMap<String, EditText> draftFields = new java.util.LinkedHashMap<>();
+  String activeFormKey = "";
+  JSONObject restoredFields = new JSONObject();
+
+  void saveFormDraft() {
+    if (activeFormKey.isEmpty() || api.access.isEmpty()) return;
+    try {
+      JSONObject data = new JSONObject();
+      for (java.util.Map.Entry<String, EditText> e : draftFields.entrySet())
+        data.put(e.getKey(), e.getValue().getText().toString());
+      vault.put(activeFormKey, data.toString());
+    } catch (Exception ignored) {
+    }
+  }
+
+  void clearFormDraft() {
+    try {
+      if (!activeFormKey.isEmpty()) vault.put(activeFormKey, "");
+    } catch (Exception ignored) {
+    }
+    draftFields.clear();
+    activeFormKey = "";
+  }
+
+  void mutate(Job job, Done done) {
+    execute(
+        job,
+        v -> {
+          clearFormDraft();
+          done.run(v);
+        });
   }
 
   void execute(Job job, Done done) {
@@ -128,6 +202,7 @@ public final class MainActivity extends Activity {
                 message("");
                 if (failure != null) {
                   if (failure instanceof Api.Failure && ((Api.Failure) failure).status == 401) {
+                    SyncJobService.cancel(this);
                     Reminders.clear(this);
                     vault.clear();
                     api.access = "";
@@ -215,7 +290,12 @@ public final class MainActivity extends Activity {
   EditText field(LinearLayout c, String label, String value, boolean password) {
     label(c, label);
     EditText e = new EditText(this);
-    e.setText(value);
+    String draftId = label + ":" + draftFields.size();
+    e.setText(
+        !password && !activeFormKey.isEmpty() && restoredFields.has(draftId)
+            ? restoredFields.optString(draftId)
+            : value);
+    if (!password && !activeFormKey.isEmpty()) draftFields.put(draftId, e);
     e.setTextColor(INK);
     e.setTextSize(16);
     e.setPadding(dp(12), dp(8), dp(12), dp(8));
@@ -226,11 +306,37 @@ public final class MainActivity extends Activity {
     e.setSingleLine(true);
     if (password)
       e.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+    e.addTextChangedListener(
+        new android.text.TextWatcher() {
+          public void beforeTextChanged(CharSequence value, int start, int count, int after) {}
+
+          public void onTextChanged(CharSequence value, int start, int before, int count) {
+            handler.removeCallbacks(draftSaver);
+            handler.postDelayed(draftSaver, 400);
+          }
+
+          public void afterTextChanged(android.text.Editable value) {}
+        });
     c.addView(e, new LinearLayout.LayoutParams(-1, -2));
     return e;
   }
 
   void frame(String heading, boolean navigation) {
+    saveFormDraft();
+    draftFields.clear();
+    activeFormKey = "";
+    restoredFields = new JSONObject();
+    if (api != null && !api.access.isEmpty() && !screen.equals("Suhbat")) {
+      activeFormKey = "form:" + api.user.optString("id") + ":" + screen;
+      try {
+        String data = vault.get(activeFormKey);
+        if (!data.isEmpty()) restoredFields = new JSONObject(data);
+      } catch (Exception ignored) {
+      }
+    }
+    saveChatDraft();
+    chatInput = null;
+    chatDraftKey = "";
     generation++;
     root = column();
     root.setBackgroundColor(BG);
@@ -320,6 +426,10 @@ public final class MainActivity extends Activity {
         return "Qayd kiritilmagan";
       case "UPCOMING":
         return "Qabul vaqti kelmagan";
+      case "DRAFT":
+        return "Loyiha";
+      case "STOPPED":
+        return "To‘xtatilgan";
       case "OPEN":
         return "Ochiq";
       case "ACTIVE":
@@ -369,6 +479,7 @@ public final class MainActivity extends Activity {
               });
         });
     label(body, "Bemor va oilaviy shifokor uchun. Kirish ma’lumotlarini muassasangiz beradi.");
+    button(body, "Bemor hisobini aktivlashtirish", () -> new ClinicalUi(this).activation());
     label(body, "Ilova shoshilinch yordam xizmati emas.");
   }
 
@@ -477,7 +588,7 @@ public final class MainActivity extends Activity {
           c,
           "Topshiriqni qabul qilish",
           () ->
-              execute(
+              mutate(
                   () ->
                       api.post(
                           "/tasks/" + t.getString("id") + "/accept",
@@ -495,9 +606,27 @@ public final class MainActivity extends Activity {
       label(box, r.optString("observation"));
       label(box, r.optString("actions"));
       label(box, r.optString("follow_up"));
+      if (r.optString("author").equals(api.user.optString("id")))
+        button(box, "Hisobotni tuzatish", () -> new ClinicalUi(this).reportCorrection(t));
+      JSONArray corrections = t.optJSONArray("corrections");
+      if (corrections != null)
+        for (int i = 0; i < corrections.length(); i++) {
+          JSONObject correction = corrections.getJSONObject(i);
+          label(
+              box,
+              "Tuzatish: "
+                  + correction.optString("correction_text")
+                  + " · "
+                  + correction.optString("reason"));
+        }
     }
     if (p != null && !val(p, "id").isEmpty())
       button(body, "Bemorning dori jadvali", () -> loadMedication(p.optString("id")));
+    if (p != null && !val(p, "id").isEmpty())
+      button(
+          body,
+          "Dori jadvalini boshqarish",
+          () -> new ClinicalUi(this).plans(p.optString("id"), t.optString("discharge")));
     button(body, "Ro‘yxatga qaytish", this::loadTasks);
   }
 
@@ -509,7 +638,7 @@ public final class MainActivity extends Activity {
   }
 
   void completeForm(JSONObject t) {
-    screen = "Natija";
+    screen = "Natija:" + t.optString("id") + ":" + t.optInt("version");
     frame("Tashrif natijasi", true);
     LinearLayout c = card();
     label(c, "Faqat amalga oshirilgan aloqa yoki tashrifni tasdiqlang.");
@@ -532,7 +661,7 @@ public final class MainActivity extends Activity {
               b = actions.getText().toString(),
               f = follow.getText().toString(),
               ch = channel.getSelectedItemPosition() == 0 ? "PHONE" : "HOME_VISIT";
-          execute(
+          mutate(
               () ->
                   api.post(
                       "/tasks/" + t.getString("id") + "/complete",
@@ -556,7 +685,7 @@ public final class MainActivity extends Activity {
   }
 
   void attemptForm(JSONObject t) {
-    screen = "Aloqa";
+    screen = "Aloqa:" + t.optString("id") + ":" + t.optInt("version");
     frame("Aloqa urinishi", true);
     LinearLayout c = card();
     Spinner result =
@@ -574,7 +703,7 @@ public final class MainActivity extends Activity {
         () -> {
           int selection = result.getSelectedItemPosition();
           String n = note.getText().toString(), f = next.getText().toString();
-          execute(
+          mutate(
               () ->
                   api.post(
                       "/tasks/" + t.getString("id") + "/contact-attempts",
@@ -662,7 +791,9 @@ public final class MainActivity extends Activity {
           }
           if (c.optString("status").equals("OPEN")) {
             LinearLayout compose = card();
-            EditText input = field(compose, "Xabar", "", false);
+            chatDraftKey = "chatdraft:" + api.user.optString("id") + ":" + id;
+            EditText input = field(compose, "Xabar", vault.get(chatDraftKey), false);
+            chatInput = input;
             input.setSingleLine(false);
             String key = Api.key();
             button(
@@ -674,10 +805,13 @@ public final class MainActivity extends Activity {
                     message("Xabar matnini yozing.");
                     return;
                   }
-                  execute(
+                  mutate(
                       () ->
                           api.post("/conversations/" + id + "/messages", json("text", value), key),
-                      out -> chat(id, true));
+                      out -> {
+                        clearChatDraft();
+                        chat(id, true);
+                      });
                 });
             if (!doctor()) button(compose, "Holatimni yuborish", () -> statusForm(id));
           }
@@ -686,7 +820,7 @@ public final class MainActivity extends Activity {
   }
 
   void statusForm(String id) {
-    screen = "Holat";
+    screen = "Holat:" + id;
     frame("Bugungi holatingiz", true);
     LinearLayout c = card();
     Spinner state = spinner(c, new String[] {"Yaxshilandi", "O‘zgarmadi", "Yomonlashdi"});
@@ -702,7 +836,7 @@ public final class MainActivity extends Activity {
               code =
                   new String[] {"IMPROVED", "UNCHANGED", "WORSENED"}
                       [state.getSelectedItemPosition()];
-          execute(
+          mutate(
               () ->
                   api.post(
                       "/conversations/" + id + "/status-updates",
@@ -721,25 +855,12 @@ public final class MainActivity extends Activity {
     screen = "Dorilar";
     frame("Dori jadvali", true);
     button(body, "Saqlangan jadvalni ko‘rish", () -> cachedMedication(patient));
+    button(body, "Yuborilmagan qaydlar", () -> new ClinicalUi(this).queue());
     loadMedication(patient);
   }
 
   void flushQueue() throws Exception {
-    String saved = vault.get("dose_queue");
-    JSONArray queue = saved.isEmpty() ? new JSONArray() : new JSONArray(saved);
-    while (queue.length() > 0) {
-      JSONObject entry = queue.getJSONObject(0);
-      try {
-        api.post(
-            "/dose-occurrences/" + entry.getString("id") + "/record",
-            entry.getJSONObject("payload"),
-            entry.getString("key"));
-      } catch (Exception e) {
-        throw new Exception("Qayd qurilmada saqlandi, hali sinxronlanmadi. " + e.getMessage(), e);
-      }
-      queue.remove(0);
-      vault.put("dose_queue", queue.toString());
-    }
+    MedicationSync.flush(api, vault);
   }
 
   void loadMedication(String patient) {
@@ -806,7 +927,25 @@ public final class MainActivity extends Activity {
     button(body, "Jadvalni yangilash", () -> loadMedication(patient));
     if (!doctor()) {
       button(body, "Eslatmalarga ruxsat berish", this::notificationPermission);
+      if (Build.VERSION.SDK_INT >= 31) {
+        boolean precise = getSystemService(AlarmManager.class).canScheduleExactAlarms();
+        label(
+            body,
+            precise
+                ? "Aniq vaqtli eslatma ruxsati yoqilgan"
+                : "Aniq vaqtli eslatma ruxsati yo‘q; eslatma kechikishi mumkin.");
+        if (!precise)
+          button(
+              body,
+              "Aniq vaqtli eslatmani yoqish",
+              () ->
+                  startActivity(
+                      new Intent(
+                          android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                          Uri.parse("package:" + getPackageName()))));
+      }
       button(body, "Saqlangan jadvalni ko‘rish", () -> cachedMedication(patient));
+      button(body, "Yuborilmagan qaydlar", () -> new ClinicalUi(this).queue());
       label(
           body,
           "Eslatma Android batareya cheklovlari sabab kechikishi mumkin. Dorini o‘zgartirish uchun"
@@ -820,6 +959,8 @@ public final class MainActivity extends Activity {
       c.addView(text(item.optString("name"), 21, INK));
       label(c, item.optString("prescribed_dose_text") + " · " + item.optString("route"));
       label(c, item.optString("instructions"));
+      if (!doctor() && !dose.isNull("record"))
+        button(c, "Qaydni tuzatish", () -> new ClinicalUi(this).correction(dose, patient));
       boolean due =
           Instant.parse(dose.getString("scheduled_at")).toEpochMilli()
               <= System.currentTimeMillis();
@@ -895,7 +1036,7 @@ public final class MainActivity extends Activity {
     LinearLayout c = card();
     c.addView(text(api.user.optString("username"), 22, INK));
     label(c, doctor() ? "Oilaviy shifokor" : "Bemor");
-    label(c, "MedicineTrack 0.1.0 · Sinov versiyasi");
+    label(c, "MedicineTrack 0.2.0 · Sinov versiyasi");
     label(
         c,
         "Bildirishnomalar: "
@@ -903,6 +1044,7 @@ public final class MainActivity extends Activity {
                 ? "yoqilgan"
                 : "o‘chirilgan"));
     label(c, "Server: " + api.base);
+    button(c, "Bildirishnomalar", () -> new ClinicalUi(this).notifications());
     button(
         c,
         "Chiqish",
@@ -916,12 +1058,13 @@ public final class MainActivity extends Activity {
                 .setPositiveButton(
                     "Chiqish",
                     (d, w) ->
-                        execute(
+                        mutate(
                             () -> {
                               try {
                                 api.post("/auth/logout", json("refresh", api.refresh), null);
                               } catch (Exception ignored) {
                               }
+                              SyncJobService.cancel(this);
                               Reminders.clear(this);
                               vault.clear();
                               api.access = "";

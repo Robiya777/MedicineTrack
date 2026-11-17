@@ -51,9 +51,19 @@ final class Reminders {
     for (int i = 0; i < rows.length(); i++) {
       JSONObject row = rows.getJSONObject(i);
       long at = Instant.parse(row.getString("scheduled_at")).toEpochMilli();
-      if (row.optBoolean("reminder_enabled") && at > System.currentTimeMillis() && at == earliest)
-        c.getSystemService(AlarmManager.class)
-            .setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, intent(c, row.getString("id")));
+      if (row.optBoolean("reminder_enabled") && at > System.currentTimeMillis() && at == earliest) {
+        AlarmManager manager = c.getSystemService(AlarmManager.class);
+        if (android.os.Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()) {
+          try {
+            manager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP, at, intent(c, row.getString("id")));
+          } catch (SecurityException denied) {
+            manager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP, at, intent(c, row.getString("id")));
+          }
+        } else
+          manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, intent(c, row.getString("id")));
+      }
     }
   }
 
