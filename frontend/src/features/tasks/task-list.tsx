@@ -1,29 +1,24 @@
 import { useId, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
-import {
-  Activity,
-  Clock3,
-  RefreshCw,
-  SlidersHorizontal,
-  ShieldCheck,
-  UserRoundX,
-} from 'lucide-react'
+import { RefreshCw, SlidersHorizontal } from 'lucide-react'
 import {
   doctorName,
   doctorsQuery,
-  metricsQuery,
   organizationsQuery,
   taskListQuery,
   type TaskFilters,
   type TaskSegment,
 } from '../../api/tasks'
 import { TaskTable } from './task-table'
+import { CoordinatorMetrics } from './coordinator-metrics'
 import {
   Field,
-  inputStyle,
   Notice,
+  PageHeader,
+  Pagination,
   RequestError,
+  inputStyle,
   secondaryButton,
 } from '../../components/ui'
 
@@ -87,36 +82,33 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
     })
   }
 
+  const refreshAction = (
+    <button
+      type="button"
+      className={secondaryButton}
+      disabled={tasks.isFetching}
+      onClick={() => void tasks.refetch()}
+    >
+      <RefreshCw
+        size={16}
+        className={tasks.isFetching ? 'animate-spin' : undefined}
+        aria-hidden="true"
+      />
+      Yangilash
+    </button>
+  )
+
   return (
     <section aria-labelledby="workspace-title" className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-5">
-        <div>
-          <h1
-            id="workspace-title"
-            className="text-2xl sm:text-3xl font-bold tracking-tight text-ink"
-          >
-            {coordinator ? 'Koordinator kabineti' : 'Mening chaqiruvlarim'}
-          </h1>
-          <p className="mt-1 text-sm text-muted">
-            {coordinator
-              ? 'Hududdagi bemorlar kuzatuvi va patronaj nazorati.'
-              : 'Biriktirilgan bemorlar bilan aloqa va patronaj hisoboti.'}
-          </p>
-        </div>
-        <button
-          type="button"
-          className={secondaryButton}
-          disabled={tasks.isFetching}
-          onClick={() => void tasks.refetch()}
-        >
-          <RefreshCw
-            size={16}
-            className={tasks.isFetching ? 'animate-spin' : undefined}
-            aria-hidden="true"
-          />
-          Yangilash
-        </button>
-      </div>
+      <PageHeader
+        title={coordinator ? 'Koordinator kabineti' : 'Mening chaqiruvlarim'}
+        description={
+          coordinator
+            ? 'Hududdagi bemorlar kuzatuvi va patronaj nazorati.'
+            : 'Biriktirilgan bemorlar bilan aloqa va patronaj hisoboti.'
+        }
+        action={refreshAction}
+      />
 
       {coordinator && <CoordinatorMetrics />}
 
@@ -320,120 +312,17 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
               names={names}
               facilities={facilities}
             />
-            <nav
-              aria-label="Sahifalar"
-              className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-4 bg-slate-50/30"
-            >
-              <span className="text-xs text-muted font-medium">
-                Jami: {tasks.data.count} ta chaqiruv
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className={secondaryButton}
-                  disabled={!tasks.data.hasPrevious}
-                  onClick={() => setPage(page - 1)}
-                >
-                  Oldingi
-                </button>
-                <span className="px-2 text-xs font-semibold text-ink">
-                  {page}
-                </span>
-                <button
-                  type="button"
-                  className={secondaryButton}
-                  disabled={!tasks.data.hasNext}
-                  onClick={() => setPage(page + 1)}
-                >
-                  Keyingi
-                </button>
-              </div>
-            </nav>
+            <Pagination
+              page={page}
+              onPageChange={setPage}
+              hasPrevious={tasks.data.hasPrevious}
+              hasNext={tasks.data.hasNext}
+              totalCount={tasks.data.count}
+              label="chaqiruv"
+            />
           </>
         )}
       </section>
-    </section>
-  )
-}
-
-function CoordinatorMetrics() {
-  const metrics = useQuery(metricsQuery())
-  if (metrics.isPending)
-    return <Notice>Hudud ko‘rsatkichlari yuklanmoqda…</Notice>
-  if (metrics.isError)
-    return (
-      <RequestError
-        error={metrics.error}
-        retry={() => void metrics.refetch()}
-      />
-    )
-
-  const data = metrics.data
-  const toneStyles: Record<string, string> = {
-    primary: 'bg-teal-50 text-teal-700 border-teal-200/60',
-    danger: 'bg-red-50 text-red-600 border-red-200/60',
-    warning: 'bg-amber-50 text-amber-700 border-amber-200/60',
-  }
-
-  return (
-    <section aria-labelledby="metrics-title" className="space-y-3">
-      <h2 id="metrics-title" className="text-xs font-bold uppercase tracking-wider text-muted">
-        Hudud bo‘yicha ko‘rsatkichlar
-      </h2>
-      <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            label: 'Aktiv',
-            value: data.active,
-            Icon: Activity,
-            tone: 'primary',
-          },
-          {
-            label: 'Kechikkan',
-            value: data.overdue,
-            Icon: Clock3,
-            tone: 'danger',
-          },
-          {
-            label: 'Mas’ulsiz',
-            value: data.unassigned,
-            Icon: UserRoundX,
-            tone: 'warning',
-          },
-          {
-            label: 'O‘z vaqtida bajarish',
-            value:
-              data.sla_percent === null
-                ? 'Ma’lumot yo‘q'
-                : data.sla_percent + '%',
-            Icon: ShieldCheck,
-            tone: 'primary',
-          },
-        ].map(({ label, value, Icon, tone }) => (
-          <div
-            key={label}
-            className="rounded-2xl border border-line bg-surface p-5 shadow-xs transition hover:shadow-sm"
-          >
-            <dt className="flex items-center justify-between text-xs font-semibold text-muted">
-              <span>{label}</span>
-              <span
-                className={`flex h-9 w-9 items-center justify-center rounded-xl border ${toneStyles[tone]}`}
-              >
-                <Icon size={19} aria-hidden="true" />
-              </span>
-            </dt>
-            <dd className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-ink">
-              {value}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <p className="text-xs text-muted">
-        O‘z vaqtida bajarilgan: <strong className="text-ink">{data.completed_on_time}</strong> / baholanadigan:{' '}
-        <strong className="text-ink">{data.assessed}</strong>. Bekor qilingan:{' '}
-        <strong className="text-ink">{data.cancelled}</strong>. Kech
-        hujjatlashtirilgan: <strong className="text-ink">{data.late_documented}</strong>.
-      </p>
     </section>
   )
 }
