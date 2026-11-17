@@ -217,3 +217,28 @@ def test_invalid_overlapping_schedule_is_rejected(world, client_for):
     )
     assert response.status_code == 400
     assert WorkSchedule.objects.get(doctor=world.doctor).version == 1
+
+
+def test_doctor_reactivation_creates_new_conversation_without_reusing_old_chat(world):
+    original = ensure_conversation(world.patient.id)
+    world.doctor.is_active = False
+    world.doctor.save()
+    waiting = ensure_conversation(world.patient.id)
+    assert waiting.doctor_id is None and waiting.id != original.id
+    world.doctor.is_active = True
+    world.doctor.save()
+    restored = ensure_conversation(world.patient.id)
+    assert restored.id not in {original.id, waiting.id}
+    assert restored.assignment_id == world.assignment.id
+
+
+def test_mismatched_doctor_organization_cannot_keep_chat_access(world, client_for):
+    conversation = ensure_conversation(world.patient.id)
+    world.doctor.organization = world.other_hospital
+    world.doctor.save()
+    assert (
+        client_for(world.doctor)
+        .get(f"/api/v1/conversations/{conversation.id}/messages")
+        .status_code
+        == 404
+    )

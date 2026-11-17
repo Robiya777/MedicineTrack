@@ -16,11 +16,10 @@ from .models import (
     Organization,
     OutboxEvent,
     Patient,
-    PatientAssignment,
     TaskStatus,
     VisitReport,
 )
-from .scopes import coordinator_scope
+from .scopes import active_assignments, coordinator_scope, is_hospital_staff
 
 
 def audit(actor, entity, action, fields=(), request=None):
@@ -36,6 +35,11 @@ def audit(actor, entity, action, fields=(), request=None):
 
 def require_role(user, *roles):
     if user.role not in roles:
+        raise PermissionDenied()
+
+
+def require_hospital_staff(user):
+    if not is_hospital_staff(user):
         raise PermissionDenied()
 
 
@@ -65,11 +69,11 @@ def enqueue(task, event_type, recipients, episode=None, dedupe_prefix=None, conv
 
 @transaction.atomic
 def confirm_discharge(discharge_id, user, request=None):
-    require_role(user, Role.HOSPITAL)
+    require_hospital_staff(user)
     discharge = (
         Discharge.objects.select_for_update(of=("self",))
         .select_related("patient", "hospital")
-        .get(pk=discharge_id, created_by=user)
+        .get(pk=discharge_id, created_by=user, hospital_id=user.organization_id)
     )
     if discharge.status == Discharge.Status.CONFIRMED:
         return discharge.task, False
@@ -80,17 +84,9 @@ def confirm_discharge(discharge_id, user, request=None):
         raise ValidationError({"recommendations": "Tavsiyalar va kuzatuv asosi majburiy."})
     patient = Patient.objects.select_for_update().get(pk=discharge.patient_id)
     assignment = (
-        PatientAssignment.objects.select_related("doctor__organization", "organization")
-        .filter(
-            patient=patient,
-            valid_to__isnull=True,
-            valid_from__lte=now,
-            doctor__is_active=True,
-            doctor__role=Role.DOCTOR,
-            organization__active=True,
-            organization__type=Organization.Type.CLINIC,
-            organization__territory_id=patient.territory_id,
-        )
+        active_assignments()
+        .select_related("doctor__organization", "organization")
+        .filter(patient=patient)
         .first()
     )
     if assignment and assignment.doctor.organization_id != assignment.organization_id:

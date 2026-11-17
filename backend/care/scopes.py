@@ -1,8 +1,31 @@
-from django.db.models import Q
+from django.db.models import F, Q
+from django.utils import timezone
 
 from accounts.models import Role
 
-from .models import OPEN_STATUSES, CareTask, Discharge, Patient
+from .models import OPEN_STATUSES, CareTask, Discharge, Organization, Patient, PatientAssignment
+
+
+def is_hospital_staff(user):
+    return (
+        user.role in {Role.HOSPITAL, Role.DOCTOR}
+        and user.organization_id is not None
+        and user.organization.active
+        and user.organization.type == Organization.Type.HOSPITAL
+    )
+
+
+def active_assignments():
+    return PatientAssignment.objects.filter(
+        valid_to__isnull=True,
+        valid_from__lte=timezone.now(),
+        doctor__is_active=True,
+        doctor__role=Role.DOCTOR,
+        organization__active=True,
+        organization__type=Organization.Type.CLINIC,
+        doctor__organization_id=F("organization_id"),
+        organization__territory_id=F("patient__territory_id"),
+    )
 
 
 def coordinator_scope(user):
@@ -18,8 +41,10 @@ def coordinator_scope(user):
 
 def tasks_for(user):
     queryset = CareTask.objects.all()
-    if user.role == Role.HOSPITAL:
-        return queryset.filter(discharge__created_by=user)
+    if is_hospital_staff(user):
+        return queryset.filter(
+            discharge__created_by=user, discharge__hospital_id=user.organization_id
+        )
     if user.role == Role.DOCTOR:
         return queryset.filter(assigned_doctor=user)
     if user.role == Role.COORDINATOR:
@@ -31,7 +56,7 @@ def tasks_for(user):
 
 def patients_for(user):
     queryset = Patient.objects.all()
-    if user.role == Role.HOSPITAL:
+    if is_hospital_staff(user):
         return queryset.filter(created_by_org_id=user.organization_id)
     if user.role == Role.PATIENT:
         return queryset.filter(pk=user.patient_id)
@@ -46,6 +71,6 @@ def patients_for(user):
 
 def discharges_for(user):
     queryset = Discharge.objects.all()
-    if user.role == Role.HOSPITAL:
-        return queryset.filter(created_by=user)
+    if is_hospital_staff(user):
+        return queryset.filter(created_by=user, hospital_id=user.organization_id)
     return queryset.filter(task__in=tasks_for(user))

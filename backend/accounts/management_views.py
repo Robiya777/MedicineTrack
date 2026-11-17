@@ -32,6 +32,7 @@ class StaffAccountSerializer(serializers.ModelSerializer):
             "role",
             "organization",
             "is_active",
+            "can_approve_medication_schedule",
             "password",
         ]
         read_only_fields = ["id"]
@@ -50,10 +51,18 @@ class StaffAccountSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": "Parol majburiy."})
         if role != Role.ADMIN and (not organization or not organization.active):
             raise serializers.ValidationError({"organization": "Faol muassasa kerak."})
-        if (role == Role.HOSPITAL and organization.type != Organization.Type.HOSPITAL) or (
-            role == Role.DOCTOR and organization.type != Organization.Type.CLINIC
-        ):
+        if role == Role.HOSPITAL and organization.type != Organization.Type.HOSPITAL:
             raise serializers.ValidationError({"organization": "Muassasa turi rolga mos emas."})
+        if (
+            attrs.get(
+                "can_approve_medication_schedule",
+                getattr(self.instance, "can_approve_medication_schedule", False),
+            )
+            and role != Role.DOCTOR
+        ):
+            raise serializers.ValidationError(
+                {"can_approve_medication_schedule": "Klinik tasdiq ruxsati faqat DOCTOR uchun."}
+            )
         return attrs
 
     def create(self, validated_data):

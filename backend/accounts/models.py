@@ -17,6 +17,7 @@ class Role(models.TextChoices):
 class User(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     role = models.CharField(max_length=16, choices=Role.choices)
+    can_approve_medication_schedule = models.BooleanField(default=False)
     organization = models.ForeignKey(
         "care.Organization", null=True, blank=True, on_delete=models.PROTECT
     )

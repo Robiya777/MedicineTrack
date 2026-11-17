@@ -1,9 +1,11 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied
 
 from accounts.models import Role, User
 from care.models import Patient, PatientAssignment
+from care.scopes import active_assignments
 from care.services import audit, enqueue
 from common.exceptions import Conflict
 
@@ -19,8 +21,7 @@ def conversations_for(user):
         return queryset.filter(
             doctor=user,
             status="OPEN",
-            assignment__valid_to__isnull=True,
-            assignment__valid_from__lte=timezone.now(),
+            assignment__in=active_assignments().filter(doctor=user),
         )
     return queryset.none()
 
@@ -48,17 +49,7 @@ def schedule_snapshot(doctor):
 @transaction.atomic
 def ensure_conversation(patient_id):
     patient = Patient.objects.select_for_update().get(pk=patient_id)
-    assignment = (
-        PatientAssignment.objects.filter(
-            patient=patient,
-            valid_to__isnull=True,
-            valid_from__lte=timezone.now(),
-            doctor__is_active=True,
-            organization__active=True,
-        )
-        .select_related("doctor")
-        .first()
-    )
+    assignment = active_assignments().filter(patient=patient).select_related("doctor").first()
     current = (
         Conversation.objects.select_for_update().filter(patient=patient, status="OPEN").first()
     )
@@ -98,7 +89,7 @@ def change_assignment(patient_id, doctor):
 
 def locked_conversation(pk, user):
     # Lock the patient before the conversation: same order as reassignment.
-    visible = conversations_for(user).get(pk=pk)
+    visible = get_object_or_404(conversations_for(user), pk=pk)
     Patient.objects.select_for_update().get(pk=visible.patient_id)
     conversation = (
         conversations_for(user).select_for_update().select_related("patient").filter(pk=pk).first()

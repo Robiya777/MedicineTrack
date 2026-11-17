@@ -35,6 +35,7 @@ class IdempotencyMixin:
             return
         if not key.strip() or len(key) > 128:
             raise ValidationError({"Idempotency-Key": "1–128 belgi kiriting."})
+        self.check_idempotency_scope(request, *args, **kwargs)
         payload = {}
         for name, value in request.data.items():
             if name not in request.FILES:
@@ -75,6 +76,9 @@ class IdempotencyMixin:
             response["Idempotency-Replayed"] = "true"
             return response
         return super().handle_exception(exc)
+
+    def check_idempotency_scope(self, request, *args, **kwargs):
+        """Revalidate current object permissions before replaying clinical data."""
 
     def finalize_response(self, request, response, *args, **kwargs):
         response = super().finalize_response(request, response, *args, **kwargs)

@@ -359,3 +359,33 @@ def test_reassign_racing_complete_has_only_one_winner(world, task, client_for):
         results = list(pool.map(request, ["complete", "reassign"]))
     assert results.count(200) == 1
     assert any(status in {403, 404, 409} for status in results)
+
+
+def test_reassignment_blocks_cached_response_replay(world, task, client_for):
+    client = client_for(world.doctor)
+    url = f"/api/v1/tasks/{task.id}/accept"
+    assert (
+        client.post(
+            url, {"version": 1}, format="json", HTTP_IDEMPOTENCY_KEY="accept-once"
+        ).status_code
+        == 200
+    )
+    client_for(world.coordinator).post(
+        f"/api/v1/tasks/{task.id}/reassign",
+        {"version": 2, "doctor_id": str(world.doctor2.id), "reason": "Synthetic"},
+        format="json",
+    )
+    assert (
+        client.post(
+            url, {"version": 1}, format="json", HTTP_IDEMPOTENCY_KEY="accept-once"
+        ).status_code
+        == 404
+    )
+
+
+def test_hospital_account_moving_organization_loses_old_discharge_access(world, task, client_for):
+    world.staff.organization = world.other_hospital
+    world.staff.save()
+    client = client_for(world.staff)
+    assert client.get(f"/api/v1/discharges/{world.discharge.id}").status_code == 404
+    assert client.get(f"/api/v1/tasks/{task.id}").status_code == 404

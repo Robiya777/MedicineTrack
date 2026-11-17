@@ -29,9 +29,40 @@ def test_staff_role_requires_matching_organization(world, client_for):
         {
             "username": "invalid.doctor",
             "password": "Synthetic-demo-pass-927!",
-            "role": "DOCTOR",
-            "organization": str(world.hospital.id),
+            "role": "HOSPITAL",
+            "organization": str(world.clinic.id),
         },
         format="json",
     )
     assert response.status_code == 400
+
+
+def test_clinical_permission_is_granted_only_to_doctor(world, client_for):
+    admin = client_for(world.admin)
+    response = admin.patch(
+        f"/api/v1/reference/accounts/{world.staff.id}",
+        {"can_approve_medication_schedule": True},
+        format="json",
+    )
+    assert response.status_code == 400
+    response = admin.patch(
+        f"/api/v1/reference/accounts/{world.doctor.id}",
+        {"can_approve_medication_schedule": True},
+        format="json",
+    )
+    assert response.status_code == 200 and response.data["can_approve_medication_schedule"]
+
+
+def test_admin_can_create_hospital_clinician(world, client_for):
+    response = client_for(world.admin).post(
+        "/api/v1/reference/accounts",
+        {
+            "username": "hospital.clinician",
+            "password": "Synthetic-demo-pass-927!",
+            "role": "DOCTOR",
+            "organization": str(world.hospital.id),
+            "can_approve_medication_schedule": True,
+        },
+        format="json",
+    )
+    assert response.status_code == 201 and response.data["can_approve_medication_schedule"]

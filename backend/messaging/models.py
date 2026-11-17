@@ -7,7 +7,7 @@ from common.models import UUIDModel
 
 class Conversation(UUIDModel):
     patient = models.ForeignKey("care.Patient", on_delete=models.PROTECT)
-    assignment = models.OneToOneField("care.PatientAssignment", null=True, on_delete=models.PROTECT)
+    assignment = models.ForeignKey("care.PatientAssignment", null=True, on_delete=models.PROTECT)
     doctor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.PROTECT)
     status = models.CharField(
         max_length=12, default="OPEN", choices=[("OPEN", "OPEN"), ("CLOSED", "CLOSED")]

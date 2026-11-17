@@ -2,6 +2,7 @@ import os
 import secrets
 import uuid
 from datetime import date, timedelta
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -10,7 +11,10 @@ from django.utils import timezone
 
 from accounts.models import Role, User
 from care.models import Discharge, Organization, Patient, PatientAssignment, Territory
+from care.scopes import active_assignments
 from care.services import confirm_discharge
+from medications.models import MedicationPlan
+from medications.services import approve_plan, create_plan
 from messaging.models import WorkSchedule
 from messaging.services import ensure_conversation
 
@@ -50,7 +54,8 @@ class Command(BaseCommand):
                 username=username, defaults={"role": role, "organization": org}
             )
             user.set_password(password)
-            user.save(update_fields=["password"])
+            user.can_approve_medication_schedule = role == Role.DOCTOR
+            user.save(update_fields=["password", "can_approve_medication_schedule"])
             users[role if username != "demo.doctor2" else "DOCTOR2"] = user
         doctor = users[Role.DOCTOR]
         WorkSchedule.objects.get_or_create(
@@ -106,6 +111,35 @@ class Command(BaseCommand):
                 account.set_password(password)
                 account.save(update_fields=["password"])
                 ensure_conversation(patient.id)
+                if (
+                    not MedicationPlan.objects.filter(discharge=discharge).exists()
+                    and active_assignments().filter(patient=patient, doctor=doctor).exists()
+                ):
+                    day = timezone.now().astimezone(ZoneInfo("Asia/Tashkent")).date()
+                    plan = create_plan(
+                        patient.id,
+                        users[Role.HOSPITAL],
+                        {
+                            "discharge_id": discharge.id,
+                            "items": [
+                                {
+                                    "name": "Demo dori A",
+                                    "prescribed_dose_text": "Sintetik doza (demo)",
+                                    "route": "Sintetik qabul yo‘li",
+                                    "source_reference": "Demo epikriz — sintetik ko‘rsatma",
+                                    "start_date": day - timedelta(days=1),
+                                    "end_date": day + timedelta(days=1),
+                                    "timezone": "Asia/Tashkent",
+                                    "local_times": ["08:00", "20:00"],
+                                }
+                            ],
+                        },
+                    )
+                    approve_plan(
+                        plan.id,
+                        doctor,
+                        {"version": plan.version, "lock_version": plan.lock_version},
+                    )
         self.stdout.write(
             self.style.SUCCESS(
                 "Synthetic accounts: demo.hospital, demo.doctor, demo.doctor2, demo.coordinator, demo.admin, demo.patient"

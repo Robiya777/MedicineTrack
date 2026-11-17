@@ -4,7 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from rest_framework import serializers
 
-from accounts.models import Role, User
+from accounts.models import User
 
 from .models import (
     AIExtraction,
@@ -20,6 +20,7 @@ from .models import (
     Territory,
     VisitReport,
 )
+from .scopes import is_hospital_staff
 
 
 class PatientSerializer(serializers.ModelSerializer):
@@ -100,7 +101,7 @@ class DischargeSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         fields["patient"].queryset = (
             Patient.objects.filter(created_by_org_id=request.user.organization_id)
-            if request and request.user.is_authenticated and request.user.role == Role.HOSPITAL
+            if request and request.user.is_authenticated and is_hospital_staff(request.user)
             else Patient.objects.none()
         )
         fields["replaces"].queryset = (

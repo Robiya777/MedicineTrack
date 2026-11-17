@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: MedicineTrack API
-  version: 0.1.0
+  version: 0.2.0
   description: Synthetic-data demo. Times are UTC; clients display Asia/Tashkent.
 paths:
   /api/v1/ai-extractions/{id}:
@@ -683,6 +683,80 @@ paths:
               schema:
                 $ref: '#/components/schemas/Schedule'
           description: ''
+  /api/v1/dose-occurrences/{id}/record:
+    post:
+      operationId: dose_occurrences_record_create
+      description: Hold the key lock and business changes in the same database transaction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - dose-occurrences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoseRecordInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DoseRecordInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DoseRecordInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoseRecord'
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoseRecord'
+          description: ''
+  /api/v1/dose-records/{id}/corrections:
+    post:
+      operationId: dose_records_corrections_create
+      description: Hold the key lock and business changes in the same database transaction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - dose-records
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DoseCorrectionInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DoseCorrectionInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DoseCorrectionInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DoseRecord'
+          description: ''
   /api/v1/me:
     get:
       operationId: me_retrieve
@@ -696,6 +770,210 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/medication-plans/{id}:
+    get:
+      operationId: medication_plans_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - medication-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationPlan'
+          description: ''
+    patch:
+      operationId: medication_plans_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - medication-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanUpdateInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanUpdateInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPlanUpdateInputRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationPlan'
+          description: ''
+  /api/v1/medication-plans/{id}/approve:
+    post:
+      operationId: medication_plans_approve_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - medication-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanVersionInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanVersionInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanVersionInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationPlan'
+          description: ''
+  /api/v1/medication-plans/{id}/occurrences:
+    get:
+      operationId: medication_plans_occurrences_list
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+      - in: query
+        name: date_to
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: plan_version
+        schema:
+          type: integer
+      - in: query
+        name: scheduled_from
+        schema:
+          type: string
+      - in: query
+        name: scheduled_to
+        schema:
+          type: string
+      tags:
+      - medication-plans
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDoseOccurrenceList'
+          description: ''
+  /api/v1/medication-plans/{id}/revisions:
+    post:
+      operationId: medication_plans_revisions_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - medication-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanUpdateInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanUpdateInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanUpdateInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationPlan'
+          description: ''
+  /api/v1/medication-plans/{id}/stop:
+    post:
+      operationId: medication_plans_stop_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - medication-plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanStopInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanStopInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanStopInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationPlan'
           description: ''
   /api/v1/notifications:
     get:
@@ -886,6 +1164,118 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivationOutput'
+          description: ''
+  /api/v1/patients/{id}/medication-history:
+    get:
+      operationId: patients_medication_history_list
+      parameters:
+      - in: query
+        name: date_from
+        schema:
+          type: string
+      - in: query
+        name: date_to
+        schema:
+          type: string
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: plan_version
+        schema:
+          type: integer
+      tags:
+      - patients
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDoseOccurrenceList'
+          description: ''
+  /api/v1/patients/{id}/medication-plans:
+    get:
+      operationId: patients_medication_plans_list
+      description: Hold the key lock and business changes in the same database transaction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - patients
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMedicationPlanList'
+          description: ''
+    post:
+      operationId: patients_medication_plans_create
+      description: Hold the key lock and business changes in the same database transaction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanCreateInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PlanCreateInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PlanCreateInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicationPlan'
           description: ''
   /api/v1/reference/accounts:
     get:
@@ -1799,7 +2189,7 @@ components:
         channel:
           $ref: '#/components/schemas/ContactChannelEnum'
         result:
-          $ref: '#/components/schemas/ResultEnum'
+          $ref: '#/components/schemas/ContactAttemptResultEnum'
         attempted_at:
           type: string
           format: date-time
@@ -1830,7 +2220,7 @@ components:
         channel:
           $ref: '#/components/schemas/ContactChannelEnum'
         result:
-          $ref: '#/components/schemas/ResultEnum'
+          $ref: '#/components/schemas/ContactAttemptResultEnum'
         attempted_at:
           type: string
           format: date-time
@@ -1851,6 +2241,20 @@ components:
       - note
       - result
       - version
+    ContactAttemptResultEnum:
+      enum:
+      - CONTACTED
+      - NO_ANSWER
+      - WRONG_NUMBER
+      - ADDRESS_NOT_FOUND
+      - REFUSED
+      type: string
+      description: |-
+        * `CONTACTED` - Bog‘lanildi
+        * `NO_ANSWER` - Javobsiz
+        * `WRONG_NUMBER` - Noto‘g‘ri raqam
+        * `ADDRESS_NOT_FOUND` - Manzil topilmadi
+        * `REFUSED` - Rad etdi
     ContactChannelEnum:
       enum:
       - PHONE
@@ -2094,6 +2498,255 @@ components:
       - last_name
       - organization
       - username
+    DoseCorrection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+        result:
+          allOf:
+          - $ref: '#/components/schemas/DoseResultEnum'
+          readOnly: true
+        reported_taken_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        client_recorded_at:
+          type: string
+          format: date-time
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        actor:
+          type: string
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actor
+      - client_recorded_at
+      - created_at
+      - id
+      - note
+      - reason
+      - reported_taken_at
+      - result
+      - version
+    DoseCorrectionInputRequest:
+      type: object
+      properties:
+        plan_version:
+          type: integer
+          minimum: 1
+        result:
+          $ref: '#/components/schemas/DoseResultEnum'
+        reported_taken_at:
+          type: string
+          format: date-time
+          nullable: true
+        client_recorded_at:
+          type: string
+          format: date-time
+        note:
+          type: string
+          default: ''
+          maxLength: 4000
+        version:
+          type: integer
+          minimum: 1
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 4000
+      required:
+      - client_recorded_at
+      - plan_version
+      - reason
+      - result
+      - version
+    DoseOccurrence:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        item:
+          type: string
+          format: uuid
+          readOnly: true
+        item_details:
+          allOf:
+          - $ref: '#/components/schemas/MedicationItem'
+          readOnly: true
+        plan_id:
+          type: string
+          format: uuid
+          readOnly: true
+        plan_version:
+          type: integer
+          readOnly: true
+        plan_status:
+          type: string
+          readOnly: true
+        scheduled_at:
+          type: string
+          format: date-time
+          readOnly: true
+        cancelled_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        cancellation_reason:
+          type: string
+          readOnly: true
+        reminder_enabled:
+          type: boolean
+          readOnly: true
+        status:
+          type: string
+          readOnly: true
+        record:
+          allOf:
+          - $ref: '#/components/schemas/DoseRecord'
+          readOnly: true
+      required:
+      - cancellation_reason
+      - cancelled_at
+      - id
+      - item
+      - item_details
+      - plan_id
+      - plan_status
+      - plan_version
+      - record
+      - reminder_enabled
+      - scheduled_at
+      - status
+    DoseRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        occurrence:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_user:
+          type: string
+          format: uuid
+          readOnly: true
+        result:
+          type: string
+          readOnly: true
+        reported_taken_at:
+          type: string
+          nullable: true
+          readOnly: true
+        client_recorded_at:
+          type: string
+          readOnly: true
+        server_received_at:
+          type: string
+          format: date-time
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+        patient_reported:
+          type: boolean
+          readOnly: true
+          default: true
+        late_recorded:
+          type: boolean
+          readOnly: true
+        recording_delay_seconds:
+          type: number
+          format: double
+          readOnly: true
+        sync_delay_seconds:
+          type: number
+          format: double
+          readOnly: true
+        recorded_against_inactive_plan:
+          type: boolean
+          readOnly: true
+        original:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+        corrections:
+          type: array
+          items:
+            $ref: '#/components/schemas/DoseCorrection'
+          readOnly: true
+      required:
+      - client_recorded_at
+      - corrections
+      - id
+      - late_recorded
+      - note
+      - occurrence
+      - original
+      - patient_reported
+      - patient_user
+      - recorded_against_inactive_plan
+      - recording_delay_seconds
+      - reported_taken_at
+      - result
+      - server_received_at
+      - sync_delay_seconds
+      - version
+    DoseRecordInputRequest:
+      type: object
+      properties:
+        plan_version:
+          type: integer
+          minimum: 1
+        result:
+          $ref: '#/components/schemas/DoseResultEnum'
+        reported_taken_at:
+          type: string
+          format: date-time
+          nullable: true
+        client_recorded_at:
+          type: string
+          format: date-time
+        note:
+          type: string
+          default: ''
+          maxLength: 4000
+      required:
+      - client_recorded_at
+      - plan_version
+      - result
+    DoseResultEnum:
+      enum:
+      - TAKEN
+      - SKIPPED
+      type: string
+      description: |-
+        * `TAKEN` - Ichdim
+        * `SKIPPED` - O‘tkazib yubordim
     Extraction:
       type: object
       properties:
@@ -2181,6 +2834,228 @@ components:
       required:
       - password
       - username
+    MedicationItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          nullable: true
+          maxLength: 250
+        prescribed_dose_text:
+          type: string
+          nullable: true
+          maxLength: 4000
+        route:
+          type: string
+          nullable: true
+          maxLength: 80
+        instructions:
+          type: string
+          maxLength: 4000
+        source_reference:
+          type: string
+          maxLength: 4000
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        timezone:
+          type: string
+          maxLength: 80
+        local_times:
+          type: array
+          items:
+            type: string
+            format: time
+          maxItems: 8
+        schedule_type:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleTypeEnum'
+          default: FIXED_TIMES
+        needs_clarification:
+          type: boolean
+        clarification_reason:
+          type: string
+          maxLength: 4000
+        missing_fields:
+          type: array
+          items: {}
+          readOnly: true
+      required:
+      - id
+      - missing_fields
+    MedicationItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+          maxLength: 250
+        prescribed_dose_text:
+          type: string
+          nullable: true
+          maxLength: 4000
+        route:
+          type: string
+          nullable: true
+          maxLength: 80
+        instructions:
+          type: string
+          maxLength: 4000
+        source_reference:
+          type: string
+          maxLength: 4000
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        timezone:
+          type: string
+          maxLength: 80
+        local_times:
+          type: array
+          items:
+            type: string
+            format: time
+          maxItems: 8
+        schedule_type:
+          allOf:
+          - $ref: '#/components/schemas/ScheduleTypeEnum'
+          default: FIXED_TIMES
+        needs_clarification:
+          type: boolean
+        clarification_reason:
+          type: string
+          maxLength: 4000
+    MedicationPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        discharge:
+          type: string
+          format: uuid
+          readOnly: true
+        series_id:
+          type: string
+          format: uuid
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+          default: 1
+        lock_version:
+          type: integer
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MedicationPlanStatusEnum'
+          readOnly: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationItem'
+          readOnly: true
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+        approved_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        approved_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        supersedes:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        stopped_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        stopped_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        stop_reason:
+          type: string
+          readOnly: true
+        ends_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - approved_at
+      - approved_by
+      - completed_at
+      - created_at
+      - created_by
+      - discharge
+      - ends_at
+      - id
+      - items
+      - lock_version
+      - patient
+      - series_id
+      - status
+      - stop_reason
+      - stopped_at
+      - stopped_by
+      - supersedes
+      - updated_at
+      - version
+    MedicationPlanStatusEnum:
+      enum:
+      - DRAFT
+      - ACTIVE
+      - COMPLETED
+      - STOPPED
+      type: string
+      description: |-
+        * `DRAFT` - Loyiha
+        * `ACTIVE` - Faol
+        * `COMPLETED` - Kurs tugagan
+        * `STOPPED` - To‘xtatilgan
     Message:
       type: object
       properties:
@@ -2382,6 +3257,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Doctor'
+    PaginatedDoseOccurrenceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DoseOccurrence'
+    PaginatedMedicationPlanList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationPlan'
     PaginatedMessageList:
       type: object
       required:
@@ -2627,6 +3548,19 @@ components:
         no_phone_reason:
           type: string
           maxLength: 250
+    PatchedPlanUpdateInputRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        lock_version:
+          type: integer
+          minimum: 1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationItemRequest'
     PatchedStaffAccountRequest:
       type: object
       properties:
@@ -2654,6 +3588,8 @@ components:
           title: Active
           description: Designates whether this user should be treated as active. Unselect
             this instead of deleting accounts.
+        can_approve_medication_schedule:
+          type: boolean
         password:
           type: string
           writeOnly: true
@@ -2735,6 +3671,63 @@ components:
       - birth_date
       - full_name
       - territory
+    PlanCreateInputRequest:
+      type: object
+      properties:
+        discharge_id:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationItemRequest'
+      required:
+      - discharge_id
+    PlanStopInputRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        lock_version:
+          type: integer
+          minimum: 1
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 4000
+      required:
+      - lock_version
+      - reason
+      - version
+    PlanUpdateInputRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        lock_version:
+          type: integer
+          minimum: 1
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedicationItemRequest'
+      required:
+      - lock_version
+      - version
+    PlanVersionInputRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        lock_version:
+          type: integer
+          minimum: 1
+      required:
+      - lock_version
+      - version
     ReassignInputRequest:
       type: object
       properties:
@@ -2797,20 +3790,6 @@ components:
       - id
       - observation
       - performed_at
-    ResultEnum:
-      enum:
-      - CONTACTED
-      - NO_ANSWER
-      - WRONG_NUMBER
-      - ADDRESS_NOT_FOUND
-      - REFUSED
-      type: string
-      description: |-
-        * `CONTACTED` - Bog‘lanildi
-        * `NO_ANSWER` - Javobsiz
-        * `WRONG_NUMBER` - Noto‘g‘ri raqam
-        * `ADDRESS_NOT_FOUND` - Manzil topilmadi
-        * `REFUSED` - Rad etdi
     Schedule:
       type: object
       properties:
@@ -2848,6 +3827,11 @@ components:
           maxLength: 80
         shifts: {}
         exceptions: {}
+    ScheduleTypeEnum:
+      enum:
+      - FIXED_TIMES
+      type: string
+      description: '* `FIXED_TIMES` - FIXED_TIMES'
     SelfReportedStateEnum:
       enum:
       - IMPROVED
@@ -2888,6 +3872,8 @@ components:
           title: Active
           description: Designates whether this user should be treated as active. Unselect
             this instead of deleting accounts.
+        can_approve_medication_schedule:
+          type: boolean
       required:
       - id
       - role
@@ -2919,6 +3905,8 @@ components:
           title: Active
           description: Designates whether this user should be treated as active. Unselect
             this instead of deleting accounts.
+        can_approve_medication_schedule:
+          type: boolean
         password:
           type: string
           writeOnly: true
@@ -3224,7 +4212,11 @@ components:
           format: uuid
           readOnly: true
           nullable: true
+        can_approve_medication_schedule:
+          type: boolean
+          readOnly: true
       required:
+      - can_approve_medication_schedule
       - first_name
       - id
       - last_name

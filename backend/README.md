@@ -1,6 +1,8 @@
 # MedicineTrack backend
 
-REST API, PostgreSQL modellari, JWT sessiyalari, patronaj topshiriqlari, bemor–shifokor xabarlari va Celery fon vazifalari. Barcha backend fayllari shu papkada.
+REST API, PostgreSQL modellari, JWT sessiyalari, patronaj topshiriqlari, bemor–shifokor xabarlari, tasdiqlangan dori jadvallari va Celery fon vazifalari. Barcha backend fayllari shu papkada. API versiyasi 0.2.0; TZ 1.2dagi §24 moduli qo‘shilgan.
+
+Dori jadvali, klinik ruxsat, versiya, offline qayd va klient sync kontrakti: [docs/MEDICATION_API.md](docs/MEDICATION_API.md). Tekshiruv natijalari va qolgan klient sinovlari: [VALIDATION.md](VALIDATION.md).
 
 Texnologiyalar: Python 3.13, Django 5.2, Django REST Framework, PostgreSQL 16, Redis 7, Celery. Aniq paket versiyalari `uv.lock` va `requirements.txt`da.
 
@@ -127,14 +129,15 @@ uv run python manage.py makemigrations --check --dry-run
 uv run python manage.py spectacular --file openapi.yaml --validate --fail-on-warn
 ```
 
-PostgreSQL skripti shu Compose DBni ishga tushiradi va alohida `test_...` bazasida testlarni bajaradi. Parallel confirm, bir xil idempotency kaliti va reassign/complete poygasi PostgreSQLda tekshiriladi; bu uch test SQLite’da skip qilinadi.
+PostgreSQL skripti shu Compose DBni ishga tushiradi va alohida `test_...` bazasida testlarni bajaradi. Parallel confirm, bir xil idempotency kaliti, reassign/complete, dori tasdig‘i, offline qayd hamda stop/revision poygasi PostgreSQLda tekshiriladi; bu olti test SQLite’da skip qilinadi.
 
 Ishlayotgan Docker APIga HTTP sinov (`DEMO_PASSWORD` `.env`da seed bilan bir xil bo‘lishi kerak):
 
 ```bash
 uv run python scripts/smoke_test.py
+uv run python scripts/smoke_medications.py
 ```
 
-Skript sintetik bemor va task yaratadi, AI mock/review, tasdiqlash, biriktirish, qabul qilish, yakunlash, chat va holat yuborishni tekshiradi. Token/parolni chiqarmaydi.
+Birinchi skript sintetik bemor va task yaratadi, AI mock/review, tasdiqlash, biriktirish, qabul qilish, yakunlash, chat va holat yuborishni tekshiradi. Ikkinchisi klinik dori tasdig‘i, occurrences, bemor qaydi, correction, yangi versiya, kech offline tarix va stopni tekshiradi. Ikkalasi ham token/parolni chiqarmaydi. Yangilangan `seed_demo` `demo.patient` uchun sintetik tasdiqlangan dori jadvali ham yaratadi.
 
 Web/APK klientlari, fizik Android QA, tashqi AI provayderi, real SMS/push, public hosting va TZdagi 1000 task/20 parallel foydalanuvchilik yuklama sinovi alohida integratsiya ishlaridir. Lokal test natijalari bu tekshiruvlarning o‘rniga ko‘rsatilmaydi.

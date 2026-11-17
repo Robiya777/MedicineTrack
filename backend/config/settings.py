@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "accounts",
     "care",
     "messaging",
+    "medications",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -131,12 +132,20 @@ SIMPLE_JWT = {
 }
 SPECTACULAR_SETTINGS = {
     "TITLE": "MedicineTrack API",
-    "VERSION": "0.1.0",
+    "VERSION": "0.2.0",
     "DESCRIPTION": "Synthetic-data demo. Times are UTC; clients display Asia/Tashkent.",
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
     "COMPONENT_SPLIT_REQUEST": True,
     "ENUM_NAME_OVERRIDES": {
-        "ContactChannelEnum": [("PHONE", "Telefon"), ("HOME_VISIT", "Uyga tashrif")]
+        "ContactChannelEnum": [("PHONE", "Telefon"), ("HOME_VISIT", "Uyga tashrif")],
+        "DoseResultEnum": [("TAKEN", "Ichdim"), ("SKIPPED", "O‘tkazib yubordim")],
+        "ContactAttemptResultEnum": [
+            ("CONTACTED", "Bog‘lanildi"),
+            ("NO_ANSWER", "Javobsiz"),
+            ("WRONG_NUMBER", "Noto‘g‘ri raqam"),
+            ("ADDRESS_NOT_FOUND", "Manzil topilmadi"),
+            ("REFUSED", "Rad etdi"),
+        ],
     },
 }
 CELERY_BROKER_URL = REDIS_URL or "redis://localhost:6379/0"
@@ -146,6 +155,7 @@ CELERY_TASK_TIME_LIMIT = 40
 CELERY_TASK_SOFT_TIME_LIMIT = 30
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BEAT_SCHEDULE = {
+    "medication-course-completion": {"task": "medications.jobs.complete_courses", "schedule": 60.0},
     "deadlines": {"task": "care.jobs.scan_deadlines", "schedule": 60.0},
     "outbox": {"task": "care.jobs.deliver_outbox", "schedule": 5.0},
     "response-deadlines": {"task": "messaging.jobs.scan_responses", "schedule": 60.0},

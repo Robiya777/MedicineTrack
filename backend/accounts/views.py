@@ -21,6 +21,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from care.models import Patient
+from care.scopes import is_hospital_staff
 from care.services import audit
 
 from .models import ActivationCode, AuthSession, Role, User
@@ -200,7 +201,7 @@ class MeView(APIView):
 class IssueActivationView(APIView):
     @extend_schema(request=ActivationIssueInput, responses=ActivationOutput)
     def post(self, request, pk):
-        if request.user.role != Role.HOSPITAL:
+        if not is_hospital_staff(request.user):
             raise PermissionDenied()
         serializer = ActivationIssueInput(data=request.data)
         serializer.is_valid(raise_exception=True)

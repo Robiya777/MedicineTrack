@@ -31,7 +31,8 @@ from .models import (
     TaskStatus,
     Territory,
 )
-from .scopes import discharges_for, patients_for, tasks_for
+from .permissions import HospitalWritePermission
+from .scopes import discharges_for, is_hospital_staff, patients_for, tasks_for
 from .serializers import (
     AIReviewInput,
     AttachmentSerializer,
@@ -59,6 +60,10 @@ class ScopedViewSet(IdempotencyMixin, viewsets.GenericViewSet):
         r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
     )
 
+    def check_idempotency_scope(self, request, *args, **kwargs):
+        if self.kwargs.get(self.lookup_url_kwarg or self.lookup_field) is not None:
+            self.get_object()
+
 
 class PatientViewSet(
     mixins.CreateModelMixin,
@@ -68,6 +73,7 @@ class PatientViewSet(
     ScopedViewSet,
 ):
     serializer_class = PatientSerializer
+    permission_classes = [HospitalWritePermission]
     http_method_names = ["get", "post", "patch", "head", "options"]
 
     @extend_schema(
@@ -93,7 +99,7 @@ class PatientViewSet(
         return queryset.select_for_update() if self.request.method == "PATCH" else queryset
 
     def perform_create(self, serializer):
-        services.require_role(self.request.user, Role.HOSPITAL)
+        services.require_hospital_staff(self.request.user)
         if self.request.user.organization.type != Organization.Type.HOSPITAL:
             raise PermissionDenied()
         patient = serializer.save(
@@ -102,7 +108,7 @@ class PatientViewSet(
         services.audit(self.request.user, patient, "PATIENT_CREATED", request=self.request)
 
     def perform_update(self, serializer):
-        services.require_role(self.request.user, Role.HOSPITAL)
+        services.require_hospital_staff(self.request.user)
         patient = serializer.instance
         if patient.created_by_id != self.request.user.id:
             raise PermissionDenied()
@@ -128,6 +134,7 @@ class DischargeViewSet(
     ScopedViewSet,
 ):
     serializer_class = DischargeSerializer
+    permission_classes = [HospitalWritePermission]
     http_method_names = ["get", "post", "patch", "head", "options"]
 
     def get_queryset(self):
@@ -142,14 +149,14 @@ class DischargeViewSet(
         return queryset
 
     def perform_create(self, serializer):
-        services.require_role(self.request.user, Role.HOSPITAL)
+        services.require_hospital_staff(self.request.user)
         if self.request.user.organization.type != Organization.Type.HOSPITAL:
             raise PermissionDenied()
         obj = serializer.save(created_by=self.request.user, hospital=self.request.user.organization)
         services.audit(self.request.user, obj, "DISCHARGE_DRAFT_CREATED", request=self.request)
 
     def perform_update(self, serializer):
-        services.require_role(self.request.user, Role.HOSPITAL)
+        services.require_hospital_staff(self.request.user)
         if serializer.instance.status != Discharge.Status.DRAFT:
             raise Conflict("Tasdiqlangan yozuvga faqat tuzatish qo‘shiladi.")
         serializer.save()
@@ -171,7 +178,7 @@ class DischargeViewSet(
     @extend_schema(request=UploadInput, responses=AttachmentSerializer)
     @action(detail=True, methods=["post"], parser_classes=[MultiPartParser])
     def attachments(self, request, pk=None):
-        services.require_role(request.user, Role.HOSPITAL)
+        services.require_hospital_staff(request.user)
         discharge = self.get_object()
         if discharge.status != Discharge.Status.DRAFT:
             raise Conflict("Faqat loyiha chiqarishga fayl yuklanadi.")
@@ -208,7 +215,7 @@ class DischargeViewSet(
     @extend_schema(request=CorrectionSerializer, responses=CorrectionSerializer)
     @action(detail=True, methods=["post"])
     def corrections(self, request, pk=None):
-        services.require_role(request.user, Role.HOSPITAL)
+        services.require_hospital_staff(request.user)
         discharge = self.get_object()
         if discharge.status != Discharge.Status.CONFIRMED:
             raise Conflict("Loyiha yozuvni bevosita tahrirlang.")
@@ -223,7 +230,7 @@ class DischargeViewSet(
     @extend_schema(request=ExtractionInput, responses=ExtractionSerializer)
     @action(detail=True, methods=["post"], url_path="ai-extractions")
     def ai_extractions(self, request, pk=None):
-        services.require_role(request.user, Role.HOSPITAL)
+        services.require_hospital_staff(request.user)
         discharge = self.get_object()
         if discharge.status != Discharge.Status.DRAFT:
             raise Conflict("AI tekshiruvi faqat loyiha chiqarish uchun.")
@@ -394,7 +401,7 @@ class ExtractionViewSet(mixins.RetrieveModelMixin, ScopedViewSet):
     serializer_class = ExtractionSerializer
 
     def get_queryset(self):
-        if self.request.user.role != Role.HOSPITAL:
+        if not is_hospital_staff(self.request.user):
             return AIExtraction.objects.none()
         return AIExtraction.objects.filter(discharge__created_by=self.request.user)
 
@@ -525,7 +532,10 @@ class DoctorViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, ScopedView
 
     def get_queryset(self):
         queryset = User.objects.filter(
-            role=Role.DOCTOR, is_active=True, organization__active=True
+            role=Role.DOCTOR,
+            is_active=True,
+            organization__active=True,
+            organization__type=Organization.Type.CLINIC,
         ).order_by("username")
         user = self.request.user
         if user.role == Role.ADMIN:

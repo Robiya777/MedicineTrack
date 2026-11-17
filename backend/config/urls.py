@@ -25,9 +25,19 @@ from care.views import (
     TerritoryViewSet,
 )
 from common.health import live, ready
+from medications.views import (
+    DoseOccurrenceViewSet,
+    DoseRecordViewSet,
+    MedicationHistoryView,
+    MedicationPlanViewSet,
+    PatientPlansView,
+)
 from messaging.views import ConversationViewSet, ScheduleView, UnansweredView
 
 router = SimpleRouter(trailing_slash=False)
+router.register("medication-plans", MedicationPlanViewSet, basename="medication-plan")
+router.register("dose-occurrences", DoseOccurrenceViewSet, basename="dose-occurrence")
+router.register("dose-records", DoseRecordViewSet, basename="dose-record")
 router.register("reference/accounts", StaffAccountViewSet, basename="staff-account")
 router.register("patients", PatientViewSet, basename="patient")
 router.register("discharges", DischargeViewSet, basename="discharge")
@@ -40,6 +50,8 @@ router.register("reference/doctors", DoctorViewSet, basename="doctor")
 router.register("conversations", ConversationViewSet, basename="conversation")
 
 urlpatterns = [
+    path("api/v1/patients/<uuid:pk>/medication-plans", PatientPlansView.as_view()),
+    path("api/v1/patients/<uuid:pk>/medication-history", MedicationHistoryView.as_view()),
     path("health/live", live),
     path("health/ready", ready),
     path("api/v1/auth/csrf", CSRFView.as_view()),
