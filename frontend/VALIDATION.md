@@ -76,3 +76,29 @@ quyidagilar tekshirildi.
 Bitta taskning webdan Android APKda yakunlanishi qolgan integratsiya sinovi.
 Ushbu kompyuterda sozlangan AVD va ishlaydigan Java muhiti aniqlanmadi.
 Uch rolning web orqali bir xil backend bilan ishlashi yuqorida tekshirildi.
+
+## Dizayn 1–2-bosqich — 2026-11-18
+
+Teal va mint koordinator preview’si sintetik ma’lumot bilan Chromiumda tekshirildi.
+
+- Galereyadan /design/medicinetrack/queue ochildi. 24 ta sintetik yozuv,
+  14 aktiv, 3 mas’ulsiz, 2 kechikkan va 70% (7/10) ko‘rsatkichlari
+  shu datasetdan hisoblandi.
+- Holat, shifokor va muassasa filtrlari, mos yozuv bo‘lmagan holat, filtrni
+  tozalash, sahifalash va muddat bo‘yicha ikki tomonlama saralash o‘tdi.
+- Tafsilotda to‘liq ID ochildi va nusxalandi. Escape bilan dialog yopildi
+  va fokus uni ochgan tugmaga qaytdi. Mobil menyuda ham shu xatti-harakat tekshirildi.
+- Yuklanish, bo‘sh ro‘yxat va xato holatlari, xatodan qayta urinish tekshirildi.
+- 1440, 1024, 768 va 360 px ekranlarda skrinshot olindi. Gorizontal surilish yo‘q.
+  Desktop va mobil skrinshotlar vizual tekshirildi. 800×360 landscape ham tekshirildi.
+- Mobil menyu, filtrlarni ochish va tafsilot oynasi ishladi. Ko‘rinadigan
+  interaktiv elementlarning o‘lchamlari tekshirildi.
+- Reduced motion yoqilganda refresh animatsiyasi o‘chdi.
+- Yetti asosiy matn/fon juftligining hisoblangan kontrasti 4.5:1dan yuqori chiqdi.
+- Original clinical dizayn varianti va login ochildi. Preview CSS doirasi,
+  yangi variantning qo‘llanadigan queue yo‘li va preview paytida API so‘rovlari
+  yuborilmasligi tekshirildi.
+- npm run lint, TypeScript va build o‘tdi.
+
+Bu dizaynni ko‘rib kelishish uchun alohida preview. Ishchi kabinetlarga
+dizayn integratsiyasi keyingi bosqichning qabul ssenariylari bilan tekshiriladi.

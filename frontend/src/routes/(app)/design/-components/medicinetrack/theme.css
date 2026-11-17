@@ -84,6 +84,7 @@
   font-weight: 650;
 }
 .mt-field { display: grid; gap: 6px; min-width: 0; }
+.mt-field > label,
 .mt-field > span { color: var(--mt-muted); font-size: 13px; font-weight: 500; }
 .mt-input {
   width: 100%;

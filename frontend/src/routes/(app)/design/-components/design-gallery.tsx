@@ -1,10 +1,11 @@
 import { Link } from '@tanstack/react-router'
-import { Activity, ArrowLeft, ArrowRight, CircleCheck, Columns2, GitCompareArrows, LayoutDashboard, Moon, PanelsTopLeft } from 'lucide-react'
+import { Activity, ArrowLeft, ArrowRight, CircleCheck, Columns2, GitCompareArrows, HeartPulse, LayoutDashboard, Moon, PanelsTopLeft } from 'lucide-react'
 import { screens, variantIds, variants } from './catalog'
 import type { VariantId } from './catalog'
 import './design.css'
+import './medicinetrack/preview.css'
 
-const icons = { clinical: LayoutDashboard, operations: Columns2, portal: PanelsTopLeft, night: Moon, guided: CircleCheck }
+const icons = { medicinetrack: HeartPulse, clinical: LayoutDashboard, operations: Columns2, portal: PanelsTopLeft, night: Moon, guided: CircleCheck }
 
 export function DesignGallery() {
   return <div className="d-gallery">
@@ -16,9 +17,9 @@ export function DesignGallery() {
       <div className="d-gallery-intro">
         <div>
           <h1>Web dizayn variantlari</h1>
-          <p>Bir xil ish jarayonini beshta dizaynda ko‘rib chiqing. Kabinetlar orasida o‘ting, demo amallarni sinang va ochiq ekranni boshqa variantga almashtiring.</p>
+          <p>MedicineTrack uchun dizayn variantlarini ko‘rib chiqing. Kelishilgan teal va mint yo‘nalishida koordinator preview’si tayyor.</p>
         </div>
-        <div className="d-gallery-count"><GitCompareArrows size={20} aria-hidden /><span>5 variant<br /><strong>{Object.keys(screens).length} ta ekran</strong></span></div>
+        <div className="d-gallery-count"><GitCompareArrows size={20} aria-hidden /><span>{variantIds.length} variant<br /><strong>{Object.keys(screens).length} ta ekran</strong></span></div>
       </div>
       <div className="d-gallery-grid">
         {variantIds.map((id) => {

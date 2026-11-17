@@ -64,3 +64,16 @@ Natija, urinishlar va hodisalar chaqiruv tarixida ko‘rinadi.
 `409` konfliktida joriy vazifa qayta olinadi. Forma saqlangan holda
 **Joriy holat bilan davom etish** orqali yangi versiyani tekshirib davom etiladi.
 Eski shifokor ruxsati bekor bo‘lsa, tafsilot o‘rnida ruxsat xabari ko‘rsatiladi.
+
+## Yangi teal va mint dizayn preview’si
+
+Dev serverda `/design/medicinetrack/queue`ni oching. Bu 1–2-dizayn bosqichi
+uchun koordinatorning sintetik preview’si. Jadval holatlari, shifokor/muassasa
+filtrlari, muddat bo‘yicha saralash, sahifalash va tafsilot oynasi ishlaydi.
+Mobil menyu kichik ekranda ochiladi. **Preview holatlari** orqali yuklanish,
+bo‘sh ro‘yxat va xato ko‘rinishlarini sinang.
+
+Ranglar, tipografiya va o‘lchamlar [dizayn asosida](docs/DESIGN_SYSTEM.md)
+yozilgan. CSS `.mt-preview` konteyneriga tegishli. Kelishilgan preview keyingi
+bosqichda ishchi kabinetlarga ulanadi. Production preview uchun mavjud
+`VITE_ENABLE_DESIGN_PREVIEW=true` sozlamasi ishlatiladi.
