@@ -1,7 +1,5 @@
 import { workspaces } from '../../../../../components/workspaces'
 import { useSessionStore } from '../../../../../state/session'
-
-
 import { HospitalDashboard } from './hospital-dashboard'
 
 export function WorkspacePage() {

@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import { useState, type SubmitEvent } from 'react'
 import {
   hospitalQueryKeys, saveDischarge, type Discharge, type DischargeInput, type HospitalPatient,
@@ -50,7 +51,10 @@ export function DischargeForm({ patient, draft, onSaved, cancel }: {
       queryClient.setQueryData(hospitalQueryKeys.discharge(saved.id), saved)
       void queryClient.invalidateQueries({ queryKey: hospitalQueryKeys.discharges })
       onSaved(saved)
-    } catch {
+    } catch (error) {
+      if (draft && isAxiosError(error) && error.response?.status === 409) {
+        void queryClient.invalidateQueries({ queryKey: hospitalQueryKeys.discharge(draft.id) })
+      }
       // React Query keeps the error and the form values stay available for a retry.
     }
   }

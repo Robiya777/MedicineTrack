@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
+import { isAxiosError } from 'axios'
 import { ArrowLeft, Check } from 'lucide-react'
 import { useState } from 'react'
 import {
@@ -53,7 +54,10 @@ function DischargeSummary({ discharge }: { discharge: Discharge }) {
       } satisfies Discharge)
       void queryClient.invalidateQueries({ queryKey: hospitalQueryKeys.discharge(discharge.id) })
       void queryClient.invalidateQueries({ queryKey: hospitalQueryKeys.discharges })
-    } catch {
+    } catch (error) {
+      if (isAxiosError(error) && error.response?.status === 409) {
+        void queryClient.invalidateQueries({ queryKey: hospitalQueryKeys.discharge(discharge.id) })
+      }
       // Keep the summary and retry the same confirmation if the response was lost.
     }
   }
