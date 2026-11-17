@@ -6,7 +6,9 @@ Statsionardan chiqarilgan og‘ir bemorni hududiy oilaviy shifokorga avtomatik t
 
 - [Batafsil texnik topshiriq — TZ (o‘zbekcha)](docs/TECHNICAL_SPEC_UZ.md)
 
-Hozirgi repo bosqichi: texnik rejalashtirish. Ishlaydigan web, backend va APK hali ushbu commit tarkibiga kirmaydi.
+Repo tarkibida [backend](backend/README.md) va unga ulangan [Android prototip](android/README.md) mavjud. Androidda bemor/shifokor kirishi, patronaj, chat, holat va dori eslatmalari tekshirilgan. Bu to‘liq TZ yoki production tayyorligi tasdig‘i emas.
+
+Androidning tekshiruv dalillari va cheklovlari: [VALIDATION](android/VALIDATION.md).
 
 ## Jamoa
 
