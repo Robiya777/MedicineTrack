@@ -128,3 +128,27 @@ HttpOnly cookie’da qoladi. Frontend yangilangach avvalgi umumiy cookie sessiya
 bilan ishlayotgan vkladkalarda qayta kirish kerak.
 
 Bu imkoniyat uchun backenddagi `tab_id` qo‘llovi ham yangilangan bo‘lishi kerak.
+
+## 5-bosqich: dori jadvali
+
+Statsionar chiqarish tafsilotida **Yangi dori jadvali** orqali mavjud ko‘rsatma
+asosida loyiha tuzadi. Dori nomi, doza matni, qabul yo‘li, manba, kurs, vaqt zonasi
+va aniq qabul vaqtlari kiritiladi. Noaniq ko‘rsatma aniqlashtirish uchun belgilanadi.
+Loyiha bemorga ko‘rinmaydi va eslatma yaratmaydi.
+
+Shifokor chaqiruv tafsilotidagi **Dori jadvali va qabul tarixi** orqali yoki yon
+menyudagi **Dori jadvali**dan bemor UUIDsi bilan kiradi. Klinik ruxsati mavjud
+shifokor to‘liq jadvalni tekshirib tasdiqlaydi. Faol jadval yangi versiya bilan
+almashtiriladi yoki sabab bilan to‘xtatiladi. Versiya konflikti paytida forma
+saqlanadi; yopib, Yangilash orqali joriy yozuvni tekshiring.
+
+Bemor yon menyudagi **Dori jadvali**da tanlangan sana uchun server hisoblagan
+qabullarni ko‘radi. Muddati kelgan qabulga **Ichdim / O‘tkazib yubordim** qaydi
+kiritadi. Qayd faqat server tasdiqlagach saqlangan hisoblanadi. Xato qaydga
+majburiy sabab bilan tuzatish kiritiladi; original saqlanadi. Shifokor bemor
+bildirgan tarixni ko‘radi, bemor o‘rniga qayd kiritmaydi.
+
+Webda lokal fon notification yoki doimiy offline navbat yaratilmagan. Bu APK
+vazifasi; fizik qurilmadagi eslatma → qayd → web tarixi sinovi Android jamoasi
+bilan alohida bajariladi. API va versiya qoidalari backendning
+[MEDICATION_API.md](../backend/docs/MEDICATION_API.md) hujjatida.

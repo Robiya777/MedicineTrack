@@ -1,3 +1,4 @@
+import {MedicationPanel} from '../../../../../../../features/medications/patient-medications'
 import { PatientActivation } from '../../../../../../../features/messaging/activation'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getRouteApi, Link } from '@tanstack/react-router'
@@ -122,6 +123,7 @@ function DischargeSummary({ discharge }: { discharge: Discharge }) {
         )}
       </section>
       <PatientActivation patientId={discharge.patient} />
+      <MedicationPanel patientId={discharge.patient} dischargeId={discharge.id}/>
       {discharge.status === 'CONFIRMED' && <LinkedTask discharge={discharge} />}
     </>
   )

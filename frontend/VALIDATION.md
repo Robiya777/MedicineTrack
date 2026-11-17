@@ -178,3 +178,12 @@ bilan tekshirildi. Ular alohida incognito context emas.
 - Refresh cookie’lari HttpOnly va auth path bilan cheklangan; document.cookie
   orqali ko‘rinmadi. Tokenlar SessionStorage yoki LocalStorage’ga yozilmadi.
 - Lint, TypeScript va production build o‘tdi.
+
+## Funksional 5-bosqich — 2026-11-18
+
+Dori loyihasi, klinik approve, revision/stop, bemor qabuli, sababli correction
+va shifokor tarixi ulandi. Uch rolning bitta backenddagi web oqimi tekshirildi.
+Record javobi yo‘qolganda bir xil payload va kalit bilan retry o‘tdi.
+Backend medication regressiyasi: 36 passed, 3 PostgreSQL-specific skipped.
+Web/API dalillari va APK bilan qolgan sinovlar
+[5-bosqich hisobotida](docs/STAGE5_ACCEPTANCE.md) ajratilgan.
