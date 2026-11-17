@@ -114,3 +114,17 @@ sinovda backend papkasida `python manage.py process_jobs` bir martalik siklni
 bajaradi. Ishchi serverni sozlash [backend yo‘riqnomasida](../backend/README.md).
 
 Qabul sinovlari [4-bosqich hisobotida](docs/STAGE4_ACCEPTANCE.md) keltirilgan.
+
+## Bir brauzerda bir nechta akkaunt
+
+Har bir vkladka alohida sessiya ishlatadi. Birida `demo.doctor`, ikkinchisida
+`demo.patient` bilan kirish mumkin. Sahifani yangilash shu vkladkaning akkauntini
+tiklaydi. Chiqish faqat shu vkladkadagi sessiyani bekor qiladi.
+
+Yangi vkladka o‘z loginini so‘raydi. Web Locks mavjud brauzerlarda nusxalangan
+vkladkaning ko‘chirilgan identifikatori ham ajratiladi. SessionStorage’da faqat
+random vkladka identifikatori turadi; access token xotirada, refresh token esa
+HttpOnly cookie’da qoladi. Frontend yangilangach avvalgi umumiy cookie sessiyasi
+bilan ishlayotgan vkladkalarda qayta kirish kerak.
+
+Bu imkoniyat uchun backenddagi `tab_id` qo‘llovi ham yangilangan bo‘lishi kerak.
