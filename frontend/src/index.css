@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --color-surface: #f4f8f8;
+  --color-line: #cbdada;
+  --color-ink: #172b35;
+  --color-muted: #4c636b;
+  --color-action: #075b68;
+  --color-ready: #16634b;
+  --color-warning: #8b411e;
+}
+
+@layer base {
+  body {
+    @apply min-h-screen bg-surface font-sans text-ink antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-4 outline-action;
+  }
+}
