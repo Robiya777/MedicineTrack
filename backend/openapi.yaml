@@ -126,6 +126,17 @@ paths:
       operationId: auth_logout_create
       tags:
       - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TabSessionInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TabSessionInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TabSessionInputRequest'
       security:
       - jwtAuth: []
       responses:
@@ -2819,6 +2830,9 @@ components:
     LoginInputRequest:
       type: object
       properties:
+        tab_id:
+          type: string
+          format: uuid
         username:
           type: string
           minLength: 1
@@ -3747,6 +3761,9 @@ components:
     RefreshInputRequest:
       type: object
       properties:
+        tab_id:
+          type: string
+          format: uuid
         refresh:
           type: string
           minLength: 1
@@ -3985,6 +4002,12 @@ components:
       - note
       - observed_at
       - self_reported_state
+    TabSessionInputRequest:
+      type: object
+      properties:
+        tab_id:
+          type: string
+          format: uuid
     Task:
       type: object
       properties:

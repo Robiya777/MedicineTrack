@@ -141,3 +141,12 @@ uv run python scripts/smoke_medications.py
 Birinchi skript sintetik bemor va task yaratadi, AI mock/review, tasdiqlash, biriktirish, qabul qilish, yakunlash, chat va holat yuborishni tekshiradi. Ikkinchisi klinik dori tasdig‘i, occurrences, bemor qaydi, correction, yangi versiya, kech offline tarix va stopni tekshiradi. Ikkalasi ham token/parolni chiqarmaydi. Yangilangan `seed_demo` `demo.patient` uchun sintetik tasdiqlangan dori jadvali ham yaratadi.
 
 Web/APK klientlari, fizik Android QA, tashqi AI provayderi, real SMS/push, public hosting va TZdagi 1000 task/20 parallel foydalanuvchilik yuklama sinovi alohida integratsiya ishlaridir. Lokal test natijalari bu tekshiruvlarning o‘rniga ko‘rsatilmaydi.
+
+### Vkladka uchun web sessiyasi
+
+Web login va refresh tanasi ixtiyoriy `tab_id` UUID qabul qiladi. Shu qiymat
+berilsa, refresh token `refresh_token_<UUID hex>` nomli HttpOnly cookie’da
+saqlanadi. Refresh faqat tanlangan cookie’ni o‘qiydi, umumiy cookie’ga tushmaydi.
+Logout tanasi ham shu `tab_id`ni qabul qilib, faqat shu cookie’ni o‘chiradi.
+CSRF, Secure/SameSite, token rotatsiyasi va qayta ishlatishni bloklash saqlanadi.
+`tab_id` berilmagan eski web mijozlar hamda Android token oqimi mos qoladi.

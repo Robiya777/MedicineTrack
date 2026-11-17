@@ -31,6 +31,7 @@ from .serializers import (
     ActivationOutput,
     LoginInput,
     RefreshInput,
+    TabSessionInput,
     TokenOutput,
     UserSerializer,
 )
@@ -55,7 +56,12 @@ def csrf_check(request):
         raise PermissionDenied("CSRF tekshiruvi bajarilmadi.")
 
 
-def mint_tokens(session):
+def refresh_cookie_name(tab_id=None):
+    # A selector is not a credential. The token stays HttpOnly, scoped to auth URLs.
+    return f"refresh_token_{tab_id.hex}" if tab_id else "refresh_token"
+
+
+def mint_tokens(session, tab_id=None):
     refresh = RefreshToken.for_user(session.user)
     refresh["sid"] = str(session.id)
     refresh.set_exp(from_time=session.created_at, lifetime=timedelta(days=7))
@@ -67,7 +73,7 @@ def mint_tokens(session):
     response = Response(result)
     if session.client == "web":
         response.set_cookie(
-            "refresh_token",
+            refresh_cookie_name(tab_id),
             str(refresh),
             httponly=True,
             secure=settings.COOKIE_SECURE,
@@ -132,7 +138,7 @@ class LoginView(PublicAuthView):
             session = AuthSession.objects.create(
                 user=user, client=data["client"], expires_at=timezone.now() + timedelta(days=7)
             )
-            return mint_tokens(session)
+            return mint_tokens(session, data.get("tab_id"))
 
 
 class RefreshView(PublicAuthView):
@@ -144,7 +150,10 @@ class RefreshView(PublicAuthView):
     def post(self, request):
         serializer = RefreshInput(data=request.data)
         serializer.is_valid(raise_exception=True)
-        raw = serializer.validated_data.get("refresh") or request.COOKIES.get("refresh_token")
+        tab_id = serializer.validated_data.get("tab_id")
+        raw = serializer.validated_data.get("refresh") or request.COOKIES.get(
+            refresh_cookie_name(tab_id)
+        )
         try:
             token = RefreshToken(raw or "")
         except TokenError as exc:
@@ -176,19 +185,26 @@ class RefreshView(PublicAuthView):
                 return auth_failure(
                     request, "Refresh token qayta ishlatilgan yoki akkaunt bloklangan."
                 )
-            return mint_tokens(session)
+            return mint_tokens(session, tab_id)
 
 
 class LogoutView(APIView):
-    @extend_schema(request=None, responses={204: None})
+    @extend_schema(request=TabSessionInput, responses={204: None})
     def post(self, request):
+        serializer = TabSessionInput(data=request.data)
+        serializer.is_valid(raise_exception=True)
         session = AuthSession.objects.get(pk=request.auth["sid"])
         if session.client == "web":
             csrf_check(request)
         session.revoked_at = timezone.now()
         session.save(update_fields=["revoked_at"])
         response = Response(status=204)
-        response.delete_cookie("refresh_token", path="/api/v1/auth", samesite="Lax")
+        if session.client == "web":
+            response.delete_cookie(
+                refresh_cookie_name(serializer.validated_data.get("tab_id")),
+                path="/api/v1/auth",
+                samesite="Lax",
+            )
         return response
 
 

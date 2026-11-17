@@ -54,3 +54,15 @@ Patronaj, chat va dori uchta alohida jarayon ekanligi testda tekshirilgan: qabul
 - Public HTTPS hosting, backup/restore amaliyoti, SMS/push va real tibbiy ma’lumot bilan pilot.
 
 Lokal manzil va demo paroli `.env`da. U Gitdan chiqarilgan. Ishga tushirish va qayta tekshirish buyruqlari `README.md`da.
+
+## Tab-isolated web sessions — 2026-11-18
+
+- Added optional UUID tab_id to web login/refresh/logout; each selector uses a
+  separate HttpOnly cookie. Unknown selectors never fall back to the legacy cookie.
+- Verified two accounts share one browser cookie jar, retain identities after
+  reload/rotation, and logout deletes only the selected tab cookie/session.
+- Verified Secure/HttpOnly cookie attributes, CSRF enforcement, legacy web and
+  Android auth compatibility through the existing auth regression suite.
+- Full SQLite suite: 87 passed, 6 skipped (PostgreSQL-specific checks).
+- Chromium tested two pages in one context, forced access expiry, separate logout,
+  a fresh tab and a window.open copy of sessionStorage. All passed.

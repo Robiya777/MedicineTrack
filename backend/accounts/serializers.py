@@ -19,13 +19,17 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class LoginInput(serializers.Serializer):
+class TabSessionInput(serializers.Serializer):
+    tab_id = serializers.UUIDField(required=False)
+
+
+class LoginInput(TabSessionInput):
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(write_only=True, trim_whitespace=False)
     client = serializers.ChoiceField(choices=["web", "android"], default="android")
 
 
-class RefreshInput(serializers.Serializer):
+class RefreshInput(TabSessionInput):
     refresh = serializers.CharField(required=False)
 
 
