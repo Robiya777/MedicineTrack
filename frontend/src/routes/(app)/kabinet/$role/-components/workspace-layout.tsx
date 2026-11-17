@@ -1,3 +1,4 @@
+import {NotificationBell} from '../../../../../components/notification-bell'
 import {
   Link,
   Navigate,
@@ -161,7 +162,7 @@ export function WorkspaceLayout() {
             <Building2 size={18} aria-hidden="true" />
             <span>{workspace.title}</span>
           </div>
-          <div className="mt-profile">
+          <div className="flex items-center gap-3"><NotificationBell/><div className="mt-profile">
             <span className="mt-avatar" aria-hidden="true">
               {initials}
             </span>
@@ -169,7 +170,7 @@ export function WorkspaceLayout() {
               <strong>{fullName}</strong>
               <span>{workspace.label}</span>
             </div>
-          </div>
+          </div></div>
         </header>
         <main id="workspace-content" tabIndex={-1} className="mt-main">
           {error && (

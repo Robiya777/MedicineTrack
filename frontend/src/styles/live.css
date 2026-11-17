@@ -336,3 +336,7 @@
 @media(max-width:639px) { .mt-conversation-card { flex-wrap: wrap; padding: 16px; gap: 12px; } .mt-message { max-width: 95%; } }
 .mt-interval { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; align-items: end; gap: 12px; }
 @media(max-width:639px) { .mt-interval { grid-template-columns: minmax(0,1fr); } .mt-interval > button { justify-self: start; } }
+.mt-notification-trigger { position: relative; }
+.mt-notification-count { position: absolute; top: -6px; right: -6px; border-radius: 10px; min-width: 21px; padding: 2px 4px; background: var(--mt-danger); color: white; font-size: 11px; line-height: 16px; }
+.mt-notification-error { color: var(--mt-danger); font-weight: 700; }
+@media(max-width:639px) { .mt-live .mt-topbar-location { font-size: 11px; } }

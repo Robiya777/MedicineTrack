@@ -151,6 +151,7 @@ function TaskDetails({ task }: { task: HospitalTask }) {
           : 'Mas’ul biriktirilmagan' },
         { label: 'Patronaj muddati (Toshkent)', value: formatTashkentDateTime(task.due_at) },
       ]} />
+      {!task.assigned_doctor && <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Chaqiruv hali shifokorga tayinlanmagan. Koordinator uni mas’ul shifokorga biriktirishi kerak.</p>}
       {task.overdue && <p className="rounded-lg bg-amber-50 p-3 text-sm font-medium text-amber-900">Patronaj muddati o‘tgan.</p>}
     </section>
   )
