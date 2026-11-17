@@ -7,7 +7,7 @@ export function TaskHistory({ task }: { task: CareTask }) {
   return (
     <>
       {task.contact_attempts.length > 0 && (
-        <section aria-labelledby="contact-title" className="space-y-4 rounded-xl border border-line bg-white p-5 sm:p-6">
+        <section aria-labelledby="contact-title" className="space-y-4 mt-card p-5 sm:p-6">
           <h2 id="contact-title" className="text-xl font-semibold">Aloqa urinishlari</h2>
           <ol className="space-y-5">
             {task.contact_attempts.map((attempt) => (
@@ -25,7 +25,7 @@ export function TaskHistory({ task }: { task: CareTask }) {
         </section>
       )}
       {task.report && (
-        <section aria-labelledby="report-title" className="space-y-5 rounded-xl border border-line bg-white p-5 sm:p-6">
+        <section aria-labelledby="report-title" className="space-y-5 mt-card p-5 sm:p-6">
           <h2 id="report-title" className="text-xl font-semibold">Yakuniy natija</h2>
           <Facts items={[
             { label: 'Aloqa yoki tashrif vaqti (Toshkent)', value: formatTashkentDateTime(task.report.performed_at) },
@@ -39,18 +39,18 @@ export function TaskHistory({ task }: { task: CareTask }) {
         </section>
       )}
       {task.status === 'CANCELLED' && (
-        <section className="space-y-4 rounded-xl border border-line bg-white p-5" aria-labelledby="cancel-title">
+        <section className="space-y-4 mt-card p-5" aria-labelledby="cancel-title">
           <h2 id="cancel-title" className="text-xl font-semibold">Bekor qilish sababi</h2>
           <p className="whitespace-pre-wrap wrap-break-word">{task.cancellation_note}</p>
           {task.cancelled_at && <p className="text-sm text-muted">{formatTashkentDateTime(task.cancelled_at)} (Toshkent)</p>}
         </section>
       )}
-      <section aria-labelledby="timeline-title" className="space-y-4 rounded-xl border border-line bg-white p-5 sm:p-6">
+      <section aria-labelledby="timeline-title" className="space-y-4 mt-card p-5 sm:p-6">
         <h2 id="timeline-title" className="text-xl font-semibold">Chaqiruv tarixi</h2>
         {task.timeline.length === 0 && <p className="text-sm text-muted">Hodisalar hali yo‘q.</p>}
         <ol className="space-y-3">
           {task.timeline.map((event) => (
-            <li key={event.id} className="border-l-2 border-[#a1c3b5] pl-4">
+            <li key={event.id} className="mt-timeline-event">
               <p className="font-medium">{eventLabels[event.action] ?? 'Yozuv yangilandi'}</p>
               <time dateTime={event.created_at} className="text-sm text-muted">{formatTashkentDateTime(event.created_at)} (Toshkent)</time>
             </li>

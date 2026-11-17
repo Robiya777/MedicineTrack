@@ -10,13 +10,13 @@ export function NewDischargePage() {
   const navigate = useNavigate()
 
   return (
-    <section className="space-y-5">
+    <section className="mt-workflow space-y-5">
       <Link to="/kabinet/$role" params={{ role: 'statsionar' }} className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-semibold text-action">
         <ArrowLeft size={17} aria-hidden="true" />
         Chiqarishlarga qaytish
       </Link>
       <h1 className="text-3xl font-semibold tracking-tight">Yangi chiqarish</h1>
-      <ol aria-label="Chiqarish bosqichlari" className="flex flex-wrap gap-x-5 gap-y-2 border-b border-line pb-3 text-sm text-muted">
+      <ol aria-label="Chiqarish bosqichlari" className="mt-steps">
         <li aria-current={patient ? undefined : 'step'} className={patient ? '' : 'font-semibold text-action'}>
           1. Bemor
         </li>

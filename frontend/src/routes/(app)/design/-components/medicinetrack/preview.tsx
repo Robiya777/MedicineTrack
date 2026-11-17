@@ -90,7 +90,7 @@ export function MedicineTrackPreview() {
   )
 
   return (
-    <div className="mt-preview">
+    <div className="mt-theme mt-preview">
       <a href="#mt-main" className="mt-skip">Asosiy tarkibga o‘tish</a>
       <aside className="mt-sidebar">
         <Brand />

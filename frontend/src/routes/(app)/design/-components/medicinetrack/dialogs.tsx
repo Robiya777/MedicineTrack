@@ -1,44 +1,9 @@
-import { Building2, Check, Copy, MapPin, UserRound, X } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { Building2, Check, Copy, MapPin, UserRound } from 'lucide-react'
+import { useState } from 'react'
+import { Dialog as PreviewDialog } from '../../../../../components/dialog'
+export { PreviewDialog }
 import { previewDate, previewDoctors, previewFacilities, type PreviewTask } from './data'
 import { TaskStatus } from './task-table'
-
-export function PreviewDialog({ title, close, children, drawer = false }: {
-  title: string
-  close: () => void
-  children: ReactNode
-  drawer?: boolean
-}) {
-  const dialog = useRef<HTMLDialogElement>(null)
-  const headingId = useId()
-  useEffect(() => {
-    const node = dialog.current
-    const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    node?.showModal()
-    return () => {
-      node?.close()
-      if (trigger?.isConnected) trigger.focus({ preventScroll: true })
-    }
-  }, [])
-
-  return (
-    <dialog
-      ref={dialog}
-      className={'mt-dialog' + (drawer ? ' mt-drawer' : '')}
-      aria-labelledby={headingId}
-      onCancel={(event) => { event.preventDefault(); close() }}
-      onClick={(event) => { if (event.target === event.currentTarget) close() }}
-    >
-      <div className="mt-dialog-content">
-        <header className="mt-dialog-header">
-          <h2 id={headingId}>{title}</h2>
-          <button type="button" className="mt-button mt-button-quiet mt-icon-button" onClick={close} aria-label="Yopish"><X size={20} /></button>
-        </header>
-        {children}
-      </div>
-    </dialog>
-  )
-}
 
 export function TaskDetailDialog({ task, close }: { task: PreviewTask; close: () => void }) {
   const [copied, setCopied] = useState(false)

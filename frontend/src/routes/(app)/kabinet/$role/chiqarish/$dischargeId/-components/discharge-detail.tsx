@@ -21,7 +21,7 @@ export function DischargeDetail() {
   const discharge = useQuery(dischargeQuery(dischargeId))
 
   return (
-    <section className="space-y-5">
+    <section className="mt-workflow space-y-5">
       <Link to="/kabinet/$role" params={{ role: 'statsionar' }} className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-semibold text-action">
         <ArrowLeft size={17} aria-hidden="true" />
         Chiqarishlarga qaytish
@@ -84,7 +84,7 @@ function DischargeSummary({ discharge }: { discharge: Discharge }) {
 
   return (
     <>
-      <section className="space-y-5 rounded-xl border border-line bg-white p-5 sm:p-6" aria-labelledby="summary-title">
+      <section className="space-y-5 mt-card p-5 sm:p-6" aria-labelledby="summary-title">
         <h2 id="summary-title" className="text-xl font-semibold">
           {discharge.status === 'DRAFT' ? 'Tasdiqlashdan oldin tekshiring' : 'Chiqarish ma’lumotlari'}
         </h2>
@@ -137,7 +137,7 @@ function TaskDetails({ task }: { task: HospitalTask }) {
   const doctor = useQuery(doctorNameQuery(task.assigned_doctor))
 
   return (
-    <section className="space-y-5 rounded-xl border border-line bg-white p-5 sm:p-6" aria-labelledby="task-title">
+    <section className="space-y-5 mt-card p-5 sm:p-6" aria-labelledby="task-title">
       <h2 id="task-title" className="text-xl font-semibold">Aktiv chaqiruv</h2>
       <Facts items={[
         { label: 'Chaqiruv ID', value: <span className="font-mono text-sm">{task.id}</span> },

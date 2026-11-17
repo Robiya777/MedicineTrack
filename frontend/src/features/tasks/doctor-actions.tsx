@@ -17,7 +17,7 @@ export function DoctorActions({ task }: { task: CareTask }) {
     : action === 'accept' && task.status !== 'NEW' ? null : action
 
   return (
-    <section className="space-y-4 rounded-xl border border-line bg-white p-5 sm:p-6" aria-labelledby="doctor-actions-title">
+    <section className="space-y-4 mt-card p-5 sm:p-6" aria-labelledby="doctor-actions-title">
       <h2 id="doctor-actions-title" className="text-xl font-semibold">Chaqiruv bilan ishlash</h2>
       {currentAction ? (
         <DoctorForm key={currentAction} task={task} action={currentAction} close={() => setAction(null)} />

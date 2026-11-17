@@ -80,7 +80,7 @@ export function NewPatientForm({ onSaved, cancel }: {
       <Field label="Manzil" error={fieldErrors.address}>
         {(a11y) => <textarea {...a11y} className={inputStyle} name="address" rows={2} required />}
       </Field>
-      <label className="flex w-fit items-center gap-2 text-sm font-medium">
+      <label className="flex min-h-11 w-fit cursor-pointer items-center gap-3 text-sm font-medium">
         <input type="checkbox" checked={noPhone} onChange={(event) => setNoPhone(event.currentTarget.checked)} />
         Telefon yo‘q
       </label>
@@ -93,7 +93,7 @@ export function NewPatientForm({ onSaved, cancel }: {
           <Field label="Telefon" error={fieldErrors.contact} hint="Xalqaro shaklda, masalan +998901234567.">
             {(a11y) => <input {...a11y} className={inputStyle} name="contact" type="tel" maxLength={20} required />}
           </Field>
-          <label className="flex w-fit items-center gap-2 text-sm font-medium">
+          <label className="flex min-h-11 w-fit cursor-pointer items-center gap-3 text-sm font-medium">
             <input type="checkbox" name="contact_is_representative" />
             Vakilning telefon raqami
           </label>

@@ -62,7 +62,7 @@ export function DischargeForm({ patient, draft, onSaved, cancel }: {
   const fieldErrors = { ...responseFieldErrors(mutation.error), ...errors }
 
   return (
-    <form onSubmit={submit} className="space-y-5 rounded-xl border border-line bg-white p-5 sm:p-6" aria-busy={mutation.isPending}>
+    <form onSubmit={submit} className="space-y-5 mt-card p-5 sm:p-6" aria-busy={mutation.isPending}>
       <div>
         <h2 className="text-xl font-semibold">{draft ? 'Chiqarishni tahrirlash' : 'Chiqarish ma’lumotlari'}</h2>
         <p className="mt-1 wrap-break-word text-sm text-muted">{patient.full_name}</p>

@@ -1,10 +1,29 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link } from '@tanstack/react-router'
-import { RefreshCw } from 'lucide-react'
-import { useState } from 'react'
-import { doctorName, doctorsQuery, metricsQuery, organizationsQuery, taskListQuery, type TaskFilters, type TaskSegment } from '../../api/tasks'
-import { formatTashkentDateTime, taskStatusLabels } from '../hospital/format'
-import { Field, inputStyle, Notice, RequestError, secondaryButton } from '../hospital/ui'
+import { getRouteApi } from '@tanstack/react-router'
+import {
+  Activity,
+  Clock3,
+  RefreshCw,
+  ShieldCheck,
+  UserRoundX,
+} from 'lucide-react'
+import {
+  doctorName,
+  doctorsQuery,
+  metricsQuery,
+  organizationsQuery,
+  taskListQuery,
+  type TaskFilters,
+  type TaskSegment,
+} from '../../api/tasks'
+import { TaskTable } from './task-table'
+import {
+  Field,
+  inputStyle,
+  Notice,
+  RequestError,
+  secondaryButton,
+} from '../hospital/ui'
 
 const coordinatorSegments: { value: TaskSegment; label: string }[] = [
   { value: 'all', label: 'Barchasi' },
@@ -21,104 +40,243 @@ const doctorSegments: { value: TaskSegment; label: string }[] = [
   { value: 'CANCELLED', label: 'Bekor qilingan' },
 ]
 
+const workspaceRoute = getRouteApi('/(app)/kabinet/$role')
+
 export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
-  const role = coordinator ? 'koordinator' : 'shifokor'
-  const [filters, setFilters] = useState<TaskFilters>({ segment: coordinator ? 'all' : 'open', doctorId: '', organizationId: '' })
-  const [page, setPage] = useState(1)
+  const search = workspaceRoute.useSearch()
+  const navigate = workspaceRoute.useNavigate()
+  const segments = coordinator ? coordinatorSegments : doctorSegments
+  const filters: TaskFilters = {
+    segment: segments.some((item) => item.value === search.segment)
+      ? search.segment!
+      : coordinator
+        ? 'all'
+        : 'open',
+    doctorId: coordinator ? search.doctorId || '' : '',
+    organizationId: coordinator ? search.organizationId || '' : '',
+  }
+  const page = search.page || 1
+  const setPage = (page: number) =>
+    void navigate({ search: (prev) => ({ ...prev, page }) })
   const tasks = useQuery(taskListQuery(filters, page))
   const doctors = useQuery({ ...doctorsQuery(), enabled: coordinator })
-  const organizations = useQuery({ ...organizationsQuery(), enabled: coordinator })
-  const names = new Map(doctors.data?.map((doctor) => [doctor.id, doctorName(doctor)]))
-  const segments = coordinator ? coordinatorSegments : doctorSegments
+  const organizations = useQuery({
+    ...organizationsQuery(),
+    enabled: coordinator,
+  })
+  const names = new Map(
+    doctors.data?.map((doctor) => [doctor.id, doctorName(doctor)]),
+  )
+  const facilities = new Map(
+    organizations.data?.map((org) => [org.id, org.name]),
+  )
 
   function updateFilters(next: Partial<TaskFilters>) {
-    setPage(1)
-    setFilters({ ...filters, ...next })
+    const updated = { ...filters, ...next }
+    void navigate({
+      search: {
+        segment: updated.segment,
+        doctorId: updated.doctorId || undefined,
+        organizationId: updated.organizationId || undefined,
+        page: 1,
+      },
+    })
   }
 
   return (
     <section aria-labelledby="workspace-title" className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 id="workspace-title" className="text-3xl font-semibold tracking-tight">
-          {coordinator ? 'Koordinator kabineti' : 'Mening chaqiruvlarim'}
-        </h1>
-        <button type="button" className={secondaryButton} disabled={tasks.isFetching} onClick={() => void tasks.refetch()}>
-          <RefreshCw size={16} aria-hidden="true" />Yangilash
+      <div className="mt-page-heading">
+        <div>
+          <h1
+            id="workspace-title"
+            className="text-3xl font-semibold tracking-tight"
+          >
+            {coordinator ? 'Koordinator kabineti' : 'Mening chaqiruvlarim'}
+          </h1>
+          <p>
+            {coordinator
+              ? 'Hududdagi bemorlar kuzatuvi va patronaj nazorati.'
+              : 'Biriktirilgan bemorlar bilan aloqa va patronaj hisoboti.'}
+          </p>
+        </div>
+        <button
+          type="button"
+          className={secondaryButton}
+          disabled={tasks.isFetching}
+          onClick={() => void tasks.refetch()}
+        >
+          <RefreshCw size={16} aria-hidden="true" />
+          Yangilash
         </button>
       </div>
       {coordinator && <CoordinatorMetrics />}
-      <section aria-label="Chaqiruvlar" className="overflow-hidden rounded-xl border border-line bg-white">
-        <div className="space-y-4 border-b border-line p-4 sm:p-5">
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Chaqiruv holati">
+      <section aria-label="Chaqiruvlar" className="mt-card mt-queue">
+        <div>
+          <div className="mt-queue-summary">
+            <h2 className="text-lg font-semibold">Chaqiruvlar</h2>
+            {tasks.data && (
+              <span className="mt-total-count">{tasks.data.count}</span>
+            )}
+          </div>
+          <div
+            className="mt-segments"
+            role="group"
+            aria-label="Chaqiruv holati"
+          >
             {segments.map((segment) => (
               <button
                 key={segment.value}
                 type="button"
                 aria-pressed={filters.segment === segment.value}
                 onClick={() => updateFilters({ segment: segment.value })}
-                className={secondaryButton + (filters.segment === segment.value ? ' border-[#0b6155] bg-[#e4f0eb]' : '')}
+                className="mt-segment"
               >
                 {segment.label}
               </button>
             ))}
           </div>
-          {filters.segment === 'soon' && <p className="text-sm text-muted">Keyingi 4 soatda muddati tugaydigan ochiq chaqiruvlar.</p>}
+          {filters.segment === 'soon' && (
+            <p className="px-5 pt-3 text-sm text-muted">
+              Keyingi 4 soatda muddati tugaydigan ochiq chaqiruvlar.
+            </p>
+          )}
           {coordinator && (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="mt-filter-fields">
               <Field label="Shifokor">
                 {(a11y) => (
-                  <select {...a11y} className={inputStyle} value={filters.doctorId} onChange={(event) => updateFilters({ doctorId: event.currentTarget.value })}>
+                  <select
+                    {...a11y}
+                    className={inputStyle}
+                    value={filters.doctorId}
+                    onChange={(event) =>
+                      updateFilters({ doctorId: event.currentTarget.value })
+                    }
+                  >
                     <option value="">Barcha shifokorlar</option>
-                    {doctors.data?.map((doctor) => <option key={doctor.id} value={doctor.id}>{doctorName(doctor)}</option>)}
+                    {doctors.data?.map((doctor) => (
+                      <option key={doctor.id} value={doctor.id}>
+                        {doctorName(doctor)}
+                      </option>
+                    ))}
                   </select>
                 )}
               </Field>
               <Field label="Qabul qiluvchi muassasa">
                 {(a11y) => (
-                  <select {...a11y} className={inputStyle} value={filters.organizationId} onChange={(event) => updateFilters({ organizationId: event.currentTarget.value })}>
+                  <select
+                    {...a11y}
+                    className={inputStyle}
+                    value={filters.organizationId}
+                    onChange={(event) =>
+                      updateFilters({
+                        organizationId: event.currentTarget.value,
+                      })
+                    }
+                  >
                     <option value="">Barcha muassasalar</option>
-                    {organizations.data?.map((org) => <option key={org.id} value={org.id}>{org.name}</option>)}
+                    {organizations.data?.map((org) => (
+                      <option key={org.id} value={org.id}>
+                        {org.name}
+                      </option>
+                    ))}
                   </select>
                 )}
               </Field>
+              {(filters.doctorId ||
+                filters.organizationId ||
+                filters.segment !== (coordinator ? 'all' : 'open')) && (
+                <button
+                  type="button"
+                  className="mt-clear-filters"
+                  onClick={() =>
+                    updateFilters({
+                      segment: coordinator ? 'all' : 'open',
+                      doctorId: '',
+                      organizationId: '',
+                    })
+                  }
+                >
+                  Filtrlarni tozalash
+                </button>
+              )}
             </div>
           )}
-          {doctors.isError && coordinator && <RequestError error={doctors.error} retry={() => void doctors.refetch()} />}
-          {organizations.isError && coordinator && <RequestError error={organizations.error} retry={() => void organizations.refetch()} />}
+          {!coordinator && filters.segment !== 'open' && (
+            <div className="px-5 pb-4">
+              <button
+                type="button"
+                className="mt-clear-filters"
+                onClick={() => updateFilters({ segment: 'open' })}
+              >
+                Filtrlarni tozalash
+              </button>
+            </div>
+          )}
+          {doctors.isError && coordinator && (
+            <RequestError
+              error={doctors.error}
+              retry={() => void doctors.refetch()}
+            />
+          )}
+          {organizations.isError && coordinator && (
+            <RequestError
+              error={organizations.error}
+              retry={() => void organizations.refetch()}
+            />
+          )}
         </div>
-        {tasks.isPending && <div className="p-4"><Notice>Chaqiruvlar yuklanmoqda…</Notice></div>}
-        {tasks.isError && <div className="p-4"><RequestError error={tasks.error} retry={() => void tasks.refetch()} /></div>}
-        {tasks.data && tasks.data.results.length === 0 && <div className="p-4"><Notice>Tanlangan filtrlarda chaqiruv yo‘q.</Notice></div>}
+        {tasks.isPending && (
+          <div className="p-4">
+            <Notice>Chaqiruvlar yuklanmoqda…</Notice>
+          </div>
+        )}
+        {tasks.isError && (
+          <div className="p-4">
+            <RequestError
+              error={tasks.error}
+              retry={() => void tasks.refetch()}
+            />
+          </div>
+        )}
+        {tasks.data && tasks.data.results.length === 0 && (
+          <div className="p-4">
+            <Notice>Tanlangan filtrlarda chaqiruv yo‘q.</Notice>
+          </div>
+        )}
         {tasks.data && (
           <>
-            <ul className="divide-y divide-line">
-              {tasks.data.results.map((task) => (
-                <li key={task.id}>
-                  <Link
-                    to="/kabinet/$role/chaqiruv/$taskId"
-                    params={{ role, taskId: task.id }}
-                    className="grid min-w-0 gap-x-5 gap-y-2 p-4 hover:bg-surface sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] sm:p-5"
-                  >
-                    <div className="min-w-0">
-                      <span className="wrap-break-word font-semibold">{task.patient.full_name || 'Bemor'}</span>
-                      <p className="mt-1 break-all font-mono text-xs text-muted">{task.id}</p>
-                    </div>
-                    <div className="min-w-0 sm:text-right">
-                      <span className={'text-sm font-semibold ' + (task.overdue ? 'text-red-800' : 'text-action')}>
-                        {taskStatusLabels[task.status]}{task.overdue ? ' · Muddati o‘tgan' : ''}
-                      </span>
-                      <p className="mt-1 text-sm text-muted">{formatTashkentDateTime(task.due_at)} (Toshkent)</p>
-                      {coordinator && task.assigned_doctor && <p className="mt-1 wrap-break-word text-sm text-muted">{names.get(task.assigned_doctor) ?? task.assigned_doctor}</p>}
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <nav aria-label="Chaqiruv sahifalari" className="flex flex-wrap items-center gap-3 border-t border-line p-4">
-              <span className="mr-auto text-sm text-muted">{tasks.data.count} ta chaqiruv</span>
-              <button type="button" className={secondaryButton} disabled={!tasks.data.hasPrevious} onClick={() => setPage(page - 1)}>Oldingi</button>
+            {tasks.data.results.length > 0 && (
+              <TaskTable
+                tasks={tasks.data.results}
+                coordinator={coordinator}
+                names={names}
+                facilities={facilities}
+              />
+            )}
+            <nav
+              aria-label="Chaqiruv sahifalari"
+              className="mt-list-pagination"
+            >
+              <span className="mr-auto text-sm text-muted">
+                {tasks.data.count} ta chaqiruv
+              </span>
+              <button
+                type="button"
+                className={secondaryButton}
+                disabled={!tasks.data.hasPrevious}
+                onClick={() => setPage(page - 1)}
+              >
+                Oldingi
+              </button>
               <span className="text-sm text-muted">{page}</span>
-              <button type="button" className={secondaryButton} disabled={!tasks.data.hasNext} onClick={() => setPage(page + 1)}>Keyingi</button>
+              <button
+                type="button"
+                className={secondaryButton}
+                disabled={!tasks.data.hasNext}
+                onClick={() => setPage(page + 1)}
+              >
+                Keyingi
+              </button>
             </nav>
           </>
         )}
@@ -129,29 +287,67 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
 
 function CoordinatorMetrics() {
   const metrics = useQuery(metricsQuery())
-  if (metrics.isPending) return <Notice>Hudud ko‘rsatkichlari yuklanmoqda…</Notice>
-  if (metrics.isError) return <RequestError error={metrics.error} retry={() => void metrics.refetch()} />
+  if (metrics.isPending)
+    return <Notice>Hudud ko‘rsatkichlari yuklanmoqda…</Notice>
+  if (metrics.isError)
+    return (
+      <RequestError
+        error={metrics.error}
+        retry={() => void metrics.refetch()}
+      />
+    )
 
   const data = metrics.data
   return (
     <section aria-labelledby="metrics-title" className="space-y-3">
-      <h2 id="metrics-title" className="text-sm font-semibold text-muted">Hudud bo‘yicha ko‘rsatkichlar</h2>
-      <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <h2 id="metrics-title" className="text-sm font-semibold text-muted">
+        Hudud bo‘yicha ko‘rsatkichlar
+      </h2>
+      <dl className="mt-metrics">
         {[
-          { label: 'Aktiv', value: data.active },
-          { label: 'Kechikkan', value: data.overdue },
-          { label: 'Mas’ulsiz', value: data.unassigned },
-          { label: 'O‘z vaqtida bajarish', value: data.sla_percent === null ? 'Ma’lumot yo‘q' : data.sla_percent + '%' },
-        ].map(({ label, value }) => (
-          <div key={label} className="rounded-xl border border-line bg-white p-4">
-            <dt className="text-sm text-muted">{label}</dt>
-            <dd className="mt-2 wrap-break-word text-xl font-semibold">{value}</dd>
+          {
+            label: 'Aktiv',
+            value: data.active,
+            Icon: Activity,
+            tone: 'primary',
+          },
+          {
+            label: 'Kechikkan',
+            value: data.overdue,
+            Icon: Clock3,
+            tone: 'danger',
+          },
+          {
+            label: 'Mas’ulsiz',
+            value: data.unassigned,
+            Icon: UserRoundX,
+            tone: 'warning',
+          },
+          {
+            label: 'O‘z vaqtida bajarish',
+            value:
+              data.sla_percent === null
+                ? 'Ma’lumot yo‘q'
+                : data.sla_percent + '%',
+            Icon: ShieldCheck,
+            tone: 'primary',
+          },
+        ].map(({ label, value, Icon, tone }) => (
+          <div key={label} className="mt-card mt-metric">
+            <dt className="mt-metric-top">
+              <span>{label}</span>
+              <span className={'mt-metric-icon mt-metric-icon-' + tone}>
+                <Icon size={19} aria-hidden="true" />
+              </span>
+            </dt>
+            <dd className="mt-metric-value mt-numeric">{value}</dd>
           </div>
         ))}
       </dl>
       <p className="text-sm text-muted">
-        O‘z vaqtida bajarilgan {data.completed_on_time} / baholanadigan {data.assessed}.
-        {' '}Bekor qilingan {data.cancelled}. Kech hujjatlashtirilgan {data.late_documented}.
+        O‘z vaqtida bajarilgan {data.completed_on_time} / baholanadigan{' '}
+        {data.assessed}. Bekor qilingan {data.cancelled}. Kech
+        hujjatlashtirilgan {data.late_documented}.
       </p>
     </section>
   )

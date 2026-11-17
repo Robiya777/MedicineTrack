@@ -10,7 +10,7 @@ export function PatientSelect({ onSelect }: { onSelect: (patient: HospitalPatien
   const [adding, setAdding] = useState(false)
 
   return (
-    <section className="space-y-5 rounded-xl border border-line bg-white p-5 sm:p-6">
+    <section className="space-y-5 mt-card p-5 sm:p-6">
       {adding ? <NewPatientForm onSaved={onSelect} cancel={() => setAdding(false)} /> : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
