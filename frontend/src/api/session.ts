@@ -1,3 +1,4 @@
+import { tabSessionId } from './tab-session'
 import axios, { isAxiosError } from 'axios'
 import { queryClient } from '../state/query-client'
 import { useSessionStore, type SessionUser } from '../state/session'
@@ -33,18 +34,18 @@ async function csrfHeaders() {
   return { 'X-CSRFToken': data.csrf_token }
 }
 
-function withCookieLock<T>(operation: () => Promise<T>): Promise<T> {
-  // Refresh rotates a cookie shared by all tabs on this origin.
+async function withCookieLock<T>(operation: (tabId: string) => Promise<T>): Promise<T> {
+  const tabId = await tabSessionId()
   return navigator.locks
-    ? navigator.locks.request('medicinetrack-web-session', operation)
-    : operation()
+    ? navigator.locks.request('medicinetrack-refresh:' + tabId, () => operation(tabId))
+    : operation(tabId)
 }
 
 export async function signIn(username: string, password: string) {
-  return withCookieLock(async () => {
+  return withCookieLock(async (tabId) => {
     const headers = await csrfHeaders()
     const { data } = await authClient.post<Tokens>('/auth/login', {
-      username, password, client: 'web',
+      username, password, client: 'web', tab_id: tabId,
     }, { headers })
     const { data: user } = await authClient.get<SessionUser>('/me', {
       headers: { Authorization: `Bearer ${data.access}` },
@@ -59,15 +60,15 @@ function refresh() {
   if (pendingRefresh) return pendingRefresh
 
   const { revision, user } = useSessionStore.getState()
-  pendingRefresh = withCookieLock(async () => {
+  pendingRefresh = withCookieLock(async (tabId) => {
     if (useSessionStore.getState().revision !== revision) return null
 
     try {
       const headers = await csrfHeaders()
-      const { data } = await authClient.post<Tokens>('/auth/refresh', {}, { headers })
+      const { data } = await authClient.post<Tokens>('/auth/refresh', { tab_id: tabId }, { headers })
       if (useSessionStore.getState().revision !== revision) return null
 
-      // Another tab may have signed in as a different user.
+      // A refresh must retain this tab’s identity.
       if (user && data.user.id !== user.id) {
         clearSession()
         return null
@@ -103,9 +104,9 @@ export async function signOut() {
     if (pendingRefresh) await pendingRefresh
     let { accessToken } = useSessionStore.getState()
 
-    const revoke = (token: string) => withCookieLock(async () => {
+    const revoke = (token: string) => withCookieLock(async (tabId) => {
       const csrf = await csrfHeaders()
-      await authClient.post('/auth/logout', undefined, {
+      await authClient.post('/auth/logout', { tab_id: tabId }, {
         headers: { ...csrf, Authorization: `Bearer ${token}` },
       })
     })

@@ -164,3 +164,17 @@ jadvali va javobsiz murojaatlar real API bilan ulandi.
 
 AT-24–AT-33 bo‘yicha dalillar va APK/HTTPS qabul chegarasi
 [4-bosqich qabul hisobotida](docs/STAGE4_ACCEPTANCE.md).
+
+## Vkladkalar bo‘yicha alohida sessiya — 2026-11-18
+
+Bitta Chromium browser context ichida cookie’larni bo‘lishadigan ikki sahifa
+bilan tekshirildi. Ular alohida incognito context emas.
+
+- Doctor va patient ikki vkladkada kirdi; ikkisi reload qilinganda o‘z roli saqlandi.
+- APIga sun’iy 401 qaytarilganda faqat doctor sessiyasi yangilandi.
+- Doctor chiqdi; patient reload va refreshdan keyin tizimda qoldi.
+- Yangi vkladka va sessionStorage ko‘chiriladigan window.open nusxasi boshqa
+  akkauntni olmadi; alohida identifikator va login sahifasini oldi.
+- Refresh cookie’lari HttpOnly va auth path bilan cheklangan; document.cookie
+  orqali ko‘rinmadi. Tokenlar SessionStorage yoki LocalStorage’ga yozilmadi.
+- Lint, TypeScript va production build o‘tdi.
