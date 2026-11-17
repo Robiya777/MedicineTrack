@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios'
 import { Eye, EyeOff, HeartPulse, ShieldCheck } from 'lucide-react'
 import { useState, type SubmitEvent } from 'react'
 import { signIn } from '../../../../api/session'
-import { workspaces } from '../../../../components/workspaces'
+import { workspaces } from '../../../../lib/workspaces'
 
 const inputClass = 'mt-input mt-2'
 

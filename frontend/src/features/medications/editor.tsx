@@ -6,11 +6,9 @@ import {
   primaryButton,
   secondaryButton,
   RequestError,
-} from '../hospital/ui'
-import {
-  useIdempotentMutation,
-  responseFieldErrors,
-} from '../hospital/mutation'
+} from '../../components/ui'
+import { useIdempotentMutation } from '../../hooks/use-idempotent-mutation'
+import { responseFieldErrors } from '../../lib/errors'
 export function MedicationEditor({
   initial,
   save,

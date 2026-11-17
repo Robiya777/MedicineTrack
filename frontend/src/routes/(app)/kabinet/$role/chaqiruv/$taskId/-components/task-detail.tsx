@@ -5,13 +5,13 @@ import { getRouteApi, Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { doctorNameQuery } from '../../../../../../../api/hospital'
 import { taskDetailQuery, type CareTask } from '../../../../../../../api/tasks'
-import { formatTashkentDateTime } from '../../../../../../../features/hospital/format'
+import { formatTashkentDateTime } from '../../../../../../../lib/date'
 import {
   Facts,
   Notice,
   RequestError,
   secondaryButton,
-} from '../../../../../../../features/hospital/ui'
+} from '../../../../../../../components/ui'
 import { CoordinatorActions } from '../../../../../../../features/tasks/coordinator-actions'
 import { DoctorActions } from '../../../../../../../features/tasks/doctor-actions'
 import { TaskHistory } from '../../../../../../../features/tasks/task-history'
@@ -22,18 +22,18 @@ export function TaskDetail() {
   const { taskId, role } = route.useParams()
   const task = useQuery(taskDetailQuery(taskId))
   return (
-    <section className="mt-workflow space-y-5">
+    <section className="max-w-4xl space-y-6">
       <Link
         to="/kabinet/$role"
         params={{ role }}
         search={(prev) => prev}
-        className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-semibold text-action"
+        className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-semibold text-primary hover:underline"
       >
         <ArrowLeft size={17} aria-hidden="true" />
         Chaqiruvlarga qaytish
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-semibold tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
           Chaqiruv tafsiloti
         </h1>
         <button
@@ -69,11 +69,11 @@ function TaskFacts({ task }: { task: CareTask }) {
   const doctor = useQuery(doctorNameQuery(task.assigned_doctor))
   return (
     <section
-      className="mt-detail-summary space-y-5 mt-card p-5 sm:p-6"
+      className="space-y-5 rounded-2xl border border-line bg-surface p-6 shadow-xs border-t-4 border-t-primary"
       aria-labelledby="patient-title"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="patient-title" className="wrap-break-word font-semibold">
+        <h2 id="patient-title" className="wrap-break-word text-xl font-bold text-ink">
           {task.patient.full_name || 'Bemor'}
         </h2>
         <TaskStatus task={task} />
@@ -103,7 +103,7 @@ function TaskFacts({ task }: { task: CareTask }) {
             label: 'Telefon',
             value: task.patient.contact ? (
               <a
-                className="rounded-sm text-action underline underline-offset-4"
+                className="font-medium text-primary hover:underline"
                 href={'tel:' + task.patient.contact}
               >
                 {task.patient.contact}
@@ -117,7 +117,7 @@ function TaskFacts({ task }: { task: CareTask }) {
         ]}
       />
       {task.overdue && (
-        <p className="rounded-lg bg-[var(--mt-danger-wash)] p-3 text-sm font-medium text-[var(--mt-danger)]">
+        <p className="rounded-xl border border-danger/20 bg-danger-wash p-3.5 text-sm font-semibold text-danger">
           Patronaj muddati o‘tgan.
         </p>
       )}

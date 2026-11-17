@@ -1,5 +1,13 @@
 import type { CareTask } from '../../api/tasks'
 
+export const taskStatusLabels: Record<CareTask['status'], string> = {
+  UNASSIGNED: 'Mas’ul biriktirilmagan',
+  NEW: 'Yangi',
+  ACCEPTED: 'Qabul qilingan',
+  COMPLETED: 'Bajarilgan',
+  CANCELLED: 'Bekor qilingan',
+}
+
 export const channelLabels = { PHONE: 'Telefon', HOME_VISIT: 'Uyga tashrif' }
 export const contactResultLabels = {
   CONTACTED: 'Bog‘lanildi',
@@ -24,3 +32,4 @@ export const eventLabels: Record<string, string> = {
 export function taskIsOpen(task: CareTask) {
   return ['UNASSIGNED', 'NEW', 'ACCEPTED'].includes(task.status)
 }
+

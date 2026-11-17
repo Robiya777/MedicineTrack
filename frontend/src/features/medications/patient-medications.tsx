@@ -23,16 +23,18 @@ import {
   RequestError,
   secondaryButton,
   Facts,
-} from '../hospital/ui'
+} from '../../components/ui'
 import {
   useIdempotentMutation,
+} from '../../hooks/use-idempotent-mutation'
+import {
   responseFieldErrors,
-} from '../hospital/mutation'
+} from '../../lib/errors'
 import {
   formatTashkentDateTime,
   parseTashkentInput,
   tashkentInputValue,
-} from '../hospital/format'
+} from '../../lib/date'
 import { MedicationEditor } from './editor'
 const route = getRouteApi('/(app)/kabinet/$role/dorilar/$patientId/')
 const statuses = {

@@ -4,7 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { z } from 'zod'
 import { useSessionStore } from '../../state/session'
-import { Field, inputStyle, primaryButton } from '../hospital/ui'
+import { Field, inputStyle, primaryButton } from '../../components/ui'
 import { MedicationPanel } from './patient-medications'
 export function MedicationEntry() {
   const user = useSessionStore((s) => s.user)!,

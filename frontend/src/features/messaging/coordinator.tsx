@@ -15,12 +15,14 @@ import {
   primaryButton,
   RequestError,
   secondaryButton,
-} from '../hospital/ui'
+} from '../../components/ui'
 import {
   responseFieldErrors,
+} from '../../lib/errors'
+import {
   useIdempotentMutation,
-} from '../hospital/mutation'
-import { formatTashkentDateTime } from '../hospital/format'
+} from '../../hooks/use-idempotent-mutation'
+import { formatTashkentDateTime } from '../../lib/date'
 const weekdays = [
   'Dushanba',
   'Seshanba',

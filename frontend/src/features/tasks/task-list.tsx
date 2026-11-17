@@ -25,7 +25,7 @@ import {
   Notice,
   RequestError,
   secondaryButton,
-} from '../hospital/ui'
+} from '../../components/ui'
 
 const coordinatorSegments: { value: TaskSegment; label: string }[] = [
   { value: 'all', label: 'Barchasi' },
@@ -89,15 +89,15 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
 
   return (
     <section aria-labelledby="workspace-title" className="space-y-6">
-      <div className="mt-page-heading">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-5">
         <div>
           <h1
             id="workspace-title"
-            className="text-3xl font-semibold tracking-tight"
+            className="text-2xl sm:text-3xl font-bold tracking-tight text-ink"
           >
             {coordinator ? 'Koordinator kabineti' : 'Mening chaqiruvlarim'}
           </h1>
-          <p>
+          <p className="mt-1 text-sm text-muted">
             {coordinator
               ? 'Hududdagi bemorlar kuzatuvi va patronaj nazorati.'
               : 'Biriktirilgan bemorlar bilan aloqa va patronaj hisoboti.'}
@@ -109,51 +109,72 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
           disabled={tasks.isFetching}
           onClick={() => void tasks.refetch()}
         >
-          <RefreshCw size={16} className={tasks.isFetching ? 'mt-spin' : undefined} aria-hidden="true" />
+          <RefreshCw
+            size={16}
+            className={tasks.isFetching ? 'animate-spin' : undefined}
+            aria-hidden="true"
+          />
           Yangilash
         </button>
       </div>
+
       {coordinator && <CoordinatorMetrics />}
-      <section aria-label="Chaqiruvlar" aria-busy={tasks.isFetching} className="mt-card mt-queue">
+
+      <section
+        aria-label="Chaqiruvlar"
+        aria-busy={tasks.isFetching}
+        className="rounded-2xl border border-line bg-surface shadow-xs overflow-hidden"
+      >
         <div>
-          <div className="mt-queue-summary">
-            <h2 className="text-lg font-semibold">Chaqiruvlar</h2>
+          <div className="flex items-center justify-between border-b border-line px-5 py-4">
+            <h2 className="text-base font-bold text-ink">Chaqiruvlar</h2>
             {tasks.data && (
-              <span className="mt-total-count">{tasks.data.count}</span>
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-muted">
+                {tasks.data.count} ta
+              </span>
             )}
           </div>
           <div
-            className="mt-segments"
+            className="flex flex-wrap gap-1.5 border-b border-line p-2.5 bg-slate-50/50"
             role="group"
             aria-label="Chaqiruv holati"
           >
-            {segments.map((segment) => (
-              <button
-                key={segment.value}
-                type="button"
-                aria-pressed={filters.segment === segment.value}
-                onClick={() => updateFilters({ segment: segment.value })}
-                className="mt-segment"
-              >
-                {segment.label}
-              </button>
-            ))}
+            {segments.map((segment) => {
+              const active = filters.segment === segment.value
+              return (
+                <button
+                  key={segment.value}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => updateFilters({ segment: segment.value })}
+                  className={`rounded-lg px-3.5 py-1.5 text-xs font-medium transition cursor-pointer ${
+                    active
+                      ? 'bg-white text-primary font-semibold shadow-xs border border-line/60'
+                      : 'text-muted hover:text-ink hover:bg-white/60'
+                  }`}
+                >
+                  {segment.label}
+                </button>
+              )
+            })}
           </div>
+
           {filters.segment === 'soon' && (
-            <p className="px-5 pt-3 text-sm text-muted">
+            <p className="px-5 pt-3 text-xs text-muted">
               Keyingi 4 soatda muddati tugaydigan ochiq chaqiruvlar.
             </p>
           )}
+
           {coordinator && (
-            <div className="mt-filter-mobile-heading">
-              <p>
+            <div className="flex items-center justify-between p-4 border-b border-line md:hidden">
+              <p className="text-xs text-muted">
                 {Number(Boolean(filters.doctorId)) +
                   Number(Boolean(filters.organizationId))}{' '}
                 ta faol filtr
               </p>
               <button
                 type="button"
-                className="mt-button"
+                className={secondaryButton}
                 aria-expanded={filtersOpen}
                 aria-controls={filtersId}
                 onClick={() => setFiltersOpen(!filtersOpen)}
@@ -163,13 +184,13 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
               </button>
             </div>
           )}
+
           {coordinator && (
             <div
               id={filtersId}
-              className={
-                'mt-filter-fields' +
-                (filtersOpen ? ' mt-filter-fields-open' : '')
-              }
+              className={`p-5 grid-cols-1 md:grid-cols-3 gap-4 border-b border-line bg-slate-50/30 ${
+                filtersOpen ? 'grid' : 'hidden md:grid'
+              }`}
             >
               <Field label="Shifokor">
                 {(a11y) => (
@@ -214,111 +235,119 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
               {(filters.doctorId ||
                 filters.organizationId ||
                 filters.segment !== (coordinator ? 'all' : 'open')) && (
-                <button
-                  type="button"
-                  className="mt-clear-filters"
-                  onClick={() =>
-                    updateFilters({
-                      segment: coordinator ? 'all' : 'open',
-                      doctorId: '',
-                      organizationId: '',
-                    })
-                  }
-                >
-                  Filtrlarni tozalash
-                </button>
+                <div className="flex items-end pb-1">
+                  <button
+                    type="button"
+                    className="inline-flex items-center text-xs font-semibold text-primary hover:underline cursor-pointer"
+                    onClick={() =>
+                      updateFilters({
+                        segment: coordinator ? 'all' : 'open',
+                        doctorId: '',
+                        organizationId: '',
+                      })
+                    }
+                  >
+                    Filtrlarni tozalash
+                  </button>
+                </div>
               )}
             </div>
           )}
+
           {!coordinator && filters.segment !== 'open' && (
-            <div className="px-5 pb-4">
+            <div className="px-5 py-3 border-b border-line">
               <button
                 type="button"
-                className="mt-clear-filters"
+                className="inline-flex items-center text-xs font-semibold text-primary hover:underline cursor-pointer"
                 onClick={() => updateFilters({ segment: 'open' })}
               >
                 Filtrlarni tozalash
               </button>
             </div>
           )}
+
           {doctors.isError && coordinator && (
-            <RequestError
-              error={doctors.error}
-              retry={() => void doctors.refetch()}
-            />
+            <div className="p-5">
+              <RequestError
+                error={doctors.error}
+                retry={() => void doctors.refetch()}
+              />
+            </div>
           )}
           {organizations.isError && coordinator && (
-            <RequestError
-              error={organizations.error}
-              retry={() => void organizations.refetch()}
-            />
+            <div className="p-5">
+              <RequestError
+                error={organizations.error}
+                retry={() => void organizations.refetch()}
+              />
+            </div>
           )}
         </div>
+
         {tasks.isPending && (
-          <div className="p-4">
+          <div className="p-8">
             <Notice>Chaqiruvlar yuklanmoqda…</Notice>
           </div>
         )}
         {tasks.isError && (
-          <div className="p-4">
+          <div className="p-5">
             <RequestError
               error={tasks.error}
               retry={() => void tasks.refetch()}
             />
           </div>
         )}
+
         {tasks.data && tasks.data.results.length === 0 && (
-          <div className="p-4">
-            <Notice>Tanlangan filtrlarda chaqiruv yo‘q.</Notice>
-            <button
-              type="button"
-              className="mt-button mt-3"
-              onClick={() =>
-                updateFilters({
-                  segment: coordinator ? 'all' : 'open',
-                  doctorId: '',
-                  organizationId: '',
-                })
-              }
-            >
-              Barcha chaqiruvlarni ko‘rish
-            </button>
+          <div className="p-8">
+            <Notice>
+              {filters.segment === 'unassigned'
+                ? 'Mas’ul biriktirilmagan chaqiruvlar yo‘q.'
+                : filters.segment === 'overdue'
+                  ? 'Kechikkan chaqiruvlar yo‘q.'
+                  : filters.segment === 'soon'
+                    ? 'Yaqin 4 soatda muddati tugaydigan chaqiruvlar yo‘q.'
+                    : 'Chaqiruvlar topilmadi.'}
+            </Notice>
           </div>
         )}
-        {tasks.data && (
+
+        {tasks.data && tasks.data.results.length > 0 && (
           <>
-            {tasks.data.results.length > 0 && (
-              <TaskTable
-                tasks={tasks.data.results}
-                coordinator={coordinator}
-                names={names}
-                facilities={facilities}
-              />
-            )}
+            <TaskTable
+              tasks={tasks.data.results}
+              coordinator={coordinator}
+              names={names}
+              facilities={facilities}
+            />
             <nav
-              aria-label="Chaqiruv sahifalari"
-              className="mt-list-pagination"
+              aria-label="Sahifalar"
+              className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-4 bg-slate-50/30"
             >
-              <span className="mr-auto text-sm text-muted">
-                {tasks.data.count} ta chaqiruv
+              <span className="text-xs text-muted font-medium">
+                Jami: {tasks.data.count} ta chaqiruv
               </span>
-              <button
-                type="button"
-                className={secondaryButton}
-                disabled={!tasks.data.hasPrevious}
-                onClick={() => setPage(page - 1)}
-              >
-                Oldingi
-              </button>
-              <span className="text-sm text-muted">{page}</span>
-              <button
-                type="button"
-                className={secondaryButton}
-                disabled={!tasks.data.hasNext}
-                onClick={() => setPage(page + 1)}
-              >
-                Keyingi
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className={secondaryButton}
+                  disabled={!tasks.data.hasPrevious}
+                  onClick={() => setPage(page - 1)}
+                >
+                  Oldingi
+                </button>
+                <span className="px-2 text-xs font-semibold text-ink">
+                  {page}
+                </span>
+                <button
+                  type="button"
+                  className={secondaryButton}
+                  disabled={!tasks.data.hasNext}
+                  onClick={() => setPage(page + 1)}
+                >
+                  Keyingi
+                </button>
+              </div>
             </nav>
           </>
         )}
@@ -340,12 +369,18 @@ function CoordinatorMetrics() {
     )
 
   const data = metrics.data
+  const toneStyles: Record<string, string> = {
+    primary: 'bg-teal-50 text-teal-700 border-teal-200/60',
+    danger: 'bg-red-50 text-red-600 border-red-200/60',
+    warning: 'bg-amber-50 text-amber-700 border-amber-200/60',
+  }
+
   return (
     <section aria-labelledby="metrics-title" className="space-y-3">
-      <h2 id="metrics-title" className="text-sm font-semibold text-muted">
+      <h2 id="metrics-title" className="text-xs font-bold uppercase tracking-wider text-muted">
         Hudud bo‘yicha ko‘rsatkichlar
       </h2>
-      <dl className="mt-metrics">
+      <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
             label: 'Aktiv',
@@ -375,21 +410,29 @@ function CoordinatorMetrics() {
             tone: 'primary',
           },
         ].map(({ label, value, Icon, tone }) => (
-          <div key={label} className="mt-card mt-metric">
-            <dt className="mt-metric-top">
+          <div
+            key={label}
+            className="rounded-2xl border border-line bg-surface p-5 shadow-xs transition hover:shadow-sm"
+          >
+            <dt className="flex items-center justify-between text-xs font-semibold text-muted">
               <span>{label}</span>
-              <span className={'mt-metric-icon mt-metric-icon-' + tone}>
+              <span
+                className={`flex h-9 w-9 items-center justify-center rounded-xl border ${toneStyles[tone]}`}
+              >
                 <Icon size={19} aria-hidden="true" />
               </span>
             </dt>
-            <dd className="mt-metric-value mt-numeric">{value}</dd>
+            <dd className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-ink">
+              {value}
+            </dd>
           </div>
         ))}
       </dl>
-      <p className="text-sm text-muted">
-        O‘z vaqtida bajarilgan {data.completed_on_time} / baholanadigan{' '}
-        {data.assessed}. Bekor qilingan {data.cancelled}. Kech
-        hujjatlashtirilgan {data.late_documented}.
+      <p className="text-xs text-muted">
+        O‘z vaqtida bajarilgan: <strong className="text-ink">{data.completed_on_time}</strong> / baholanadigan:{' '}
+        <strong className="text-ink">{data.assessed}</strong>. Bekor qilingan:{' '}
+        <strong className="text-ink">{data.cancelled}</strong>. Kech
+        hujjatlashtirilgan: <strong className="text-ink">{data.late_documented}</strong>.
       </p>
     </section>
   )

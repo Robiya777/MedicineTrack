@@ -1,14 +1,14 @@
-import { Dialog } from '../../components/dialog'
 import { useQuery } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { doctorName, doctorsQuery, type CareTask } from '../../api/tasks'
 import {
+  Dialog,
   Field,
   inputStyle,
   primaryButton,
   RequestError,
   secondaryButton,
-} from '../hospital/ui'
+} from '../../components/ui'
 import { TaskActionForm } from './action-form'
 import { taskIsOpen } from './labels'
 

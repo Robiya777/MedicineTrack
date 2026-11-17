@@ -1,6 +1,3 @@
-import '../styles/medicine-track.css'
-import '../styles/workspace.css'
-import '../styles/live.css'
 import { Link, Outlet, useLocation } from '@tanstack/react-router'
 
 export function RootLayout() {

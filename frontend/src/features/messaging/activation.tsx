@@ -4,9 +4,9 @@ import { Link } from '@tanstack/react-router'
 import { z } from 'zod'
 import { activatePatient, issueActivation } from '../../api/messaging'
 import { hospitalPatientQuery } from '../../api/hospital'
-import { formatTashkentDateTime } from '../hospital/format'
-import { responseFieldErrors } from '../hospital/mutation'
-import { Field, inputStyle, primaryButton, RequestError } from '../hospital/ui'
+import { formatTashkentDateTime } from '../../lib/date'
+import { responseFieldErrors } from '../../lib/errors'
+import { Field, inputStyle, primaryButton, RequestError } from '../../components/ui'
 
 export function PatientActivation({ patientId }: { patientId: string }) {
   const patient = useQuery(hospitalPatientQuery(patientId))

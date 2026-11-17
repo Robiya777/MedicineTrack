@@ -9,12 +9,14 @@ import {
   confirmDischarge, dischargeQuery, dischargeTaskQuery, doctorNameQuery, hospitalPatientQuery, hospitalQueryKeys,
   type Discharge, type HospitalTask,
 } from '../../../../../../../api/hospital'
+import { formatTashkentDateTime } from '../../../../../../../lib/date'
+import { responseFieldErrors } from '../../../../../../../lib/errors'
+import { useIdempotentMutation } from '../../../../../../../hooks/use-idempotent-mutation'
+import { Facts, Notice, primaryButton, RequestError, secondaryButton } from '../../../../../../../components/ui'
 import {
-  dischargeStatusLabels, formatTashkentDateTime, taskStatusLabels,
+  dischargeStatusLabels, taskStatusLabels,
 } from '../../../../../../../features/hospital/format'
 import { DischargeForm } from '../../../../../../../features/hospital/discharge-form'
-import { responseFieldErrors, useIdempotentMutation } from '../../../../../../../features/hospital/mutation'
-import { Facts, Notice, primaryButton, RequestError, secondaryButton } from '../../../../../../../features/hospital/ui'
 
 const detailRoute = getRouteApi('/(app)/kabinet/$role/chiqarish/$dischargeId/')
 
@@ -23,12 +25,12 @@ export function DischargeDetail() {
   const discharge = useQuery(dischargeQuery(dischargeId))
 
   return (
-    <section className="mt-workflow space-y-5">
-      <Link to="/kabinet/$role" params={{ role: 'statsionar' }} className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-semibold text-action">
+    <section className="max-w-4xl space-y-6">
+      <Link to="/kabinet/$role" params={{ role: 'statsionar' }} className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-semibold text-primary hover:underline">
         <ArrowLeft size={17} aria-hidden="true" />
         Chiqarishlarga qaytish
       </Link>
-      <h1 className="text-3xl font-semibold tracking-tight">Chiqarish tafsiloti</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">Chiqarish tafsiloti</h1>
       {discharge.isPending && <Notice>Chiqarish yuklanmoqda…</Notice>}
       {discharge.isError && <RequestError error={discharge.error} retry={() => void discharge.refetch()} />}
       {discharge.data && <DischargeSummary key={discharge.data.id} discharge={discharge.data} />}
@@ -86,7 +88,7 @@ function DischargeSummary({ discharge }: { discharge: Discharge }) {
 
   return (
     <>
-      <section className="space-y-5 mt-card p-5 sm:p-6" aria-labelledby="summary-title">
+      <section className="space-y-5 rounded-2xl border border-line bg-surface p-6 shadow-xs" aria-labelledby="summary-title">
         <h2 id="summary-title" className="text-xl font-semibold">
           {discharge.status === 'DRAFT' ? 'Tasdiqlashdan oldin tekshiring' : 'Chiqarish ma’lumotlari'}
         </h2>
@@ -141,7 +143,7 @@ function TaskDetails({ task }: { task: HospitalTask }) {
   const doctor = useQuery(doctorNameQuery(task.assigned_doctor))
 
   return (
-    <section className="space-y-5 mt-card p-5 sm:p-6" aria-labelledby="task-title">
+    <section className="space-y-5 rounded-2xl border border-line bg-surface p-6 shadow-xs" aria-labelledby="task-title">
       <h2 id="task-title" className="text-xl font-semibold">Aktiv chaqiruv</h2>
       <Facts items={[
         { label: 'Chaqiruv ID', value: <span className="font-mono text-sm">{task.id}</span> },

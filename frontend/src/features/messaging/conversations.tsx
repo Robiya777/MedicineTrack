@@ -25,11 +25,13 @@ import {
   formatTashkentDateTime,
   parseTashkentInput,
   tashkentInputValue,
-} from '../hospital/format'
+} from '../../lib/date'
 import {
   responseFieldErrors,
+} from '../../lib/errors'
+import {
   useIdempotentMutation,
-} from '../hospital/mutation'
+} from '../../hooks/use-idempotent-mutation'
 import {
   Facts,
   Field,
@@ -38,7 +40,7 @@ import {
   primaryButton,
   RequestError,
   secondaryButton,
-} from '../hospital/ui'
+} from '../../components/ui'
 
 const route = getRouteApi('/(app)/kabinet/$role/suhbat/$conversationId/')
 const delivery = {

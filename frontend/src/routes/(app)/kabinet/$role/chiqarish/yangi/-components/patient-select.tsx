@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios'
 import { useState, type SubmitEvent } from 'react'
 import { z } from 'zod'
 import { hospitalPatientQuery, type HospitalPatient } from '../../../../../../../api/hospital'
-import { Facts, Field, inputStyle, Notice, primaryButton, RequestError, secondaryButton } from '../../../../../../../features/hospital/ui'
+import { Facts, Field, inputStyle, Notice, primaryButton, RequestError, secondaryButton } from '../../../../../../../components/ui'
 import { NewPatientForm } from './new-patient-form'
 
 export function PatientSelect({ onSelect }: { onSelect: (patient: HospitalPatient) => void }) {
