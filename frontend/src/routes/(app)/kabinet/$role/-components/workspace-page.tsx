@@ -2,9 +2,12 @@ import { workspaces } from '../../../../../components/workspaces'
 import { useSessionStore } from '../../../../../state/session'
 
 
+import { HospitalDashboard } from './hospital-dashboard'
+
 export function WorkspacePage() {
   const user = useSessionStore((state) => state.user)
   if (!user) return null
+  if (user.role === 'HOSPITAL') return <HospitalDashboard />
 
   const workspace = workspaces[user.role]
   const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ')

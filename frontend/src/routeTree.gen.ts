@@ -20,7 +20,11 @@ import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
 import { Route as appDesignVariantIndexRouteImport } from './routes/(app)/design/$variant/index'
 import { Route as appDesignVariantScreenRouteRouteImport } from './routes/(app)/design/$variant/$screen/route'
 import { Route as appKabinetRoleIndexRouteImport } from './routes/(app)/kabinet/$role/index'
+import { Route as appKabinetRoleChiqarishRouteRouteImport } from './routes/(app)/kabinet/$role/chiqarish/route'
 import { Route as appDesignVariantScreenIndexRouteImport } from './routes/(app)/design/$variant/$screen/index'
+import { Route as appKabinetRoleChiqarishIndexRouteImport } from './routes/(app)/kabinet/$role/chiqarish/index'
+import { Route as appKabinetRoleChiqarishDischargeIdRouteRouteImport } from './routes/(app)/kabinet/$role/chiqarish/$dischargeId/route'
+import { Route as appKabinetRoleChiqarishDischargeIdIndexRouteImport } from './routes/(app)/kabinet/$role/chiqarish/$dischargeId/index'
 
 const apphomeRouteRoute = apphomeRouteRouteImport.update({
   id: '/(app)/(home)',
@@ -77,11 +81,35 @@ const appKabinetRoleIndexRoute = appKabinetRoleIndexRouteImport.update({
   path: '/',
   getParentRoute: () => appKabinetRoleRouteRoute,
 } as any)
+const appKabinetRoleChiqarishRouteRoute =
+  appKabinetRoleChiqarishRouteRouteImport.update({
+    id: '/chiqarish',
+    path: '/chiqarish',
+    getParentRoute: () => appKabinetRoleRouteRoute,
+  } as any)
 const appDesignVariantScreenIndexRoute =
   appDesignVariantScreenIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => appDesignVariantScreenRouteRoute,
+  } as any)
+const appKabinetRoleChiqarishIndexRoute =
+  appKabinetRoleChiqarishIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => appKabinetRoleChiqarishRouteRoute,
+  } as any)
+const appKabinetRoleChiqarishDischargeIdRouteRoute =
+  appKabinetRoleChiqarishDischargeIdRouteRouteImport.update({
+    id: '/$dischargeId',
+    path: '/$dischargeId',
+    getParentRoute: () => appKabinetRoleChiqarishRouteRoute,
+  } as any)
+const appKabinetRoleChiqarishDischargeIdIndexRoute =
+  appKabinetRoleChiqarishDischargeIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => appKabinetRoleChiqarishDischargeIdRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -93,9 +121,13 @@ export interface FileRoutesByFullPath {
   '/design/': typeof appDesignIndexRoute
   '/login/': typeof authLoginIndexRoute
   '/design/$variant/$screen': typeof appDesignVariantScreenRouteRouteWithChildren
+  '/kabinet/$role/chiqarish': typeof appKabinetRoleChiqarishRouteRouteWithChildren
   '/design/$variant/': typeof appDesignVariantIndexRoute
   '/kabinet/$role/': typeof appKabinetRoleIndexRoute
+  '/kabinet/$role/chiqarish/$dischargeId': typeof appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren
   '/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
+  '/kabinet/$role/chiqarish/': typeof appKabinetRoleChiqarishIndexRoute
+  '/kabinet/$role/chiqarish/$dischargeId/': typeof appKabinetRoleChiqarishDischargeIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof apphomeIndexRoute
@@ -104,6 +136,8 @@ export interface FileRoutesByTo {
   '/design/$variant': typeof appDesignVariantIndexRoute
   '/kabinet/$role': typeof appKabinetRoleIndexRoute
   '/design/$variant/$screen': typeof appDesignVariantScreenIndexRoute
+  '/kabinet/$role/chiqarish': typeof appKabinetRoleChiqarishIndexRoute
+  '/kabinet/$role/chiqarish/$dischargeId': typeof appKabinetRoleChiqarishDischargeIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,9 +150,13 @@ export interface FileRoutesById {
   '/(app)/design/': typeof appDesignIndexRoute
   '/(auth)/login/': typeof authLoginIndexRoute
   '/(app)/design/$variant/$screen': typeof appDesignVariantScreenRouteRouteWithChildren
+  '/(app)/kabinet/$role/chiqarish': typeof appKabinetRoleChiqarishRouteRouteWithChildren
   '/(app)/design/$variant/': typeof appDesignVariantIndexRoute
   '/(app)/kabinet/$role/': typeof appKabinetRoleIndexRoute
+  '/(app)/kabinet/$role/chiqarish/$dischargeId': typeof appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren
   '/(app)/design/$variant/$screen/': typeof appDesignVariantScreenIndexRoute
+  '/(app)/kabinet/$role/chiqarish/': typeof appKabinetRoleChiqarishIndexRoute
+  '/(app)/kabinet/$role/chiqarish/$dischargeId/': typeof appKabinetRoleChiqarishDischargeIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,9 +169,13 @@ export interface FileRouteTypes {
     | '/design/'
     | '/login/'
     | '/design/$variant/$screen'
+    | '/kabinet/$role/chiqarish'
     | '/design/$variant/'
     | '/kabinet/$role/'
+    | '/kabinet/$role/chiqarish/$dischargeId'
     | '/design/$variant/$screen/'
+    | '/kabinet/$role/chiqarish/'
+    | '/kabinet/$role/chiqarish/$dischargeId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -142,6 +184,8 @@ export interface FileRouteTypes {
     | '/design/$variant'
     | '/kabinet/$role'
     | '/design/$variant/$screen'
+    | '/kabinet/$role/chiqarish'
+    | '/kabinet/$role/chiqarish/$dischargeId'
   id:
     | '__root__'
     | '/(app)/(home)'
@@ -153,9 +197,13 @@ export interface FileRouteTypes {
     | '/(app)/design/'
     | '/(auth)/login/'
     | '/(app)/design/$variant/$screen'
+    | '/(app)/kabinet/$role/chiqarish'
     | '/(app)/design/$variant/'
     | '/(app)/kabinet/$role/'
+    | '/(app)/kabinet/$role/chiqarish/$dischargeId'
     | '/(app)/design/$variant/$screen/'
+    | '/(app)/kabinet/$role/chiqarish/'
+    | '/(app)/kabinet/$role/chiqarish/$dischargeId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -244,12 +292,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appKabinetRoleIndexRouteImport
       parentRoute: typeof appKabinetRoleRouteRoute
     }
+    '/(app)/kabinet/$role/chiqarish': {
+      id: '/(app)/kabinet/$role/chiqarish'
+      path: '/chiqarish'
+      fullPath: '/kabinet/$role/chiqarish'
+      preLoaderRoute: typeof appKabinetRoleChiqarishRouteRouteImport
+      parentRoute: typeof appKabinetRoleRouteRoute
+    }
     '/(app)/design/$variant/$screen/': {
       id: '/(app)/design/$variant/$screen/'
       path: '/'
       fullPath: '/design/$variant/$screen/'
       preLoaderRoute: typeof appDesignVariantScreenIndexRouteImport
       parentRoute: typeof appDesignVariantScreenRouteRoute
+    }
+    '/(app)/kabinet/$role/chiqarish/': {
+      id: '/(app)/kabinet/$role/chiqarish/'
+      path: '/'
+      fullPath: '/kabinet/$role/chiqarish/'
+      preLoaderRoute: typeof appKabinetRoleChiqarishIndexRouteImport
+      parentRoute: typeof appKabinetRoleChiqarishRouteRoute
+    }
+    '/(app)/kabinet/$role/chiqarish/$dischargeId': {
+      id: '/(app)/kabinet/$role/chiqarish/$dischargeId'
+      path: '/$dischargeId'
+      fullPath: '/kabinet/$role/chiqarish/$dischargeId'
+      preLoaderRoute: typeof appKabinetRoleChiqarishDischargeIdRouteRouteImport
+      parentRoute: typeof appKabinetRoleChiqarishRouteRoute
+    }
+    '/(app)/kabinet/$role/chiqarish/$dischargeId/': {
+      id: '/(app)/kabinet/$role/chiqarish/$dischargeId/'
+      path: '/'
+      fullPath: '/kabinet/$role/chiqarish/$dischargeId/'
+      preLoaderRoute: typeof appKabinetRoleChiqarishDischargeIdIndexRouteImport
+      parentRoute: typeof appKabinetRoleChiqarishDischargeIdRouteRoute
     }
   }
 }
@@ -322,11 +398,46 @@ const authLoginRouteRouteWithChildren = authLoginRouteRoute._addFileChildren(
   authLoginRouteRouteChildren,
 )
 
+interface appKabinetRoleChiqarishDischargeIdRouteRouteChildren {
+  appKabinetRoleChiqarishDischargeIdIndexRoute: typeof appKabinetRoleChiqarishDischargeIdIndexRoute
+}
+
+const appKabinetRoleChiqarishDischargeIdRouteRouteChildren: appKabinetRoleChiqarishDischargeIdRouteRouteChildren =
+  {
+    appKabinetRoleChiqarishDischargeIdIndexRoute:
+      appKabinetRoleChiqarishDischargeIdIndexRoute,
+  }
+
+const appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren =
+  appKabinetRoleChiqarishDischargeIdRouteRoute._addFileChildren(
+    appKabinetRoleChiqarishDischargeIdRouteRouteChildren,
+  )
+
+interface appKabinetRoleChiqarishRouteRouteChildren {
+  appKabinetRoleChiqarishDischargeIdRouteRoute: typeof appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren
+  appKabinetRoleChiqarishIndexRoute: typeof appKabinetRoleChiqarishIndexRoute
+}
+
+const appKabinetRoleChiqarishRouteRouteChildren: appKabinetRoleChiqarishRouteRouteChildren =
+  {
+    appKabinetRoleChiqarishDischargeIdRouteRoute:
+      appKabinetRoleChiqarishDischargeIdRouteRouteWithChildren,
+    appKabinetRoleChiqarishIndexRoute: appKabinetRoleChiqarishIndexRoute,
+  }
+
+const appKabinetRoleChiqarishRouteRouteWithChildren =
+  appKabinetRoleChiqarishRouteRoute._addFileChildren(
+    appKabinetRoleChiqarishRouteRouteChildren,
+  )
+
 interface appKabinetRoleRouteRouteChildren {
+  appKabinetRoleChiqarishRouteRoute: typeof appKabinetRoleChiqarishRouteRouteWithChildren
   appKabinetRoleIndexRoute: typeof appKabinetRoleIndexRoute
 }
 
 const appKabinetRoleRouteRouteChildren: appKabinetRoleRouteRouteChildren = {
+  appKabinetRoleChiqarishRouteRoute:
+    appKabinetRoleChiqarishRouteRouteWithChildren,
   appKabinetRoleIndexRoute: appKabinetRoleIndexRoute,
 }
 
