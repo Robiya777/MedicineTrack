@@ -42,13 +42,10 @@ export function TaskDetail() {
       {task.data && !task.isError && (
         <>
           <TaskFacts task={task.data} />
-          {role === 'shifokor' && (
-            <MedicationTaskLink dischargeId={task.data.discharge} />
-          )}
           {role === 'koordinator' ? (
             <CoordinatorActions task={task.data} />
           ) : (
-            <DoctorActions task={task.data} />
+            <DoctorActions task={task.data} medicationLink={<MedicationTaskLink dischargeId={task.data.discharge} />} />
           )}
           <TaskHistory task={task.data} />
         </>

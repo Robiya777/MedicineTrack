@@ -33,5 +33,5 @@ function MedicationPatients() {
 }
 export function MedicationTaskLink({dischargeId}:{dischargeId:string}) {
   const discharge=useQuery(dischargeQuery(dischargeId))
-  return discharge.data && !discharge.isError ? <Link to="/kabinet/$role/dorilar/$patientId" params={{role:'shifokor',patientId:discharge.data.patient}} search={{dischargeId}} className={primaryButton}>Dori jadvali va qabul tarixi</Link>:null
+  return discharge.data && !discharge.isError ? <Link to="/kabinet/$role/dorilar/$patientId" params={{role:'shifokor',patientId:discharge.data.patient}} search={{dischargeId}} className="inline-flex min-h-11 items-center gap-2.5 rounded-2xl border border-line bg-surface px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-mint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"><Pill size={18} aria-hidden="true" />Dori jadvali<ArrowRight size={16} aria-hidden="true" /></Link>:null
 }
