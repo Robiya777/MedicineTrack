@@ -117,7 +117,7 @@ public final class FlowChecks extends Instrumentation {
                   new Intent(getTargetContext(), MainActivity.class)
                       .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
       idle();
-      visible("Parvarish davom etadi.");
+      visible("Kabinetga kirish");
       screenshot("01-login");
       Api patient = new Api(vault);
       patient.login(base, "demo.patient", password);

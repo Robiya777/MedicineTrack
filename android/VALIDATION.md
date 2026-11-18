@@ -33,3 +33,10 @@ Screenshots and local APK are outside source control at `/home/java/MedicineTrac
 Lint: 0 errors, 3 warnings (OldTargetApi, ObsoleteSdkInt, SetTextI18n). The artifact is a **debug prototype**, not a Play-ready release. Tests combine API checks and native screen/form interactions; not every dialog/control or every TZ acceptance criterion has an independent end-to-end test.
 
 Not verified: real-device battery restrictions, long-duration scheduling, optional exact-alarm delivery on physical hardware, force-stop recovery on every OEM, production TLS hosting, real push/SMS, production concurrency or clinical use. Reboot recovery and inexact notification delivery were verified on API 34 emulator. Current screen and spinner/checkbox selections are not restored; contextual text drafts are. See README for remaining operational limits.
+
+
+## 2026-11-18 — frontend dizayniga moslashuv (0.3.0)
+
+Reference: main `5e97667`, frontend DESIGN_SYSTEM.md va src/index.css. DM Sans fonti ilova ichiga joylandi (internet talab qilmaydi). Umumiy native komponentlar rang, chegaralar, yumaloqlik va navigatsiya bo‘yicha moslashtirildi; kirish sahifasi yangilandi. Dori sahifasidagi yordamchi boshqaruvlar ochiladigan bo‘limga yig‘ildi.
+
+API 34 emulatorda login, bemor bosh sahifasi, dorilar, suhbat, shifokor ro‘yxati, tafsilot va dori formasi screenshotlari ko‘rib chiqildi. Lokal sintetik backendga qarshi dastlab 45 ta tekshiruv, yakuniy takroriy yugurishda 42 ta tekshiruv o‘tdi (oldingi yugurishda tugallangan task va dori holatlari sabab shartli tekshiruvlar soni kamayadi); assembleDebug/assembleDebugAndroidTest/lintDebug o‘tdi (0 lint error, avvalgi 3 warning). Jismoniy qurilma va production server bu tekshiruvga kirmaydi.
