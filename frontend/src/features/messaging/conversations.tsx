@@ -1,3 +1,4 @@
+import {DischargeCorrections} from '@/features/records/corrections'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
@@ -97,6 +98,7 @@ export function PatientDashboard() {
                 { label: 'Shifokor tavsiyasi', value: item.recommendations },
               ]}
             />
+            <DischargeCorrections discharge={item}/>
           </article>
         ))}
         {discharges.data && (

@@ -164,3 +164,14 @@ Dockersiz yetkazish uchun backend terminalida
 `python manage.py process_notifications --watch` ishlashi kerak.
 Yangi bemorda faol shifokor biriktirilmagan bo‘lsa, chiqarish UNASSIGNED bo‘ladi:
 koordinator uni shifokorga tayinlamaguncha shifokorga tayinlash bildirishnomasi kelmaydi.
+
+## 6-bosqich: boshqaruv va tuzatishlar
+
+Texnik admin kabinetida xodimlar, rollar, tashkilotlar va hududlar boshqariladi.
+Klinik tasdiqlash ruxsati faqat shifokorga beriladi. Parol yangilanganda xodimning
+mavjud sessiyalari bekor qilinadi.
+
+Statsionar o‘z DRAFT chiqarishidagi o‘zi yaratgan bemor kontaktini tahrirlaydi.
+CONFIRMED tavsiya va shifokorning o‘z hisoboti sababli alohida tuzatish oladi;
+original matn saqlanadi. Bemor tavsiyaning tuzatish tarixini o‘qiydi.
+Sinovlar va foydalanish: [6-bosqich hisoboti](docs/STAGE6_ACCEPTANCE.md).

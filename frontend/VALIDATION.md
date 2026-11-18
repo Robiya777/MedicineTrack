@@ -195,3 +195,11 @@ qo‘ng‘iroq ochildi, bildirishnomadan biriktirilgan task tafsilotiga o‘tild
 o‘qilganlik POSTi 200 qaytardi va chaqiruv bilan ishlash amallari ko‘rindi. Dialog hamda
 sahifada gorizontal surilish va React xatosi aniqlanmadi. Lint/build o‘tdi.
 Bildirishnoma bemorni avtomatik tayinlamaydi; UNASSIGNED uchun koordinator amali kerak.
+
+## Funksional 6-bosqich — 2026-11-18
+
+Admin CRUD, rol/muassasa tekshiruvi, parol yangilash, DRAFT kontakt tahriri,
+tasdiqlangan tavsiya va muallif hisobotiga sababli tuzatish Chromiumda tekshirildi.
+Yo‘qolgan javobdan keyingi idempotent retry va bemorning faqat o‘qish huquqi o‘tdi.
+1440/360 pxda overflow va React xatosi aniqlanmadi. Lint/typecheck/build o‘tdi.
+Dalillar: [6-bosqich hisoboti](docs/STAGE6_ACCEPTANCE.md).
