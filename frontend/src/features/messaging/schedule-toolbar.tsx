@@ -11,6 +11,15 @@ export function ScheduleToolbar({children}: {children: ReactNode}) {
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(() => {
         if(marker.current) setStuck(marker.current.getBoundingClientRect().top <= 72)
+        const form = toolbar.current?.parentElement
+        const calendar = form?.querySelector<HTMLElement>('.schedule-calendar-section')
+        if(form && calendar) {
+          const naturalTop = calendar.getBoundingClientRect().top - Number(calendar.dataset.shift || 0)
+          const dockTop = 88 + (toolbar.current?.getBoundingClientRect().height || 64)
+          const shift = Math.max(0, dockTop - naturalTop)
+          calendar.dataset.shift = String(shift)
+          calendar.style.transform = `translateY(${shift}px)`
+        }
       })
     }
     const node = toolbar.current
