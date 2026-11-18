@@ -5,7 +5,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from accounts.models import Role
 from care.models import Discharge, Patient
-from care.scopes import is_hospital_staff
+from care.scopes import is_discharge_coordinator
 from care.services import audit
 from common.exceptions import Conflict
 
@@ -44,11 +44,11 @@ def replace_items(plan, items):
 @transaction.atomic
 def create_plan(patient_id, user, data, request=None):
     patient = visible_patient(user, patient_id)
-    if user.role != Role.DOCTOR and not is_hospital_staff(user):
+    if user.role != Role.DOCTOR and not is_discharge_coordinator(user):
         raise PermissionDenied()
     discharge = get_object_or_404(Discharge, pk=data["discharge_id"], patient=patient)
-    if is_hospital_staff(user) and (
-        discharge.created_by_id != user.pk or discharge.hospital_id != user.organization_id
+    if is_discharge_coordinator(user) and (
+        discharge.managing_organization_id != user.organization_id
     ):
         raise PermissionDenied()
     lock_context(discharge.id, patient.id)
@@ -61,7 +61,7 @@ def create_plan(patient_id, user, data, request=None):
 
 @transaction.atomic
 def update_draft(pk, user, data, request=None):
-    if user.role != Role.DOCTOR and not is_hospital_staff(user):
+    if user.role != Role.DOCTOR and not is_discharge_coordinator(user):
         raise PermissionDenied()
     plan = locked_plan(pk, user, data)
     if plan.status != PlanStatus.DRAFT:
