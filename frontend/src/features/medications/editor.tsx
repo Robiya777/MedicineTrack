@@ -1,3 +1,5 @@
+import { DosePlanner } from './dose-planner'
+import { Pill, Plus, Save, Trash2 } from 'lucide-react'
 import { useState, type SubmitEvent } from 'react'
 import type { ItemInput } from '@/api/medications'
 import {
@@ -47,18 +49,45 @@ export function MedicationEditor({
   }
   return (
     <form
-      className="mt-card space-y-5 p-5"
+      className="min-w-0 space-y-5 rounded-2xl border border-line bg-surface p-4 sm:p-6"
       onSubmit={submit}
       aria-busy={mutation.isPending}
     >
-      <h2 className="text-xl font-semibold">Dori jadvali loyihasi</h2>
+      <h2 className="flex items-center gap-2 text-xl font-semibold"><Pill size={21} className="text-blue" aria-hidden="true" />Dori jadvali loyihasi</h2>
       <p className="text-sm text-muted">
         Faqat shifokorning mavjud ko‘rsatmasini kiriting. Doza va qabul vaqtini
         taxmin qilmang. Jadval klinik tasdiqdan keyin bemorga ko‘rinadi.
       </p>
-      <fieldset disabled={mutation.isPending} className="space-y-6">
+      <fieldset disabled={mutation.isPending} className="min-w-0 space-y-6">
+        <button
+          type="button"
+          className={secondaryButton}
+          disabled={items.length >= 20}
+          onClick={() =>
+            setItems([
+              ...items,
+              {
+                name: '',
+                prescribed_dose_text: '',
+                route: '',
+                instructions: '',
+                source_reference: '',
+                start_date: null,
+                end_date: null,
+                timezone: 'Asia/Tashkent',
+                local_times: [],
+                schedule_type: 'FIXED_TIMES',
+                needs_clarification: false,
+                clarification_reason: '',
+              },
+            ])
+          }
+        >
+          <Plus size={17} aria-hidden="true" />Dori qo‘shish
+        </button>
+        <DosePlanner items={items} change={(index,local_times)=>update(index,{local_times})} />
         {items.map((item, index) => (
-          <section key={index} className="space-y-4 border-t border-line pt-4">
+          <section key={index} className="space-y-4 rounded-2xl border border-line bg-page/60 p-4">
             <h3 className="font-semibold">{index + 1}-dori</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               {(
@@ -185,39 +214,13 @@ export function MedicationEditor({
             )}
             <button
               type="button"
-              className="mt-button mt-button-danger"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm text-danger hover:bg-danger-wash"
               onClick={() => setItems(items.filter((_, i) => i !== index))}
             >
-              Dorini loyihadan olib tashlash
+              <Trash2 size={16} aria-hidden="true" />Dorini olib tashlash
             </button>
           </section>
         ))}
-        <button
-          type="button"
-          className={secondaryButton}
-          disabled={items.length >= 20}
-          onClick={() =>
-            setItems([
-              ...items,
-              {
-                name: '',
-                prescribed_dose_text: '',
-                route: '',
-                instructions: '',
-                source_reference: '',
-                start_date: null,
-                end_date: null,
-                timezone: 'Asia/Tashkent',
-                local_times: [],
-                schedule_type: 'FIXED_TIMES',
-                needs_clarification: false,
-                clarification_reason: '',
-              },
-            ])
-          }
-        >
-          Dori qo‘shish
-        </button>
       </fieldset>
       {error && (
         <p role="alert" className="text-red-800">
@@ -233,8 +236,8 @@ export function MedicationEditor({
       )}
       {mutation.error && <RequestError error={mutation.error} />}
       <div className="flex flex-wrap gap-3">
-        <button className={primaryButton} disabled={mutation.isPending}>
-          {mutation.isPending ? 'Saqlanmoqda…' : 'Loyihani saqlash'}
+        <button className={primaryButton} disabled={mutation.isPending || items.length === 0}>
+          <Save size={17} aria-hidden="true" />{mutation.isPending ? 'Saqlanmoqda…' : 'Loyihani saqlash'}
         </button>
         <button
           type="button"

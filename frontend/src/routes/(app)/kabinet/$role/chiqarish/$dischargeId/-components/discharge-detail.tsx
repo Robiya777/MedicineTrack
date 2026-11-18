@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { getRouteApi } from '@tanstack/react-router'
+import { ArrowLeft, ClipboardList } from 'lucide-react'
+import { getRouteApi, Link } from '@tanstack/react-router'
 import { dischargeQuery } from '@/api/hospital'
 import {
   Notice,
-  PageHeader,
+  iconButton,
   RequestError,
 } from '@/components/ui'
 import { DischargeSummary } from './discharge-summary'
@@ -15,15 +16,11 @@ export function DischargeDetail() {
   const discharge = useQuery(dischargeQuery(dischargeId))
 
   return (
-    <section className="max-w-4xl space-y-6">
-      <PageHeader
-        title="Chiqarish tafsiloti"
-        backTo={{
-          to: '/kabinet/$role/chiqarish',
-          params: { role: 'koordinator' },
-          label: 'Chiqarishlarga qaytish',
-        }}
-      />
+    <section className="space-y-6">
+      <header className="flex items-center gap-3 border-b border-line pb-5">
+        <Link to="/kabinet/$role/chiqarish" params={{role:'koordinator'}} className={iconButton + ' shrink-0'} aria-label="Chiqarishlarga qaytish" title="Chiqarishlarga qaytish"><ArrowLeft size={19} aria-hidden="true" /></Link>
+        <div><h1 className="text-2xl font-semibold tracking-tight">Chiqarish tafsiloti</h1><p className="mt-1 flex items-center gap-1.5 text-xs text-muted"><ClipboardList size={14} aria-hidden="true" />Bemor, tavsiyalar va davolash rejasi</p></div>
+      </header>
       {discharge.isPending && <Notice>Chiqarish yuklanmoqda…</Notice>}
       {discharge.isError && (
         <RequestError

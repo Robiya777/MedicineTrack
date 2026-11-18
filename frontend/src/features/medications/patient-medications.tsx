@@ -1,4 +1,4 @@
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, Pill, Plus } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRef, useState, type SubmitEvent } from 'react'
 import { getRouteApi } from '@tanstack/react-router'
@@ -81,19 +81,19 @@ export function MedicationPanel({
   }
   return (
     <section className="space-y-5">
-      <div className="mt-page-heading">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-surface p-5">
         <div>
-          <Heading>Dori jadvali</Heading>
-          <p>
+          <Heading className="flex items-center gap-2 text-xl font-semibold tracking-tight"><Pill size={21} className="text-primary" aria-hidden="true" />Dori jadvali</Heading>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
             {user.role === 'PATIENT'
               ? 'Shifokor tasdiqlagan jadval va o‘zingiz bildirgan qabul qaydlari.'
               : 'Mavjud ko‘rsatma asosidagi dori jadvali va klinik versiyalar.'}
           </p>
         </div>
-        <button className={secondaryButton} onClick={() => void refresh()}>
-          <RefreshCw size={17} aria-hidden="true" />
-          Yangilash
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+        <button className={secondaryButton} disabled={plans.isFetching} onClick={() => void refresh()} aria-label="Dori jadvalini yangilash" title="Yangilash"><RefreshCw size={17} aria-hidden="true" />Yangilash</button>
+        {dischargeId && user.role !== 'PATIENT' && <button className={primaryButton} disabled={creating || plans.isPending || plans.isError} onClick={()=>setCreating(true)}><Plus size={17} aria-hidden="true" />Yangi dori jadvali</button>}
+        </div>
       </div>
       {plans.isPending && <Notice>Jadvallar yuklanmoqda…</Notice>}
       {plans.isError && (
@@ -101,7 +101,7 @@ export function MedicationPanel({
       )}
       {!plans.isError && (
         <>
-          {user.role !== 'PATIENT' && (
+          {user.role !== 'PATIENT' && !dischargeId && (
             <div className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5">
               {!dischargeId && (
                 <Field label="Chiqarish UUIDsi">
@@ -121,7 +121,7 @@ export function MedicationPanel({
                 disabled={!discharge || creating}
                 onClick={() => setCreating(true)}
               >
-                Yangi dori jadvali
+                <Plus size={17} aria-hidden="true" />Yangi dori jadvali
               </button>
             </div>
           )}
