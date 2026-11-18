@@ -11,6 +11,7 @@ import {
   type ScheduleInput,
 } from '@/api/messaging'
 import {
+  Dialog,
   PageHeader,
   Field,
   inputStyle,
@@ -102,6 +103,7 @@ function ScheduleEditor({
 }) {
   const client = useQueryClient()
   const [input, setInput] = useState<ScheduleInput>(initial)
+  const [zoneOpen, setZoneOpen] = useState(false)
   const [tab, setTab] = useState<'week' | 'exceptions'>('week')
   const [dirty, setDirty] = useState(false)
   const [day, setDay] = useState('')
@@ -159,28 +161,20 @@ function ScheduleEditor({
       aria-busy={mutation.isPending}
     >
       <div className="sticky top-20 z-30 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-surface/95 p-2 shadow-xs backdrop-blur-sm">
-        <div className="flex rounded-lg bg-page p-1">{(['week','exceptions'] as const).map(value=><button type="button" key={value} disabled={mutation.isPending} aria-pressed={tab===value} onClick={()=>setTab(value)} className={`min-h-10 rounded-md px-3 text-sm font-semibold ${tab===value ? 'bg-surface text-primary shadow-xs' : 'text-muted'}`}>{value==='week' ? 'Haftalik tartib' : 'Istisno kunlar'}</button>)}</div>
+        <div className="flex rounded-xl border border-line bg-page p-1">{(['week','exceptions'] as const).map(value=><button type="button" key={value} disabled={mutation.isPending} aria-pressed={tab===value} onClick={()=>setTab(value)} className={`min-h-10 rounded-md px-3 text-sm font-semibold ${tab===value ? 'bg-primary text-white shadow-xs' : 'text-muted hover:bg-mint hover:text-primary'}`}>{value==='week' ? 'Haftalik tartib' : 'Istisno kunlar'}</button>)}</div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
-        <details className="relative text-sm"><summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg px-3 text-xs text-muted hover:bg-page"><Globe2 size={16} aria-hidden="true" />{input.timezone}</summary><div className="absolute right-0 top-full z-40 mt-2 w-64 rounded-xl border border-line bg-surface p-4 shadow-lg"><Field
-          label="Vaqt zonasi"
-          hint="IANA nomi, masalan Asia/Tashkent."
-          error={responseFieldErrors(mutation.error).timezone}
-        >
-          {(a11y) => (
-            <input
-              {...a11y}
-              className={inputStyle}
-              value={input.timezone}
-              onChange={(e) => change({ ...input, timezone: e.target.value })}
-              required
-            />
-          )}
-        </Field>
-        </div></details>
+          <button type="button" className={secondaryButton} onClick={()=>setZoneOpen(true)} disabled={mutation.isPending}><Globe2 size={16} aria-hidden="true" />{input.timezone}</button>
+
           <span role="status" className="hidden text-xs text-warning lg:block">{dirty ? 'Saqlanmagan' : ''}</span>
           <button type="submit" className={primaryButton} disabled={mutation.isPending}><Save size={16} aria-hidden="true" />{mutation.isPending ? 'Saqlanmoqda…' : 'Saqlash'}</button>
         </div>
       </div>
+      {zoneOpen && <Dialog title="Vaqt zonasi" close={()=>setZoneOpen(false)}>
+        <Field label="Vaqt zonasi" error={responseFieldErrors(mutation.error).timezone}>{a=><select {...a} className={inputStyle} value={input.timezone} disabled={mutation.isPending} onChange={e=>change({...input,timezone:e.target.value})}>
+          {[...new Set([input.timezone, ...Intl.supportedValuesOf('timeZone'), 'UTC'])].sort().map(zone=><option key={zone} value={zone}>{zone.replaceAll('_',' ')}</option>)}
+        </select>}</Field>
+        <div className="flex justify-end"><button type="button" className={secondaryButton} onClick={()=>setZoneOpen(false)}>Yopish</button></div>
+      </Dialog>}
       <fieldset className="min-w-0 space-y-5" disabled={mutation.isPending}>
         {tab === 'week' && <ScheduleCalendar intervals={input.shifts} change={shifts=>change({...input,shifts})} />}
         <div className={`space-y-4 ${tab !== 'exceptions' ? 'hidden' : ''}`}>
