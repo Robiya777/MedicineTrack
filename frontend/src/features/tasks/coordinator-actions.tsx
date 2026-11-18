@@ -8,7 +8,6 @@ import {
   inputStyle,
   primaryButton,
   RequestError,
-  secondaryButton,
 } from '@/components/ui'
 import { TaskActionForm } from './action-form'
 import { taskIsOpen } from './labels'
