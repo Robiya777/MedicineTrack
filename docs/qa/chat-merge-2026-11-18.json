@@ -1,0 +1,216 @@
+{
+  "verified_at": "2026-11-18T14:17:30.713449+05:00",
+  "merge_parents": [
+    "7a871715c5b3d9f4221ea1373a49a0b35065de58",
+    "2f231270f1fe46dac2156026e6a5af7e7a100eae"
+  ],
+  "resolved_file": "frontend/src/features/messaging/conversations.tsx",
+  "preserved": [
+    "Split pane chat, search, mobile navigation, wallpaper and work schedule",
+    "AI demo introduction, contextual replies and SOS",
+    "Remote task actions and medication navigation"
+  ],
+  "fixes": [
+    "Stable accessible name for the controlled message composer",
+    "Browser checks follow current labels and medication workspace"
+  ],
+  "validation": {
+    "frontend_unit_passed": 9,
+    "eslint": "passed",
+    "typescript": "passed",
+    "production_build": "passed",
+    "browser_workflows": {
+      "base": "http://127.0.0.1:5173",
+      "fixture_run": "72f8cacb",
+      "checks": [
+        {
+          "name": "Frontend proxy reaches MedicineTrack API",
+          "passed": true,
+          "ms": 398,
+          "evidence": {
+            "api": "MedicineTrack API",
+            "version": "0.2.0"
+          }
+        },
+        {
+          "name": "Hospital login and session reload",
+          "passed": true,
+          "ms": 513
+        },
+        {
+          "name": "Nullable medication DRAFT renders in medication workspace",
+          "passed": true,
+          "ms": 444
+        },
+        {
+          "name": "UI creates patient and discharge DRAFT",
+          "passed": true,
+          "ms": 616,
+          "evidence": {
+            "patient_id": "5d89ac1a-266c-4675-b37e-aacf82acdbab",
+            "discharge_id": "65af4dfd-6252-4861-b115-ab72dd620318"
+          }
+        },
+        {
+          "name": "Discharge confirmation creates one UNASSIGNED task with 24-hour deadline",
+          "passed": true,
+          "ms": 371,
+          "evidence": {
+            "task_id": "013169e7-fb96-4380-8f95-d8f011f35cdc",
+            "due_at": "2026-11-19T09:11:04Z"
+          }
+        },
+        {
+          "name": "Coordinator assigns the same browser-created task",
+          "passed": true,
+          "ms": 1358
+        },
+        {
+          "name": "Doctor accepts task and records unsuccessful contact without closing it",
+          "passed": true,
+          "ms": 1444
+        },
+        {
+          "name": "Doctor completes task; hospital sees identical result",
+          "passed": true,
+          "ms": 1004
+        },
+        {
+          "name": "Hospital activation code creates a patient account through the live web form",
+          "passed": true,
+          "ms": 4306,
+          "evidence": {
+            "patient_id": "5d89ac1a-266c-4675-b37e-aacf82acdbab"
+          }
+        },
+        {
+          "name": "Two identical successful chat messages create two different messages",
+          "passed": true,
+          "ms": 901,
+          "evidence": {
+            "message_ids": [
+              "d3f115d1-7edc-49cc-8a0c-4f8f1219dd2b",
+              "49383eaa-2f64-4ea1-b7d3-18712d66b495"
+            ]
+          }
+        },
+        {
+          "name": "Patient worsened status reaches coordinator and doctor replies in live chat",
+          "passed": true,
+          "ms": 3681
+        },
+        {
+          "name": "Work schedule supports repeat saves and rejects stale coordinator edits",
+          "passed": true,
+          "ms": 12698
+        },
+        {
+          "name": "In-app notification bell reads delivered backend events",
+          "passed": true,
+          "ms": 7072
+        },
+        {
+          "name": "Doctor clinically approves complete DRAFT while incomplete DRAFT stays visible",
+          "passed": true,
+          "ms": 655
+        },
+        {
+          "name": "Patient records medication and note-only correction preserves taken timestamp",
+          "passed": true,
+          "ms": 6816
+        },
+        {
+          "name": "Hospital doctors retain doctor workspace without coordinator discharge permissions",
+          "passed": true,
+          "ms": 1612
+        },
+        {
+          "name": "Technical admin lists staff, institutions and territories",
+          "passed": true,
+          "ms": 15509
+        },
+        {
+          "name": "Separate tabs retain separate user sessions and logout affects one tab",
+          "passed": true,
+          "ms": 1932
+        },
+        {
+          "name": "360px layout and mobile navigation",
+          "passed": true,
+          "ms": 3722
+        },
+        {
+          "name": "Browser JavaScript and backend 5xx errors",
+          "passed": true,
+          "ms": 1
+        }
+      ],
+      "browser_errors": [],
+      "server_errors": []
+    },
+    "chat_and_assistant": {
+      "base": "http://127.0.0.1:5173",
+      "fixture_run": "137d923e",
+      "checks": [
+        {
+          "name": "Primary frontend and backend expose the keyless demo",
+          "passed": true
+        },
+        {
+          "name": "Symptom reply and contextual quick answer render in the real browser",
+          "passed": true
+        },
+        {
+          "name": "Danger automatically creates one clearly labelled demo SOS",
+          "passed": true,
+          "evidence": {
+            "incident_id": "ffcc102c-254c-406f-bd90-f6d6bf65b1e8",
+            "conversation_id": "ea6b5e35-d538-4ebb-8d04-3ad6683ede78"
+          }
+        },
+        {
+          "name": "Cancelling consent sends no coordinates",
+          "passed": true
+        },
+        {
+          "name": "Denied GPS permission reports an error without invented coordinates",
+          "passed": true
+        },
+        {
+          "name": "Explicit demo location is marked as a demonstration",
+          "passed": true
+        },
+        {
+          "name": "Consented browser GPS is saved as device coordinates",
+          "passed": true
+        },
+        {
+          "name": "Assigned doctor sees the same SOS and patient GPS",
+          "passed": true
+        },
+        {
+          "name": "Territory coordinator sees and acknowledges the demo SOS",
+          "passed": true
+        },
+        {
+          "name": "Demo SOS notification reaches the real notification worker",
+          "passed": true
+        },
+        {
+          "name": "360px mobile web keeps emergency actions within the viewport",
+          "passed": true
+        },
+        {
+          "name": "Doctor reply stays separate and closes the real response episode",
+          "passed": true
+        }
+      ],
+      "browser_errors": [],
+      "server_errors": []
+    }
+  },
+  "notes": [
+    "Synthetic local demo data only. No real emergency calls.",
+    "Existing frontend bundle size warning remains."
+  ]
+}

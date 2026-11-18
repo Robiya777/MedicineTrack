@@ -104,9 +104,8 @@ try {
     await hospital.getByRole('heading', { level: 1 }).first().waitFor()
     await screenshot(hospital, 'hospital-dashboard')
   })
-  await check('Nullable medication DRAFT renders in live discharge', async () => {
-    await hospital.goto(`${base}/kabinet/koordinator/chiqarish/${fixture.discharge_id}`)
-    await hospital.getByText(fixture.null_plan_id, { exact: true }).waitFor()
+  await check('Nullable medication DRAFT renders in medication workspace', async () => {
+    await hospital.goto(`${base}/kabinet/koordinator/dorilar/${fixture.patient_id}?dischargeId=${fixture.discharge_id}`)
     await hospital.getByText('Nomi kiritilmagan dori', { exact: true }).waitFor()
   })
 
@@ -159,7 +158,7 @@ try {
     await doctor.getByRole('button', { name: 'Qabul qilish', exact: true }).click()
     task = await mutation(doctor, `/tasks/${task.id}/accept`, () => doctor.getByRole('button', { name: 'Qabul qilishni tasdiqlash', exact: true }).click())
     assert.equal(task.status, 'ACCEPTED')
-    await doctor.getByRole('button', { name: 'Aloqa urinishini qo‘shish', exact: true }).click()
+    await doctor.getByRole('button', { name: 'Aloqani qayd etish', exact: true }).click()
     await doctor.locator('[name="note"]').fill('Sintetik javobsiz aloqa')
     await doctor.locator('[name="next_action"]').fill('Sintetik qayta aloqa')
     task = await mutation(doctor, `/tasks/${task.id}/contact-attempts`, () => doctor.getByRole('button', { name: 'Urinishni saqlash', exact: true }).click(), 201)
@@ -204,10 +203,10 @@ try {
     const ids = []
     for (let i = 0; i < 2; i++) {
       await patient.getByLabel('Xabar', { exact: true }).fill(message)
-      const saved = await mutation(patient, `/conversations/${fixture.conversation_id}/messages`, () => patient.getByRole('button', { name: 'Xabarni yuborish', exact: true }).click(), 201)
+      const saved = await mutation(patient, `/conversations/${fixture.conversation_id}/messages`, () => patient.getByRole('button', { name: 'Yuborish', exact: true }).click(), 201)
       ids.push(saved.id)
       await patient.getByLabel('Xabar', { exact: true }).waitFor()
-      await patient.waitForFunction(() => document.querySelector('textarea[rows="3"]')?.value === '')
+      await patient.waitForFunction(() => document.querySelector('textarea[aria-label="Xabar"]')?.value === '')
     }
     assert.notEqual(ids[0], ids[1])
     await patient.getByText(message, { exact: true }).nth(1).waitFor()
@@ -224,7 +223,7 @@ try {
     await doctor.goto(`${base}/kabinet/shifokor/suhbat/${fixture.conversation_id}`)
     await doctor.getByText(message, { exact: true }).nth(1).waitFor()
     await doctor.getByLabel('Xabar', { exact: true }).fill(`Sintetik javob ${unique}`)
-    await mutation(doctor, `/conversations/${fixture.conversation_id}/messages`, () => doctor.getByRole('button', { name: 'Xabarni yuborish', exact: true }).click(), 201)
+    await mutation(doctor, `/conversations/${fixture.conversation_id}/messages`, () => doctor.getByRole('button', { name: 'Yuborish', exact: true }).click(), 201)
     await patient.reload()
     await patient.getByText(`Sintetik javob ${unique}`, { exact: true }).waitFor()
     await screenshot(patient, 'patient-chat')
@@ -234,7 +233,7 @@ try {
     const metadata = (response) => new URL(response.url()).pathname === `/api/v1/conversations/${fixture.conversation_id}` && response.request().method() === 'GET'
     const initialMetadata = patient.waitForResponse(async (response) => metadata(response) && Boolean((await response.json()).response_due_at))
     await patient.getByLabel('Xabar', { exact: true }).fill(`Sintetik jadval savoli ${unique}`)
-    await mutation(patient, `/conversations/${fixture.conversation_id}/messages`, () => patient.getByRole('button', { name: 'Xabarni yuborish', exact: true }).click(), 201)
+    await mutation(patient, `/conversations/${fixture.conversation_id}/messages`, () => patient.getByRole('button', { name: 'Yuborish', exact: true }).click(), 201)
     const originalDue = (await (await initialMetadata).json()).response_due_at
 
     const stale = await login(context, 'coordinator-stale', fixture.users.coordinator.username, 'koordinator')
@@ -276,7 +275,7 @@ try {
   await check('Doctor clinically approves complete DRAFT while incomplete DRAFT stays visible', async () => {
     await doctor.goto(`${base}/kabinet/shifokor/dorilar/${fixture.patient_id}`)
     await doctor.getByText('Nomi kiritilmagan dori', { exact: true }).waitFor()
-    const article = doctor.locator('article').filter({ hasText: fixture.complete_plan_id })
+    const article = doctor.locator('article').filter({ has: doctor.getByRole('heading', { name: `Sintetik QA tasdiq ${fixture.run_id}`, exact: true }) })
     await article.getByRole('button', { name: 'Klinik tasdiqlash', exact: true }).click()
     const approved = await mutation(doctor, `/medication-plans/${fixture.complete_plan_id}/approve`, () => article.getByRole('button', { name: 'Amalni tasdiqlash', exact: true }).click())
     assert.equal(approved.status, 'ACTIVE')
@@ -284,7 +283,7 @@ try {
 
   await check('Patient records medication and note-only correction preserves taken timestamp', async () => {
     await patient.goto(`${base}/kabinet/bemor/dorilar`)
-    const plan = patient.locator('article').filter({ hasText: fixture.active_plan_id })
+    const plan = patient.locator('article').filter({ has: patient.getByRole('heading', { name: `Sintetik QA dori ${fixture.run_id}`, exact: true }) })
     await plan.getByRole('button', { name: 'Qabulni qayd etish', exact: true }).first().click()
     await plan.getByLabel('Qabul izohi', { exact: true }).fill('Sintetik dastlabki qayd')
     const saved = await mutation(patient, '/record', () => plan.getByRole('button', { name: 'Qaydni saqlash', exact: true }).click(), 201)

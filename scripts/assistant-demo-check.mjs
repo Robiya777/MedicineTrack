@@ -51,19 +51,36 @@ async function mutate(page, suffix, click, status = 200) {
 }
 async function message(page, text) {
   await page.getByLabel('Xabar', { exact: true }).fill(text)
-  return mutate(page, `/conversations/${fixture.conversation_id}/messages`, () => page.getByRole('button', { name: 'Xabarni yuborish', exact: true }).click(), 201)
+  return mutate(page, `/conversations/${fixture.conversation_id}/messages`, () => page.getByRole('button', { name: 'Yuborish', exact: true }).click(), 201)
 }
 const latest = (page) => page.locator('section[aria-label="AI demo javobi"]').last()
 try {
   const { page: patient, context } = await login('patient', 'bemor')
   await check('Primary frontend and backend expose the keyless demo', async () => {
     await patient.getByRole('complementary', { name: 'AI yordamchi haqida' }).waitFor()
+    const sidebar = patient.getByRole('complementary', { name: 'Suhbatlar ro‘yxati' })
+    await sidebar.getByRole('button').first().click()
+    await patient.getByLabel('Xabar', { exact: true }).waitFor()
+    await patient.setViewportSize({ width: 360, height: 800 })
+    assert.equal(await sidebar.isVisible(), false)
+    assert.equal(await patient.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true)
+    await patient.getByRole('button', { name: 'Suhbatlar', exact: true }).click()
+    await sidebar.waitFor()
+    await sidebar.getByRole('textbox', { name: 'Suhbat qidirish', exact: true }).fill('no-matching-conversation')
+    assert.equal(await sidebar.getByRole('button').count(), 0)
+    await sidebar.getByRole('textbox', { name: 'Suhbat qidirish', exact: true }).fill('')
+    await sidebar.getByRole('button').first().waitFor()
+    await patient.setViewportSize({ width: 1360, height: 960 })
     await patient.goto(`${base}/kabinet/bemor/suhbat/${fixture.conversation_id}`)
     await patient.getByLabel('Xabar', { exact: true }).waitFor()
     assert.equal(await patient.getByRole('link', { name: '103 · Telefon qilish', exact: true }).first().getAttribute('href'), 'tel:103')
   })
   await check('Symptom reply and contextual quick answer render in the real browser', async () => {
-    const response = await message(patient, 'Boshim og‘riyapti')
+    const composer = patient.getByLabel('Xabar', { exact: true })
+    await composer.fill('Boshim og‘riyapti')
+    await composer.press('Shift+Enter')
+    assert.equal(await composer.inputValue(), 'Boshim og‘riyapti\n')
+    const response = await mutate(patient, `/conversations/${fixture.conversation_id}/messages`, () => composer.press('Enter'), 201)
     assert.equal(response.assistant.risk, 'DOCTOR_REVIEW')
     assert.equal(response.answered_at, null)
     await latest(patient).getByText('Og‘riq to‘satdan juda kuchli boshlandimi', { exact: false }).waitFor()

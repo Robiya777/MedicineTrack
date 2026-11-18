@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
+import { CheckCheck, ClipboardCheck, PhoneCall, Send } from 'lucide-react'
 import { useSessionStore } from '@/state/session'
 import { channelSchema, contactResultSchema, type CareTask, type TaskCommand } from '@/api/tasks'
 import { parseTashkentInput, tashkentInputValue } from '@/lib/date'
@@ -6,28 +7,27 @@ import { Field, inputStyle, primaryButton, secondaryButton } from '@/components/
 import { TaskActionForm } from './action-form'
 import { channelLabels, contactResultLabels, taskIsOpen } from './labels'
 
-export function DoctorActions({ task }: { task: CareTask }) {
+export function DoctorActions({ task, medicationLink }: { task: CareTask; medicationLink?: ReactNode }) {
   const userId = useSessionStore((state) => state.user?.id)
   const [action, setAction] = useState<'accept' | 'contact-attempts' | 'complete' | null>(null)
   const allowed = taskIsOpen(task) && task.assigned_doctor === userId
-  if (!allowed) return null
 
   const currentAction = action === 'complete' && task.status !== 'ACCEPTED'
     ? null
     : action === 'accept' && task.status !== 'NEW' ? null : action
 
   return (
-    <section className="space-y-4 mt-card p-5 sm:p-6" aria-labelledby="doctor-actions-title">
-      <h2 id="doctor-actions-title" className="text-xl font-semibold">Chaqiruv bilan ishlash</h2>
-      {currentAction ? (
+    <section className="space-y-5 rounded-3xl border border-line bg-surface p-5 shadow-xs sm:p-6" aria-labelledby="doctor-actions-title">
+      <header className="flex flex-wrap items-center justify-between gap-4"><div className="flex items-center gap-3"><span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-mint text-primary"><ClipboardCheck size={22} aria-hidden="true" /></span><div><h2 id="doctor-actions-title" className="text-lg font-semibold">Chaqiruv bilan ishlash</h2><p className="mt-1 text-xs leading-5 text-muted">{allowed ? 'Qabul qilish, bemor bilan aloqa va kuzatuv natijalari.' : 'Dorilar va bemorning qabul tarixini ko‘ring.'}</p></div></div>{medicationLink}</header>
+      {allowed && (currentAction ? (
         <DoctorForm key={currentAction} task={task} action={currentAction} close={() => setAction(null)} />
       ) : (
-        <div className="flex flex-wrap gap-3">
-          {task.status === 'NEW' && <button type="button" className={primaryButton} onClick={() => setAction('accept')}>Qabul qilish</button>}
-          <button type="button" className={secondaryButton} onClick={() => setAction('contact-attempts')}>Aloqa urinishini qo‘shish</button>
-          {task.status === 'ACCEPTED' && <button type="button" className={primaryButton} onClick={() => setAction('complete')}>Natijani yuborish</button>}
+        <div className="flex flex-wrap gap-3 border-t border-line pt-5">
+          {task.status === 'NEW' && <button type="button" className={primaryButton} onClick={() => setAction('accept')}><CheckCheck size={18} aria-hidden="true" />Qabul qilish</button>}
+          <button type="button" className={secondaryButton} onClick={() => setAction('contact-attempts')}><PhoneCall size={17} aria-hidden="true" />Aloqani qayd etish</button>
+          {task.status === 'ACCEPTED' && <button type="button" className={primaryButton} onClick={() => setAction('complete')}><Send size={17} aria-hidden="true" />Natijani yuborish</button>}
         </div>
-      )}
+      ))}
     </section>
   )
 }
@@ -77,7 +77,7 @@ function DoctorForm({ task, action, close }: {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 rounded-2xl border border-line bg-page p-4 sm:p-5">
       <h3 className="font-semibold">{title}</h3>
       <TaskActionForm task={task} submitLabel={action === 'accept' ? 'Qabul qilishni tasdiqlash' : contact ? 'Urinishni saqlash' : 'Natijani tasdiqlash'} cancel={close} onSaved={close} check={validate} build={build}>
         {(errors, disabled) => action === 'accept' ? (
