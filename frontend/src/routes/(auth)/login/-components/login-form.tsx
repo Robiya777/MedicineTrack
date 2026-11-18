@@ -3,9 +3,10 @@ import { isAxiosError } from 'axios'
 import { Eye, EyeOff, HeartPulse, ShieldCheck } from 'lucide-react'
 import { useState, type SubmitEvent } from 'react'
 import { signIn } from '@/api/session'
+import { inputStyle, primaryButton } from '@/components/ui'
 import { workspaces } from '@/lib/workspaces'
 
-const inputClass = 'mt-input mt-2'
+const inputClass = `${inputStyle} min-h-12 border-input-line text-base`
 
 function loginError(error: unknown) {
   const status = isAxiosError(error) ? error.response?.status : undefined
@@ -53,30 +54,30 @@ export function LoginForm() {
   }
 
   return (
-    <main className="mt-theme mt-login">
-      <div className="mt-login-layout">
-        <div className="mt-login-story">
-          <Link to="/" className="mt-brand">
-            <span>
+    <main className="flex min-h-svh items-center justify-center bg-page p-4 sm:p-8 lg:p-12">
+      <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-line bg-surface shadow-xl shadow-primary/5 md:grid-cols-2">
+        <div className="flex flex-col justify-between gap-10 bg-primary p-7 text-white sm:p-10 lg:p-12">
+          <Link to="/" className="inline-flex w-fit items-center gap-3 rounded-lg text-xl font-semibold tracking-tight focus-visible:outline-white">
+            <span className="flex size-11 items-center justify-center rounded-xl bg-white/15">
               <HeartPulse size={29} aria-hidden="true" />
             </span>
             <strong>MedicineTrack</strong>
           </Link>
           <div>
-            <h2>Har bir bemor e’tiborda.</h2>
-            <p>
+            <h2 className="max-w-xs text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">Har bir bemor e’tiborda.</h2>
+            <p className="mt-5 max-w-sm text-base leading-7 text-white/90">
               Statsionardan chiqarilgandan keyingi bemor kuzatuvi va o‘z vaqtida
               patronaj.
             </p>
           </div>
-          <div className="mt-login-note">
+          <div className="flex items-center gap-3 text-sm leading-6 text-white/90">
             <ShieldCheck size={19} aria-hidden="true" />
             Bemorlar va tibbiyot xodimlari uchun
           </div>
         </div>
-        <div className="mt-login-form">
-          <h1>Kabinetga kirish</h1>
-          <p>Hisobingiz orqali tizimga kiring.</p>
+        <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Kabinetga kirish</h1>
+          <p className="mt-3 text-sm leading-6 text-muted">Hisobingiz orqali tizimga kiring.</p>
           {expired && (
             <p className="mt-3 text-sm text-warning" role="status">
               Sessiya tugadi. Qayta kiring.
@@ -105,18 +106,18 @@ export function LoginForm() {
               <label htmlFor="password" className="text-sm font-medium">
                 Parol
               </label>
-              <div className="mt-password">
+              <div className="relative mt-1">
                 <input
                   id="password"
                   name="password"
-                  className={inputClass}
+                  className={`${inputClass} pr-14`}
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
                 />
                 <button
                   type="button"
-                  className="mt-button mt-icon-button"
+                  className="absolute inset-y-0 right-1 my-auto inline-flex size-11 cursor-pointer items-center justify-center rounded-lg text-muted hover:bg-page hover:text-ink"
                   aria-label={
                     showPassword ? 'Parolni yashirish' : 'Parolni ko‘rsatish'
                   }
@@ -140,14 +141,14 @@ export function LoginForm() {
               </p>
             )}
             <button
-              className="mt-button mt-button-primary w-full"
+              className={`${primaryButton} min-h-12 w-full text-base`}
               type="submit"
               disabled={pending}
             >
               {pending ? 'Kirilmoqda…' : 'Kirish'}
             </button>
           </form>
-          <Link to="/faollashtirish" className="mt-link mt-5 inline-flex min-h-11 items-center text-sm text-action underline">Bemor hisobini faollashtirish</Link>
+          <Link to="/faollashtirish" className="mt-5 inline-flex min-h-11 items-center self-start rounded-sm text-sm font-medium text-primary underline underline-offset-4 hover:text-primary-hover">Bemor hisobini faollashtirish</Link>
         </div>
       </div>
     </main>

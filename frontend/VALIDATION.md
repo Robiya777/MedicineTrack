@@ -203,3 +203,13 @@ tasdiqlangan tavsiya va muallif hisobotiga sababli tuzatish Chromiumda tekshiril
 Yo‘qolgan javobdan keyingi idempotent retry va bemorning faqat o‘qish huquqi o‘tdi.
 1440/360 pxda overflow va React xatosi aniqlanmadi. Lint/typecheck/build o‘tdi.
 Dalillar: [6-bosqich hisoboti](docs/STAGE6_ACCEPTANCE.md).
+
+## Login dizayni va kirish yo‘naltirishi — 2026-11-18
+
+O‘chirilgan mt-login/mt-input/mt-button CSS klasslari amaldagi Tailwind va
+umumiy UI stillariga almashtirildi. 1440/768/360 pxda input chegarasi, tugma
+rangi, joylashuv va overflow Chromiumda tekshirildi. Parol ko‘rsatish/yashirish,
+xato login, sessiya tugashi xabari va ochiq bemor aktivatsiyasi ishladi.
+Kirilmagan foydalanuvchi /, kabinet, design va noma’lum manzildan /login ga
+yo‘naltirildi. Mavjud akkaunt loginidan keyin / o‘z kabinetiga yo‘naltirildi.
+ESLint, TypeScript va production build o‘tdi.
