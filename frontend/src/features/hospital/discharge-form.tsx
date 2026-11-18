@@ -1,4 +1,5 @@
-import { useQueryClient } from '@tanstack/react-query'
+import { adminOrganizationsQuery } from '@/api/admin'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { useState, type SubmitEvent } from 'react'
 import {
@@ -16,6 +17,8 @@ export function DischargeForm({ patient, draft, onSaved, cancel }: {
   cancel: () => void
 }) {
   const queryClient = useQueryClient()
+  const organizations = useQuery(adminOrganizationsQuery())
+  const hospitals = organizations.data?.filter(org => org.active && org.type === 'HOSPITAL') || []
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
   const [initialDate] = useState(() => tashkentInputValue(draft ? new Date(draft.discharged_at) : new Date()))
@@ -44,6 +47,7 @@ export function DischargeForm({ patient, draft, onSaved, cancel }: {
 
     try {
       const saved = await mutation.mutateAsync({
+        hospital: draft?.hospital || String(form.get('hospital') || ''),
         discharged_at: draft && date.getTime() === parseTashkentInput(initialDate).getTime() ? draft.discharged_at : date.toISOString(),
         follow_up_reason: followUp,
         recommendations,
@@ -63,11 +67,13 @@ export function DischargeForm({ patient, draft, onSaved, cancel }: {
   const fieldErrors = { ...responseFieldErrors(mutation.error), ...errors }
 
   return (
-    <form onSubmit={submit} className="space-y-5 mt-card p-5 sm:p-6" aria-busy={mutation.isPending}>
+    <form onSubmit={submit} className="space-y-5 rounded-2xl border border-line bg-surface shadow-xs p-5 sm:p-6" aria-busy={mutation.isPending}>
       <div>
         <h2 className="text-xl font-semibold">{draft ? 'Chiqarishni tahrirlash' : 'Chiqarish ma’lumotlari'}</h2>
         <p className="mt-1 wrap-break-word text-sm text-muted">{patient.full_name}</p>
       </div>
+      <Field label="Chiqaruvchi kasalxona" error={fieldErrors.hospital}>{a=><select {...a} name="hospital" className={inputStyle} defaultValue={draft?.hospital || ''} required disabled={Boolean(draft) || organizations.isPending || organizations.isError}><option value="">Kasalxonani tanlang</option>{hospitals.map(org=><option key={org.id} value={org.id}>{org.name}</option>)}</select>}</Field>
+      {organizations.isError && <RequestError error={organizations.error} retry={()=>void organizations.refetch()} />}
       <Field label="Haqiqiy chiqarish vaqti" error={fieldErrors.discharged_at} hint="Toshkent vaqti. Patronaj muddati shu paytdan hisoblanadi.">
         {(a11y) => (
           <input {...a11y} className={inputStyle} name="discharged_at" type="datetime-local" step="1" defaultValue={initialDate} required />
@@ -85,10 +91,10 @@ export function DischargeForm({ patient, draft, onSaved, cancel }: {
       </Field>
       {mutation.error && <RequestError error={mutation.error} />}
       <div className="flex flex-wrap gap-3">
-        <button type="submit" className={primaryButton} disabled={mutation.isPending || submitted}>
+        <button type="submit" className={primaryButton} disabled={mutation.isPending || submitted || organizations.isPending || organizations.isError}>
           {mutation.isPending ? 'Saqlanmoqda…' : draft ? 'O‘zgarishlarni saqlash' : 'Loyihani saqlash va tekshirish'}
         </button>
-        <button type="button" className={secondaryButton} onClick={cancel} disabled={mutation.isPending || submitted}>
+        <button type="button" className={secondaryButton} onClick={cancel} disabled={mutation.isPending || submitted || organizations.isPending || organizations.isError}>
           {draft ? 'Bekor qilish' : 'Bemor tanlashga qaytish'}
         </button>
       </div>

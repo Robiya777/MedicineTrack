@@ -14,7 +14,7 @@ export function PatientActivation({ patientId }: { patientId: string }) {
   const mutation = useMutation({ mutationFn: () => issueActivation(patientId) })
   return (
     <section
-      className="mt-card space-y-4 p-5 sm:p-6"
+      className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5 sm:p-6"
       aria-labelledby="activation-title"
     >
       <h2 id="activation-title" className="text-xl font-semibold">
@@ -111,7 +111,7 @@ export function ActivationPage() {
   const fields = { ...responseFieldErrors(mutation.error), ...errors }
   return (
     <main className="mt-theme mt-login">
-      <section className="mt-card w-full max-w-lg space-y-5 p-6 sm:p-8">
+      <section className="rounded-2xl border border-line bg-surface shadow-xs w-full max-w-lg space-y-5 p-6 sm:p-8">
         <h1 className="text-2xl font-semibold">
           Bemor hisobini faollashtirish
         </h1>

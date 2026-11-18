@@ -1,1 +1,1 @@
-export const roleLabels={ADMIN:'Texnik admin',HOSPITAL:'Statsionar xodimi',DOCTOR:'Shifokor',COORDINATOR:'Koordinator'}
+export const roleLabels={ADMIN:'Texnik admin',DOCTOR:'Shifokor',COORDINATOR:'Koordinator'}

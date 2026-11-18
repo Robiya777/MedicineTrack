@@ -181,7 +181,7 @@ export function DischargeCorrections({ discharge }: { discharge: Discharge }) {
   if (discharge.status !== 'CONFIRMED') return null
   return (
     <div className="space-y-4">
-      {user?.role === 'HOSPITAL' && (
+      {user?.role === 'COORDINATOR' && (
         <CorrectionForm kind="discharge" id={discharge.id} />
       )}
       {task.isPending && <Notice>Tuzatishlar tekshirilmoqda…</Notice>}

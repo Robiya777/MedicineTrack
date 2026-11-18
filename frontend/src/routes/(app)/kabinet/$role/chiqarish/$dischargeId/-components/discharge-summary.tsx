@@ -1,3 +1,4 @@
+import { adminOrganizationsQuery } from '@/api/admin'
 import {DischargeCorrections} from '@/features/records/corrections'
 import {PatientContact} from '@/features/records/patient-contact'
 import { useState } from 'react'
@@ -30,6 +31,7 @@ export interface DischargeSummaryProps {
 }
 
 export function DischargeSummary({ discharge }: DischargeSummaryProps) {
+  const hospitals = useQuery(adminOrganizationsQuery())
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const confirm = useIdempotentMutation((_: undefined, key) =>
@@ -113,6 +115,7 @@ export function DischargeSummary({ discharge }: DischargeSummaryProps) {
         )}
         <Facts
           items={[
+            { label: 'Chiqaruvchi kasalxona', value: hospitals.data?.find(org => org.id === discharge.hospital)?.name || 'Yuklanmoqda…' },
             { label: 'Bemor', value: record?.full_name ?? '—' },
             {
               label: 'Bemor UUIDsi',

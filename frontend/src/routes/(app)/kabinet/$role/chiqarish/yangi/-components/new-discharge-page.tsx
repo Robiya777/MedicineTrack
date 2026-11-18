@@ -11,12 +11,12 @@ export function NewDischargePage() {
 
   return (
     <section className="mt-workflow space-y-5">
-      <Link to="/kabinet/$role" params={{ role: 'statsionar' }} className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-semibold text-action">
+      <Link to="/kabinet/$role/chiqarish" params={{ role: 'koordinator' }} className="inline-flex min-h-11 items-center gap-2 rounded-sm text-sm font-semibold text-action">
         <ArrowLeft size={17} aria-hidden="true" />
         Chiqarishlarga qaytish
       </Link>
       <h1 className="text-3xl font-semibold tracking-tight">Yangi chiqarish</h1>
-      <ol aria-label="Chiqarish bosqichlari" className="mt-steps">
+      <ol aria-label="Chiqarish bosqichlari" className="flex flex-wrap gap-4 rounded-xl bg-mint p-4 text-sm">
         <li aria-current={patient ? undefined : 'step'} className={patient ? '' : 'font-semibold text-action'}>
           1. Bemor
         </li>
@@ -32,7 +32,7 @@ export function NewDischargePage() {
           onSaved={(discharge) => {
             void navigate({
               to: '/kabinet/$role/chiqarish/$dischargeId',
-              params: { role: 'statsionar', dischargeId: discharge.id },
+              params: { role: 'koordinator', dischargeId: discharge.id },
               replace: true,
             })
           }}
