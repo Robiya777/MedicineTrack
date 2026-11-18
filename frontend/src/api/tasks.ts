@@ -1,14 +1,36 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { apiClient } from './client'
-import { taskSchema } from './hospital'
+import {
+  createPaginatedResponseSchema,
+  isoDateTimeSchema,
+  patientSnapshotSchema,
+  taskStatusSchema,
+} from './types'
 
-const timestamp = z.iso.datetime({ offset: true })
 export const channelSchema = z.enum(['PHONE', 'HOME_VISIT'])
-export const contactResultSchema = z.enum(['CONTACTED', 'NO_ANSWER', 'WRONG_NUMBER', 'ADDRESS_NOT_FOUND', 'REFUSED'])
+export const contactResultSchema = z.enum([
+  'CONTACTED',
+  'NO_ANSWER',
+  'WRONG_NUMBER',
+  'ADDRESS_NOT_FOUND',
+  'REFUSED',
+])
+
+export const taskSchema = z.object({
+  id: z.uuid(),
+  discharge: z.uuid(),
+  patient: patientSnapshotSchema,
+  assigned_doctor: z.uuid().nullable(),
+  status: taskStatusSchema,
+  due_at: isoDateTimeSchema,
+  overdue: z.boolean(),
+})
+
+export type HospitalTask = z.infer<typeof taskSchema>
 
 const reportSchema = z.object({
-  performed_at: timestamp,
+  performed_at: isoDateTimeSchema,
   channel: channelSchema,
   observation: z.string(),
   actions: z.string(),
@@ -21,34 +43,38 @@ export const careTaskSchema = taskSchema.extend({
     birth_date: z.string().optional(),
   }),
   receiving_org: z.uuid().nullable(),
-  discharged_at: timestamp,
+  discharged_at: isoDateTimeSchema,
   recommendations: z.string(),
-  accepted_at: timestamp.nullable(),
-  completed_at: timestamp.nullable(),
+  accepted_at: isoDateTimeSchema.nullable(),
+  completed_at: isoDateTimeSchema.nullable(),
   version: z.number().int().positive(),
   late_documented: z.boolean(),
   report: reportSchema.nullish(),
-  contact_attempts: z.array(z.object({
-    id: z.uuid(),
-    channel: channelSchema,
-    result: contactResultSchema,
-    attempted_at: timestamp,
-    note: z.string(),
-    next_action: z.string(),
-    created_at: timestamp,
-  })),
-  timeline: z.array(z.object({
-    id: z.uuid(),
-    action: z.string(),
-    actor: z.uuid().nullable(),
-    created_at: timestamp,
-  })),
+  contact_attempts: z.array(
+    z.object({
+      id: z.uuid(),
+      channel: channelSchema,
+      result: contactResultSchema,
+      attempted_at: isoDateTimeSchema,
+      note: z.string(),
+      next_action: z.string(),
+      created_at: isoDateTimeSchema,
+    }),
+  ),
+  timeline: z.array(
+    z.object({
+      id: z.uuid(),
+      action: z.string(),
+      actor: z.uuid().nullable(),
+      created_at: isoDateTimeSchema,
+    }),
+  ),
   cancellation_note: z.string(),
   cancellation_code: z.string(),
-  cancelled_at: timestamp.nullable(),
+  cancelled_at: isoDateTimeSchema.nullable(),
 })
 
-const doctorSchema = z.object({
+export const doctorSchema = z.object({
   id: z.uuid(),
   username: z.string(),
   first_name: z.string(),
@@ -59,16 +85,18 @@ const doctorSchema = z.object({
 
 export type CareTask = z.infer<typeof careTaskSchema>
 export type Doctor = z.infer<typeof doctorSchema>
-export type TaskSegment = 'all' | 'open' | 'unassigned' | 'soon' | 'overdue' | 'COMPLETED' | 'CANCELLED'
-export type TaskFilters = { segment: TaskSegment; doctorId: string; organizationId: string }
-
-function listSchema<T extends z.ZodType>(schema: T) {
-  return z.object({
-    results: z.array(schema),
-    count: z.number(),
-    next: z.string().nullable(),
-    previous: z.string().nullable(),
-  })
+export type TaskSegment =
+  | 'all'
+  | 'open'
+  | 'unassigned'
+  | 'soon'
+  | 'overdue'
+  | 'COMPLETED'
+  | 'CANCELLED'
+export type TaskFilters = {
+  segment: TaskSegment
+  doctorId: string
+  organizationId: string
 }
 
 async function fetchAll<T extends z.ZodType>(
@@ -79,8 +107,11 @@ async function fetchAll<T extends z.ZodType>(
 ) {
   const results: z.infer<T>[] = []
   for (let page = 1; ; page += 1) {
-    const { data } = await apiClient.get(path, { signal, params: { ...params, page, page_size: 100 } })
-    const response = listSchema(schema).parse(data)
+    const { data } = await apiClient.get(path, {
+      signal,
+      params: { ...params, page, page_size: 100 },
+    })
+    const response = createPaginatedResponseSchema(schema).parse(data)
     results.push(...response.results)
     if (!response.next) return results
   }
@@ -102,7 +133,9 @@ export function taskListQuery(filters: TaskFilters, page: number) {
       if (filters.organizationId) params.organization_id = filters.organizationId
       if (filters.segment === 'overdue') params.overdue = 'true'
       if (filters.segment === 'unassigned') params.status = 'UNASSIGNED'
-      if (filters.segment === 'COMPLETED' || filters.segment === 'CANCELLED') params.status = filters.segment
+      if (filters.segment === 'COMPLETED' || filters.segment === 'CANCELLED') {
+        params.status = filters.segment
+      }
 
       if (filters.segment === 'open' || filters.segment === 'soon') {
         if (filters.segment === 'soon') {
@@ -110,17 +143,20 @@ export function taskListQuery(filters: TaskFilters, page: number) {
           params.overdue = 'false'
         }
         // The API supports one status per request. Merge every matching page before paginating.
-        const groups = await Promise.all(['UNASSIGNED', 'NEW', 'ACCEPTED'].map((status) => (
-          fetchAll('/tasks', careTaskSchema, signal, { ...params, status })
-        )))
+        const groups = await Promise.all(
+          ['UNASSIGNED', 'NEW', 'ACCEPTED'].map((status) =>
+            fetchAll('/tasks', careTaskSchema, signal, { ...params, status }),
+          ),
+        )
         const byId = new Map<string, CareTask>()
         for (const task of groups.flat()) {
           const previous = byId.get(task.id)
           if (!previous || previous.version < task.version) byId.set(task.id, task)
         }
-        const matching = [...byId.values()].sort((a, b) => (
-          Date.parse(a.due_at) - Date.parse(b.due_at) || a.id.localeCompare(b.id)
-        ))
+        const matching = [...byId.values()].sort(
+          (a, b) =>
+            Date.parse(a.due_at) - Date.parse(b.due_at) || a.id.localeCompare(b.id),
+        )
         return {
           results: matching.slice((page - 1) * 20, page * 20),
           count: matching.length,
@@ -129,9 +165,16 @@ export function taskListQuery(filters: TaskFilters, page: number) {
         }
       }
 
-      const { data } = await apiClient.get('/tasks', { signal, params: { ...params, page } })
-      const result = listSchema(careTaskSchema).parse(data)
-      return { ...result, hasNext: Boolean(result.next), hasPrevious: Boolean(result.previous) }
+      const { data } = await apiClient.get('/tasks', {
+        signal,
+        params: { ...params, page },
+      })
+      const result = createPaginatedResponseSchema(careTaskSchema).parse(data)
+      return {
+        ...result,
+        hasNext: Boolean(result.next),
+        hasPrevious: Boolean(result.previous),
+      }
     },
   })
 }
@@ -157,11 +200,16 @@ export function doctorsQuery() {
 export function organizationsQuery() {
   return queryOptions({
     queryKey: ['care', 'organizations'],
-    queryFn: ({ signal }) => fetchAll('/reference/organizations', z.object({
-      id: z.uuid(),
-      name: z.string(),
-      active: z.boolean(),
-    }), signal),
+    queryFn: ({ signal }) =>
+      fetchAll(
+        '/reference/organizations',
+        z.object({
+          id: z.uuid(),
+          name: z.string(),
+          active: z.boolean(),
+        }),
+        signal,
+      ),
   })
 }
 
@@ -171,22 +219,27 @@ export function metricsQuery() {
     refetchInterval: 30_000,
     queryFn: async ({ signal }) => {
       const { data } = await apiClient.get('/dashboard/metrics', { signal })
-      return z.object({
-        active: z.number(),
-        overdue: z.number(),
-        unassigned: z.number(),
-        completed_on_time: z.number(),
-        assessed: z.number(),
-        sla_percent: z.number().nullable(),
-        cancelled: z.number(),
-        late_documented: z.number(),
-      }).parse(data)
+      return z
+        .object({
+          active: z.number(),
+          overdue: z.number(),
+          unassigned: z.number(),
+          completed_on_time: z.number(),
+          assessed: z.number(),
+          sla_percent: z.number().nullable(),
+          cancelled: z.number(),
+          late_documented: z.number(),
+        })
+        .parse(data)
     },
   })
 }
 
 export function doctorName(doctor: Doctor) {
-  return [doctor.first_name, doctor.last_name].filter(Boolean).join(' ') || doctor.username
+  return (
+    [doctor.first_name, doctor.last_name].filter(Boolean).join(' ') ||
+    doctor.username
+  )
 }
 
 export type TaskCommand =
@@ -194,25 +247,29 @@ export type TaskCommand =
   | { action: 'reassign'; version: number; doctor_id: string; reason: string }
   | { action: 'cancel'; version: number; reason_code: string; reason: string }
   | {
-    action: 'contact-attempts'
-    version: number
-    channel: z.infer<typeof channelSchema>
-    result: z.infer<typeof contactResultSchema>
-    attempted_at: string
-    note: string
-    next_action: string
-  }
+      action: 'contact-attempts'
+      version: number
+      channel: z.infer<typeof channelSchema>
+      result: z.infer<typeof contactResultSchema>
+      attempted_at: string
+      note: string
+      next_action: string
+    }
   | {
-    action: 'complete'
-    version: number
-    performed_at: string
-    channel: z.infer<typeof channelSchema>
-    observation: string
-    actions: string
-    follow_up: string
-  }
+      action: 'complete'
+      version: number
+      performed_at: string
+      channel: z.infer<typeof channelSchema>
+      observation: string
+      actions: string
+      follow_up: string
+    }
 
-export async function sendTaskCommand(id: string, command: TaskCommand, key: string) {
+export async function sendTaskCommand(
+  id: string,
+  command: TaskCommand,
+  key: string,
+) {
   const { action, ...input } = command
   const { data } = await apiClient.post(`/tasks/${id}/${action}`, input, {
     headers: { 'Idempotency-Key': key },

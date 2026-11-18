@@ -13,8 +13,8 @@ import {
   type Plan,
   type Occurrence,
   type RecordInput,
-} from '../../api/medications'
-import { useSessionStore } from '../../state/session'
+} from '@/api/medications'
+import { useSessionStore } from '@/state/session'
 import {
   Field,
   inputStyle,
@@ -23,16 +23,18 @@ import {
   RequestError,
   secondaryButton,
   Facts,
-} from '../hospital/ui'
+} from '@/components/ui'
 import {
   useIdempotentMutation,
+} from '@/hooks/use-idempotent-mutation'
+import {
   responseFieldErrors,
-} from '../hospital/mutation'
+} from '@/lib/errors'
 import {
   formatTashkentDateTime,
   parseTashkentInput,
   tashkentInputValue,
-} from '../hospital/format'
+} from '@/lib/date'
 import { MedicationEditor } from './editor'
 const route = getRouteApi('/(app)/kabinet/$role/dorilar/$patientId/')
 const statuses = {

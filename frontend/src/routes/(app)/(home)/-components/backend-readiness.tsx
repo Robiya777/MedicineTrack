@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import { CircleAlert, CircleCheck, CloudOff, LoaderCircle } from 'lucide-react'
-import { checkBackendReadiness } from '../../../../api/client'
+import { checkBackendReadiness } from '@/api/client'
 
 const connectionStatus = {
   checking: { label: 'Tekshirilmoqda…', Icon: LoaderCircle, color: 'text-muted' },

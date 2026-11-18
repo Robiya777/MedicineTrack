@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { workspaceSearch } from '../../../../components/workspace-search'
-import { restoreSession } from '../../../../api/session'
-import { workspaces } from '../../../../components/workspaces'
+import { workspaceSearch } from '@/lib/workspace-search'
+import { restoreSession } from '@/api/session'
+import { workspaces } from '@/lib/workspaces'
 import { SessionError, WorkspaceLayout } from './-components/workspace-layout'
 
 export const Route = createFileRoute('/(app)/kabinet/$role')({

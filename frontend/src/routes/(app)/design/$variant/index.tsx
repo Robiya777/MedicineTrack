@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { variants } from '../-components/catalog'
+import { variants } from '@/routes/(app)/design/-components/catalog'
 
 export const Route = createFileRoute('/(app)/design/$variant/')({
   beforeLoad: ({ context }) => {

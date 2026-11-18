@@ -3,7 +3,6 @@ import { Activity, ArrowLeft, ArrowRight, CircleCheck, Columns2, GitCompareArrow
 import { screens, variantIds, variants } from './catalog'
 import type { VariantId } from './catalog'
 import './design.css'
-import './medicinetrack/preview.css'
 
 const icons = { medicinetrack: HeartPulse, clinical: LayoutDashboard, operations: Columns2, portal: PanelsTopLeft, night: Moon, guided: CircleCheck }
 

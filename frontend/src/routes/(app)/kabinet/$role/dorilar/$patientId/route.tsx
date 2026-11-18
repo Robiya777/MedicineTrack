@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { useSessionStore } from '../../../../../../state/session'
+import { useSessionStore } from '@/state/session'
 export const Route = createFileRoute('/(app)/kabinet/$role/dorilar/$patientId')(
   {
     beforeLoad: ({ params }) => {

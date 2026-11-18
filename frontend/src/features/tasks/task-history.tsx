@@ -1,6 +1,6 @@
-import type { CareTask } from '../../api/tasks'
-import { Facts } from '../hospital/ui'
-import { formatTashkentDateTime } from '../hospital/format'
+import type { CareTask } from '@/api/tasks'
+import { Facts } from '@/components/ui'
+import { formatTashkentDateTime } from '@/lib/date'
 import { channelLabels, contactResultLabels, eventLabels } from './labels'
 
 export function TaskHistory({ task }: { task: CareTask }) {

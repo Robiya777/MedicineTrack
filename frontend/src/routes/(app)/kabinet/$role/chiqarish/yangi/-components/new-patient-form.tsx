@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type SubmitEvent } from 'react'
-import { createPatient, hospitalPatientQuery, territoriesQuery, type HospitalPatient, type PatientInput } from '../../../../../../../api/hospital'
-import { tashkentInputValue } from '../../../../../../../features/hospital/format'
-import { responseFieldErrors, useIdempotentMutation } from '../../../../../../../features/hospital/mutation'
-import { Field, inputStyle, Notice, primaryButton, RequestError, secondaryButton } from '../../../../../../../features/hospital/ui'
+import { createPatient, hospitalPatientQuery, territoriesQuery, type HospitalPatient, type PatientInput } from '@/api/hospital'
+import { tashkentInputValue } from '@/lib/date'
+import { responseFieldErrors } from '@/lib/errors'
+import { useIdempotentMutation } from '@/hooks/use-idempotent-mutation'
+import { Field, inputStyle, Notice, primaryButton, RequestError, secondaryButton } from '@/components/ui'
 
 export function NewPatientForm({ onSaved, cancel }: {
   onSaved: (patient: HospitalPatient) => void

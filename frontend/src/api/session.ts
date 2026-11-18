@@ -1,7 +1,7 @@
 import { tabSessionId } from './tab-session'
 import axios, { isAxiosError } from 'axios'
-import { queryClient } from '../state/query-client'
-import { useSessionStore, type SessionUser } from '../state/session'
+import { queryClient } from '@/state/query-client'
+import { useSessionStore, type SessionUser } from '@/state/session'
 
 const authClient = axios.create({
   baseURL: '/api/v1',

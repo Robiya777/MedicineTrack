@@ -1,9 +1,13 @@
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import babel from '@rolldown/plugin-babel'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 import { z } from 'zod'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const proxyTargetSchema = z.string().refine((value) => {
   const url = URL.parse(value)
@@ -25,6 +29,11 @@ export default defineConfig(({ mode }) => {
   const backend = { target: target.data, changeOrigin: true }
 
   return {
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
     plugins: [
       tanstackRouter({ target: 'react', autoCodeSplitting: true }),
       react(),

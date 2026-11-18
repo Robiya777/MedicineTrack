@@ -152,3 +152,15 @@ Webda lokal fon notification yoki doimiy offline navbat yaratilmagan. Bu APK
 vazifasi; fizik qurilmadagi eslatma → qayd → web tarixi sinovi Android jamoasi
 bilan alohida bajariladi. API va versiya qoidalari backendning
 [MEDICATION_API.md](../backend/docs/MEDICATION_API.md) hujjatida.
+
+## Bildirishnomalar
+
+Kabinet yuqori panelidagi qo‘ng‘iroq in-app bildirishnomalarni 15 soniyada
+tekshiradi. O‘qilmaganlar soni ko‘rinadi; bildirishnomadan chaqiruv yoki suhbatga
+ o‘tish va o‘qilgan deb belgilash mumkin. Chaqiruv tafsilotida shifokor
+**Qabul qilish**ni bosadi. Brauzerning tashqi push notification’i bu modulga kirmaydi.
+
+Dockersiz yetkazish uchun backend terminalida
+`python manage.py process_notifications --watch` ishlashi kerak.
+Yangi bemorda faol shifokor biriktirilmagan bo‘lsa, chiqarish UNASSIGNED bo‘ladi:
+koordinator uni shifokorga tayinlamaguncha shifokorga tayinlash bildirishnomasi kelmaydi.

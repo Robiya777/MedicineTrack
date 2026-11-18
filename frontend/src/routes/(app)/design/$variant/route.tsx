@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, notFound } from '@tanstack/react-router'
-import { isVariantId } from '../-components/catalog'
+import { isVariantId } from '@/routes/(app)/design/-components/catalog'
 
 export const Route = createFileRoute('/(app)/design/$variant')({
   beforeLoad: ({ params }) => {

@@ -11,8 +11,6 @@ import {
 } from './data'
 import { PreviewDialog, TaskDetailDialog } from './dialogs'
 import { TaskTable } from './task-table'
-import './theme.css'
-import './preview.css'
 
 type ViewState = 'normal' | 'loading' | 'empty' | 'error'
 const pageSize = 6

@@ -1,8 +1,8 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
-import type { HospitalPatient } from '../../../../../../../api/hospital'
-import { DischargeForm } from '../../../../../../../features/hospital/discharge-form'
+import type { HospitalPatient } from '@/api/hospital'
+import { DischargeForm } from '@/features/hospital/discharge-form'
 import { PatientSelect } from './patient-select'
 
 export function NewDischargePage() {

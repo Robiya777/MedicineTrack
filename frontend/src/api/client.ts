@@ -1,5 +1,5 @@
 import axios, { CanceledError, type InternalAxiosRequestConfig } from 'axios'
-import { useSessionStore } from '../state/session'
+import { useSessionStore } from '@/state/session'
 import { refreshForRequest } from './session'
 
 const apiBaseUrl = '/api/v1'
