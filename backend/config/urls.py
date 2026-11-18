@@ -3,6 +3,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import SimpleRouter
 
 from accounts.management_views import StaffAccountViewSet
+from accounts.presence_views import PresenceView
 from accounts.views import (
     ActivatePatientView,
     CSRFView,
@@ -33,6 +34,7 @@ from medications.views import (
     PatientPlansView,
 )
 from messaging.assistant_views import AssistantConfigView, EmergencyViewSet
+from messaging.group_views import PatientChatTeamView
 from messaging.views import ConversationViewSet, ScheduleView, UnansweredView
 
 router = SimpleRouter(trailing_slash=False)
@@ -52,6 +54,8 @@ router.register("reference/doctors", DoctorViewSet, basename="doctor")
 router.register("conversations", ConversationViewSet, basename="conversation")
 
 urlpatterns = [
+    path("api/v1/me/presence", PresenceView.as_view()),
+    path("api/v1/patients/<uuid:pk>/chat-doctors", PatientChatTeamView.as_view()),
     path("api/v1/assistant/config", AssistantConfigView.as_view()),
     path("api/v1/patients/<uuid:pk>/medication-plans", PatientPlansView.as_view()),
     path("api/v1/patients/<uuid:pk>/medication-history", MedicationHistoryView.as_view()),

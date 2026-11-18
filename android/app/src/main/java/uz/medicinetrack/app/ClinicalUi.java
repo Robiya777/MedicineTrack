@@ -490,19 +490,23 @@ final class ClinicalUi {
             LinearLayout c = m.card();
             String kind = n.optString("event_type");
             String label =
-                kind.equals("AI_EMERGENCY_ALERT")
-                    ? "DEMO SOS · Shoshilinch belgi"
-                    : kind.contains("OVERDUE") || kind.contains("ESCALAT")
-                        ? "Javob muddati o‘tgan"
-                        : kind.contains("REMIND")
-                            ? "Eslatma"
-                            : kind.contains("MESSAGE")
-                                ? "Yangi xabar"
-                                : kind.contains("ASSIGN") || kind.contains("CREAT")
-                                    ? "Yangi topshiriq"
-                                    : kind.contains("WORSEN")
-                                        ? "Bemor holati bo‘yicha xabar"
-                                        : "Parvarish bo‘yicha yangilik";
+                kind.equals("AI_ASSISTANT_REPLY")
+                    ? "AI yordamchi javob berdi"
+                    : kind.equals("CHAT_TEAM_ADDED")
+                        ? "Siz chat jamoasiga qo‘shildingiz"
+                        : kind.equals("AI_EMERGENCY_ALERT")
+                            ? "DEMO SOS · Shoshilinch belgi"
+                            : kind.contains("OVERDUE") || kind.contains("ESCALAT")
+                                ? "Javob muddati o‘tgan"
+                                : kind.contains("REMIND")
+                                    ? "Eslatma"
+                                    : kind.contains("MESSAGE")
+                                        ? "Yangi xabar"
+                                        : kind.contains("ASSIGN") || kind.contains("CREAT")
+                                            ? "Yangi topshiriq"
+                                            : kind.contains("WORSEN")
+                                                ? "Bemor holati bo‘yicha xabar"
+                                                : "Parvarish bo‘yicha yangilik";
             c.addView(m.text(label, 20, MainActivity.INK));
             m.label(
                 c,

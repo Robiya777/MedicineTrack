@@ -16,7 +16,7 @@ from common.exceptions import Conflict
 from common.idempotency import IdempotencyMixin
 from common.pagination import StandardPagination
 
-from .models import PatientStatusUpdate, ResponseEpisode, WorkSchedule
+from .models import Message, PatientStatusUpdate, ResponseEpisode, WorkSchedule
 from .serializers import (
     ConversationSerializer,
     MessageInput,
@@ -56,11 +56,18 @@ class ConversationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, Scop
     def messages(self, request, pk=None):
         conversation = self.get_object()
         if request.method == "GET":
-            queryset = conversation.messages.select_related(
-                "response_episode",
-                "assistant_assessment__incident__assessment",
-                "assistant_assessment__incident__episode__conversation__patient",
-            ).order_by("sent_at", "id")
+            queryset = (
+                Message.objects.filter(
+                    Q(conversation=conversation) | Q(response_episode__conversation=conversation)
+                )
+                .select_related(
+                    "sender",
+                    "response_episode",
+                    "assistant_assessment__incident__assessment",
+                    "assistant_assessment__incident__episode__conversation__patient",
+                )
+                .order_by("sent_at", "id")
+            )
             return self.get_paginated_response(
                 MessageSerializer(self.paginate_queryset(queryset), many=True).data
             )
@@ -81,7 +88,10 @@ class ConversationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, Scop
         self.get_object()
         conversation = locked_conversation(pk, request.user)
         count = (
-            conversation.messages.filter(read_at__isnull=True)
+            Message.objects.filter(
+                Q(conversation=conversation) | Q(response_episode__conversation=conversation)
+            )
+            .filter(read_at__isnull=True)
             .exclude(sender=request.user)
             .update(read_at=timezone.now())
         )

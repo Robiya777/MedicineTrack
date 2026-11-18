@@ -2,14 +2,20 @@ from datetime import date, time
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .assistant_serializers import AssistantAssessmentSerializer
+from .groups import can_manage_team, team_metadata
 from .models import Conversation, Message, PatientStatusUpdate, WorkSchedule
 from .services import schedule_snapshot
 
 
 class ConversationSerializer(serializers.ModelSerializer):
+    assistant_enabled = serializers.SerializerMethodField()
+    patient_name = serializers.CharField(source="patient.full_name", read_only=True)
+    team = serializers.SerializerMethodField()
+    can_manage_team = serializers.SerializerMethodField()
     response_due_at = serializers.SerializerMethodField()
     first_unanswered_at = serializers.SerializerMethodField()
     work_schedule = serializers.SerializerMethodField()
@@ -27,8 +33,39 @@ class ConversationSerializer(serializers.ModelSerializer):
             "work_schedule",
             "response_policy",
             "created_at",
+            "patient_name",
+            "team",
+            "can_manage_team",
+            "assistant_enabled",
         ]
         read_only_fields = fields
+
+    @extend_schema_field(
+        {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string", "format": "uuid"},
+                    "name": {"type": "string"},
+                    "online": {"type": "boolean"},
+                    "primary": {"type": "boolean"},
+                },
+                "required": ["id", "name", "online", "primary"],
+            },
+        }
+    )
+    def get_team(self, obj):
+        return team_metadata(obj.patient_id)
+
+    def get_can_manage_team(self, obj) -> bool:
+        request = self.context.get("request")
+        return bool(request and can_manage_team(request.user, obj.patient))
+
+    def get_assistant_enabled(self, obj) -> bool:
+        from .assistant import assistant_enabled
+
+        return assistant_enabled()
 
     def get_response_due_at(self, obj) -> str | None:
         episode = obj.episodes.filter(responded_at__isnull=True).first()
@@ -50,9 +87,13 @@ class ConversationSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    assistant = AssistantAssessmentSerializer(
-        source="assistant_assessment", read_only=True, allow_null=True
+    assistant = serializers.SerializerMethodField()
+    assistant_status = serializers.SerializerMethodField()
+    assistant_due_at = serializers.DateTimeField(
+        source="assistant_assessment.reply_due_at", read_only=True, allow_null=True
     )
+    sender_name = serializers.SerializerMethodField()
+    sender_role = serializers.CharField(source="sender.role", read_only=True)
     delivery_status = serializers.SerializerMethodField()
     answered_at = serializers.SerializerMethodField()
 
@@ -69,8 +110,32 @@ class MessageSerializer(serializers.ModelSerializer):
             "delivery_status",
             "answered_at",
             "assistant",
+            "assistant_status",
+            "assistant_due_at",
+            "sender_name",
+            "sender_role",
         ]
         read_only_fields = fields
+
+    @extend_schema_field(AssistantAssessmentSerializer(allow_null=True))
+    def get_assistant(self, obj):
+        assessment = getattr(obj, "assistant_assessment", None)
+        return (
+            AssistantAssessmentSerializer(assessment).data
+            if assessment and assessment.reply_at
+            else None
+        )
+
+    def get_assistant_status(self, obj) -> str | None:
+        assessment = getattr(obj, "assistant_assessment", None)
+        if not assessment:
+            return None
+        if assessment.reply_at:
+            return "REPLIED"
+        return "CANCELLED" if assessment.suppressed_at else "WAITING"
+
+    def get_sender_name(self, obj) -> str:
+        return obj.sender.get_full_name() or obj.sender.username
 
     def get_delivery_status(self, obj) -> str:
         if obj.response_episode_id and obj.response_episode.responded_at:

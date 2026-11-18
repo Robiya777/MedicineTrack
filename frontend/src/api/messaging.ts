@@ -17,6 +17,7 @@ const snapshot = scheduleInputSchema.extend({
   id: z.uuid(),
   version: z.number(),
 })
+export const teamDoctorSchema = z.object({ id: z.uuid(), name: z.string(), online: z.boolean(), primary: z.boolean() })
 export const conversationSchema = z.object({
   id: z.uuid(),
   patient: z.uuid(),
@@ -27,6 +28,10 @@ export const conversationSchema = z.object({
   work_schedule: z.union([snapshot, z.object({}).strict()]),
   response_policy: z.string(),
   created_at: date,
+  patient_name: z.string(),
+  team: z.array(teamDoctorSchema),
+  can_manage_team: z.boolean(),
+  assistant_enabled: z.boolean().default(false),
 })
 const messageSchema = z.object({
   id: z.uuid(),
@@ -39,6 +44,10 @@ const messageSchema = z.object({
   delivery_status: z.enum(['SENT', 'READ', 'ANSWERED']),
   answered_at: date.nullable(),
   assistant: assessmentSchema.nullable().optional(),
+  assistant_status: z.enum(['WAITING', 'REPLIED', 'CANCELLED']).nullable(),
+  assistant_due_at: date.nullable(),
+  sender_name: z.string(),
+  sender_role: z.enum(['DOCTOR', 'PATIENT']),
 })
 export const states = {
   IMPROVED: 'Yaxshilandi',
@@ -94,7 +103,7 @@ export function conversationsQuery() {
     queryKey: messagingKeys.conversations,
     queryFn: ({ signal }) =>
       allPages('/conversations', conversationSchema, signal),
-    refetchInterval: 15000,
+    refetchInterval: 5000,
     retry: false,
   })
 }
@@ -105,7 +114,7 @@ export function conversationQuery(id: string) {
       conversationSchema.parse(
         (await apiClient.get(`/conversations/${id}`, { signal })).data,
       ),
-    refetchInterval: 15000,
+    refetchInterval: 5000,
     retry: false,
   })
 }
@@ -114,7 +123,7 @@ export function messagesQuery(id: string) {
     queryKey: ['messaging', 'messages', id],
     queryFn: ({ signal }) =>
       allPages(`/conversations/${id}/messages`, messageSchema, signal),
-    refetchInterval: 15000,
+    refetchInterval: 2000,
     retry: false,
   })
 }

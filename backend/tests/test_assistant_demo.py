@@ -271,6 +271,9 @@ def test_non_demo_runtime_never_silently_enables_assistant(assistant_world, sett
     assert response.status_code == 201 and response.data["assistant"] is None
     assert not AssistantAssessment.objects.exists()
     assert patient.get("/api/v1/assistant/config").data["enabled"] is False
+    assert (
+        patient.get(f"/api/v1/conversations/{conversation.pk}").data["assistant_enabled"] is False
+    )
 
 
 @pytest.mark.django_db

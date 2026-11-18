@@ -28,7 +28,16 @@ public final class FlowChecks extends Instrumentation {
   }
 
   void ui(Runnable r) {
-    runOnMainSync(r);
+    Throwable[] failure = {null};
+    runOnMainSync(
+        () -> {
+          try {
+            r.run();
+          } catch (Throwable error) {
+            failure[0] = error;
+          }
+        });
+    if (failure[0] != null) throw new AssertionError(failure[0]);
   }
 
   void idle() throws Exception {
@@ -267,6 +276,14 @@ public final class FlowChecks extends Instrumentation {
       visible("Uyda ham yolg‘iz emassiz.");
       navSelected("Asosiy");
       screenshot("02-patient-home");
+      if (args.getString("mode", "full").equals("group")) {
+        groupScreens(patient, vault, base, password);
+        report.putString(
+            "stream",
+            "PASS: " + checks + " group chat, doctor presence and human reply priority checks.\n");
+        finish(Activity.RESULT_OK, report);
+        return;
+      }
       if (args.getString("mode", "full").equals("assistant")) {
         assistantScreens(patient, vault, base, password);
         report.putString(
@@ -462,8 +479,8 @@ public final class FlowChecks extends Instrumentation {
       screenshot("04-chat");
       ui(() -> activity.onBackPressed());
       idle();
-      visible("Suhbatlar");
-      navSelected("Suhbatlar");
+      visible("Uyda ham yolg‘iz emassiz.");
+      navSelected("Asosiy");
       ui(() -> activity.account());
       click("Bildirishnomalar");
       idle();
@@ -889,7 +906,7 @@ public final class FlowChecks extends Instrumentation {
         screenshot("10-linked-web-medications");
         ui(() -> activity.chat(fixture.optString("conversation_id"), false));
         idle();
-        visible("Shifokor bilan suhbat");
+        visible("Tibbiy jamoa bilan suhbat");
         screenshot("11-linked-web-chat");
         Api linkedDoctor = new Api(vault);
         linkedDoctor.login(
@@ -992,10 +1009,85 @@ public final class FlowChecks extends Instrumentation {
         });
   }
 
+  void groupScreens(Api patient, Vault vault, String base, String password) throws Exception {
+    Api doctor = new Api(vault), peer = new Api(vault);
+    doctor.login(base, args.getString("doctorUser", "demo.doctor"), password);
+    peer.login(base, args.getString("peerUser", "demo.doctor2"), password);
+    String patientId = patient.user.getString("patient"),
+        teamPath = "/patients/" + patientId + "/chat-doctors";
+    JSONObject team =
+        doctor.post(
+            teamPath,
+            MainActivity.json("action", "ADD", "doctor", peer.user.getString("id")),
+            Api.key());
+    check(
+        team.getJSONArray("members").length() == 2, "Two treating doctors share one patient chat");
+    ui(
+        () -> {
+          activity.api = patient;
+          activity.loadConversations();
+        });
+    idle();
+    check(
+        activity.screen.equals("Suhbat") && !activity.conversationId.isEmpty(),
+        "Patient opens chat directly without choosing a doctor profile");
+    String id = activity.conversationId;
+    ui(
+        () ->
+            check(
+                find(activity.root, "Suhbatni ochish") == null,
+                "Patient chat has no doctor profile list"));
+    visible("Tibbiy jamoa bilan suhbat");
+    visible("2 shifokor onlayn");
+    typeChat("Jamoa shifokorlariga savolim bor");
+    click("Yuborish");
+    idle();
+    JSONObject sent = lastMessage(patient, id);
+    check(
+        sent.isNull("assistant") && sent.getString("assistant_status").equals("WAITING"),
+        "Online doctors get priority over the AI");
+    visible("Shifokor javobi kutilmoqda.");
+    JSONObject reply =
+        peer.post(
+            "/conversations/" + id + "/messages",
+            MainActivity.json("text", "Ikkinchi shifokorning sintetik javobi"),
+            Api.key());
+    check(
+        reply.getString("sender").equals(peer.user.getString("id")),
+        "Second doctor posts to the same group");
+    ui(() -> activity.chat(id, true));
+    idle();
+    visible("Ikkinchi shifokorning sintetik javobi");
+    visible(peer.user.getString("username"));
+    JSONArray rows = patient.list("/conversations/" + id + "/messages");
+    for (int i = 0; i < rows.length(); i++)
+      if (rows.getJSONObject(i).getString("id").equals(sent.getString("id"))) {
+        check(
+            rows.getJSONObject(i).getString("assistant_status").equals("CANCELLED"),
+            "Human team reply cancels delayed AI");
+        check(
+            rows.getJSONObject(i).getString("delivery_status").equals("ANSWERED"),
+            "Team reply answers the clinical episode");
+      }
+    screenshot("group-patient-chat");
+    doctor.post(
+        teamPath,
+        MainActivity.json("action", "REMOVE", "doctor", peer.user.getString("id")),
+        Api.key());
+    boolean revoked = false;
+    try {
+      peer.get("/conversations/" + id + "/messages");
+    } catch (Api.Failure error) {
+      revoked = error.status == 404;
+    }
+    check(revoked, "Removing a doctor revokes chat access");
+    Reminders.clear(getTargetContext());
+  }
+
   void assistantScreens(Api patient, Vault vault, String base, String password) throws Exception {
     check(patient.get("/assistant/config").getBoolean("enabled"), "Keyless assistant enabled");
-    visible("AI yordamchi · DEMO");
-    click("AI yordamchi bilan suhbat");
+    visible("Tibbiy jamoa · Chat");
+    click("Umumiy chatni ochish");
     idle();
     String conversation = activity.conversationId;
     check(!conversation.isEmpty(), "Assistant entry opens assigned conversation");

@@ -140,7 +140,10 @@ class LoginView(PublicAuthView):
             raise AuthenticationFailed("Muassasa faol emas.")
         with transaction.atomic():
             session = AuthSession.objects.create(
-                user=user, client=data["client"], expires_at=timezone.now() + timedelta(days=7)
+                user=user,
+                client=data["client"],
+                expires_at=timezone.now() + timedelta(days=7),
+                last_seen_at=timezone.now() if user.role == Role.DOCTOR else None,
             )
             return mint_tokens(session, data.get("tab_id"))
 

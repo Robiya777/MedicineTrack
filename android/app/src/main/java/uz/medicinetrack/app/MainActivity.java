@@ -39,6 +39,7 @@ public final class MainActivity extends Activity {
   TextView feedback;
   String screen = "Kirish", conversationId = "";
   boolean busy = false, paused = true, initialMedicationSync = false;
+  long lastPresencePulse;
   int generation = 0;
   JSONArray doses = new JSONArray();
   String medicationSyncWarning = "";
@@ -79,14 +80,18 @@ public final class MainActivity extends Activity {
   final Runnable poll =
       new Runnable() {
         public void run() {
+          if (!paused && System.currentTimeMillis() - lastPresencePulse >= 15000)
+            pulsePresence(true);
           if (!paused
               && screen.equals("Suhbat")
               && !conversationId.isEmpty()
               && !busy
-              && !(getCurrentFocus() instanceof EditText)
+              && (!(getCurrentFocus() instanceof EditText)
+                  || chatInput == null
+                  || chatInput.getText().toString().isEmpty())
               && (contentScroll == null || !contentScroll.canScrollVertically(1)))
             chat(conversationId, false);
-          handler.postDelayed(this, 15000);
+          handler.postDelayed(this, 5000);
         }
       };
 
@@ -118,13 +123,14 @@ public final class MainActivity extends Activity {
             else home();
           }
         });
-    handler.postDelayed(poll, 15000);
+    handler.postDelayed(poll, 5000);
   }
 
   @Override
   protected void onResume() {
     super.onResume();
     paused = false;
+    pulsePresence(true);
     SyncJobService.schedule(this);
     if (vault != null && !worker.isShutdown())
       worker.execute(
@@ -140,6 +146,7 @@ public final class MainActivity extends Activity {
   @Override
   protected void onPause() {
     paused = true;
+    pulsePresence(false);
     if (locationShare != null) locationShare.pause();
     saveChatDraft();
     saveFormDraft();
@@ -1321,6 +1328,15 @@ public final class MainActivity extends Activity {
           Object[] data = (Object[]) v;
           JSONArray rows = (JSONArray) data[0];
           conversationPatientNames = (JSONObject) data[1];
+          if (!doctor()) {
+            for (int i = 0; i < rows.length(); i++) {
+              JSONObject current = rows.getJSONObject(i);
+              if (current.optString("status").equals("OPEN")) {
+                chat(current.getString("id"), true);
+                return;
+              }
+            }
+          }
           screen = "Suhbatlar";
           frame("Suhbatlar", true);
           label(body, "Shoshilinch yordam kerak bo‘lsa, chat javobini kutmang.");
@@ -1336,11 +1352,14 @@ public final class MainActivity extends Activity {
             box.addView(
                 text(
                     doctor()
-                        ? conversationPatientNames.optString(
-                            c.optString("patient"),
-                            "Bemor · "
-                                + c.optString("patient")
-                                    .substring(0, Math.min(8, c.optString("patient").length())))
+                        ? c.optString(
+                            "patient_name",
+                            conversationPatientNames.optString(
+                                c.optString("patient"),
+                                "Bemor · "
+                                    + c.optString("patient")
+                                        .substring(
+                                            0, Math.min(8, c.optString("patient").length()))))
                         : "Oilaviy shifokoringiz",
                     20,
                     INK));
@@ -1369,17 +1388,30 @@ public final class MainActivity extends Activity {
           JSONArray rows = (JSONArray) data[1];
           conversationId = id;
           screen = "Suhbat";
-          frame(doctor() ? "Bemor bilan suhbat" : "Shifokor bilan suhbat", true);
-          backAction = this::loadConversations;
+          frame(doctor() ? "Bemor bilan suhbat" : "Tibbiy jamoa bilan suhbat", true);
+          backAction = doctor() ? this::loadConversations : this::home;
           if (doctor())
             label(
                 body,
-                conversationPatientNames.optString(c.optString("patient"), "Bemor bilan aloqa"));
-          label(body, c.optString("response_policy"));
+                c.optString(
+                    "patient_name",
+                    conversationPatientNames.optString(
+                        c.optString("patient"), "Bemor bilan aloqa")));
+          JSONArray team = c.optJSONArray("team");
+          int onlineDoctors = 0;
+          if (team != null)
+            for (int i = 0; i < team.length(); i++)
+              if (team.getJSONObject(i).optBoolean("online")) onlineDoctors++;
+          label(
+              body, onlineDoctors > 0 ? onlineDoctors + " shifokor onlayn" : "Shifokorlar oflayn");
+          if (doctor()) label(body, c.optString("response_policy"));
           label(
               body,
-              "AI yordamchi javoblari DEMO deb belgilanadi. Ular shifokor javobi emas; haqiqiy tez"
-                  + " yordam chaqirmaydi.");
+              c.optBoolean("assistant_enabled")
+                  ? "Avval tibbiy jamoa javob beradi. Shifokorlar oflayn bo‘lsa yoki 1 daqiqada"
+                        + " javob kelmasa, AI yordamchi javob beradi. Xavfli belgida demo SOS"
+                        + " kutmaydi."
+                  : "Xabarlaringizga sizga biriktirilgan tibbiy jamoa javob beradi.");
           if (rows.length() == 0) label(body, "Birinchi xabaringizni yuboring.");
           if (rows.length() > messageLimit)
             secondary(
@@ -1398,9 +1430,17 @@ public final class MainActivity extends Activity {
             LinearLayout.LayoutParams bubble = (LinearLayout.LayoutParams) box.getLayoutParams();
             bubble.setMargins(own ? dp(32) : 0, dp(4), own ? 0 : dp(32), dp(8));
             box.setLayoutParams(bubble);
-            label(box, (own ? "Siz" : "Suhbatdoshingiz") + " · " + when(m.optString("sent_at")));
+            label(
+                box,
+                (own ? "Siz" : m.optString("sender_name", "Suhbatdoshingiz"))
+                    + " · "
+                    + when(m.optString("sent_at")));
             box.addView(text(m.optString("text"), 16, INK));
             label(box, status(m.optString("delivery_status")));
+            if (m.optString("assistant_status").equals("WAITING") && i == rows.length() - 1)
+              label(
+                  box,
+                  "Shifokor javobi kutilmoqda. Javob bo‘lmasa AI yordamchi 1 daqiqada ulanadi.");
             new AssistantUi(this)
                 .assessment(
                     m.optJSONObject("assistant"),
@@ -1814,6 +1854,19 @@ public final class MainActivity extends Activity {
     startActivity(
         new Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
             .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, getPackageName()));
+  }
+
+  void pulsePresence(boolean active) {
+    if (api == null || api.access.isEmpty() || !doctor() || worker.isShutdown()) return;
+    lastPresencePulse = System.currentTimeMillis();
+    Api session = api;
+    worker.execute(
+        () -> {
+          try {
+            session.post("/me/presence", json("active", active), null);
+          } catch (Exception ignored) {
+          }
+        });
   }
 
   void account() {

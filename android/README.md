@@ -1,8 +1,12 @@
-# MedicineTrack Android 0.5.0
+# MedicineTrack Android 0.5.1
+
+## 0.5.1 — umumiy chat va shifokor javobiga ustuvorlik
+
+Bemorning chatida shifokor profillari ro‘yxati yo‘q: biriktirilgan tibbiy jamoa bilan umumiy suhbat ochiladi. Bir nechta ruxsatli shifokor qatnashadi va javob muallifi nomi bilan ko‘rinadi. AI jamoa oflayn bo‘lsa darhol, onlayn shifokorlar 60 soniyada javob bermasa keyin javob beradi. Shifokor javobi kutilayotgan AI javobini bekor qiladi; shoshilinch demo SOS kutmaydi. [Qoidalar, API va tekshiruv](../backend/docs/CHAT_TEAM_AND_FALLBACK.md).
 
 ## 0.5.0 — kalitsiz yordamchi va demo SOS
 
-Bemor bosh sahifasi → **AI yordamchi bilan suhbat**. Alomatga mos savol/javob, xavfli belgida avtomatik **DEMO SOS**, shifokor kabinetiga ichki ogohlantirish va bemor roziligi bilan bir martalik lokatsiya ulangan. Haqiqiy GPS va namoyish koordinatasi alohida ko‘rsatiladi. Tashqi AI kaliti kerak emas; yordamchi qoidalar asosidagi demo, tashxis va dori dozasini belgilamaydi.
+Bemor bosh sahifasi → **Umumiy chatni ochish**. Alomatga mos savol/javob, xavfli belgida avtomatik **DEMO SOS**, shifokor kabinetiga ichki ogohlantirish va bemor roziligi bilan bir martalik lokatsiya ulangan. Haqiqiy GPS va namoyish koordinatasi alohida ko‘rsatiladi. Tashqi AI kaliti kerak emas; yordamchi qoidalar asosidagi demo, tashxis va dori dozasini belgilamaydi.
 
 103 tugmasi telefon terish oynasini ochadi; haqiqiy tez yordam avtomatik chaqirilmaydi. Fon lokatsiyasi yo‘q. [Namoyish yo‘riqnomasi va API](../backend/docs/ASSISTANT_DEMO.md), [yangi tekshiruvlar](../docs/ASSISTANT_DEMO_VALIDATION.md).
 

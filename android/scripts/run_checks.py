@@ -10,9 +10,10 @@ import subprocess
 parser = argparse.ArgumentParser()
 parser.add_argument('--serial', default='emulator-5554')
 parser.add_argument('--base', default='http://10.0.2.2:8001/api/v1')
-parser.add_argument('--mode', choices=['full', 'layout', 'assistant'], default='full')
+parser.add_argument('--mode', choices=['full', 'layout', 'assistant', 'group'], default='full')
 parser.add_argument('--patient-user', default='demo.patient')
 parser.add_argument('--doctor-user', default='demo.doctor')
+parser.add_argument('--peer-user', default='demo.doctor2')
 parser.add_argument('--linked-base')
 parser.add_argument('--linked-fixture', type=Path)
 parser.add_argument('--linked-report', type=Path)
@@ -27,7 +28,7 @@ for apk in ('app/build/outputs/apk/debug/app-debug.apk', 'app/build/outputs/apk/
     subprocess.run([adb, '-s', args.serial, 'install', '-r', str(root/apk)], check=True)
 arguments = ['am', 'instrument', '-w', '-e', 'base', args.base, '-e', 'password', password,
              '-e', 'mode', args.mode, '-e', 'patientUser', args.patient_user,
-             '-e', 'doctorUser', args.doctor_user]
+             '-e', 'doctorUser', args.doctor_user, '-e', 'peerUser', args.peer_user]
 linked_password = os.environ.get('MEDICINETRACK_LINKED_PASSWORD', '')
 if args.linked_base:
     if not args.linked_fixture or not linked_password:

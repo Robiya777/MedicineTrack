@@ -38,9 +38,11 @@ export function AssistantReply({ assessment, conversationId, interactive }: { as
     onSuccess: () => { void client.invalidateQueries({ queryKey: messagingKeys.all }); void client.invalidateQueries({ queryKey: assistantKeys.all }) },
     onError: () => { void client.invalidateQueries({ queryKey: messagingKeys.all }) },
   })
-  const questionCurrent = Date.parse(assessment.created_at) > now - 30 * 60_000
+  const questionCurrent = Date.parse(assessment.reply_at || assessment.created_at) > now - 30 * 60_000
   return <section className="mt-4 space-y-3 rounded-xl border border-teal-200 bg-teal-50 p-4 text-ink" aria-label="AI demo javobi">
     <p className="font-bold">AI yordamchi · DEMO <span className={'ml-2 text-sm ' + (assessment.risk === 'EMERGENCY' ? 'text-red-800' : 'text-teal-800')}>{risks[assessment.risk]}</span></p>
+    {assessment.reply_reason === 'DOCTORS_OFFLINE' && <p className="text-xs text-muted">Shifokorlar hozir oflayn bo‘lgani uchun yordamchi javob berdi.</p>}
+    {assessment.reply_reason === 'NO_REPLY_60S' && <p className="text-xs text-muted">Shifokorlardan 1 daqiqada javob kelmagani uchun yordamchi javob berdi.</p>}
     <p className="whitespace-pre-wrap wrap-break-word">{assessment.reply}</p>
     {assessment.question.text && <p className="font-semibold">{assessment.question.text}</p>}
     {interactive && questionCurrent && assessment.question.choices?.length ? <div className="flex flex-wrap gap-2">

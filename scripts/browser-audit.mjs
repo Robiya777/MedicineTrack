@@ -214,6 +214,7 @@ try {
   })
 
   await check('Patient worsened status reaches coordinator and doctor replies in live chat', async () => {
+    await patient.locator('summary').filter({ hasText: 'Holatimni bildirish' }).click()
     await patient.getByLabel('Hozirgi holatingiz', { exact: true }).selectOption('WORSENED')
     await patient.getByLabel('Holat haqida izoh', { exact: true }).fill(`Sintetik holat ${unique}`)
     const status = await mutation(patient, `/conversations/${fixture.conversation_id}/status-updates`, () => patient.getByRole('button', { name: 'Holatni yuborish', exact: true }).click(), 201)

@@ -10,11 +10,12 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
-from accounts.models import Role
-from care.scopes import active_assignments
+from accounts.models import Role, User
+from care.models import Patient
 from care.services import audit, enqueue
 from common.exceptions import Conflict
 
+from .groups import doctor_patient_ids, team_doctors, team_online
 from .models import AssistantAssessment, EmergencyEvent, EmergencyIncident
 from .triage import assess
 
@@ -29,9 +30,7 @@ def incidents_for(user):
     if user.role == Role.PATIENT and user.patient_id:
         return rows.filter(**{patient + "_id": user.patient_id})
     if user.role == Role.DOCTOR:
-        return rows.filter(
-            **{patient + "__in": active_assignments().filter(doctor=user).values("patient_id")}
-        )
+        return rows.filter(**{patient + "__in": doctor_patient_ids(user)})
     if user.role == Role.COORDINATOR and user.organization_id and user.organization.active:
         territory = user.organization.territory_id
         same = Q(
@@ -56,13 +55,24 @@ def assessment_for_message(message, response_to=None):
         AssistantAssessment.objects.filter(
             message__conversation__patient_id=message.conversation.patient_id,
             message__response_episode_id=message.response_episode_id,
-            created_at__gte=timezone.now() - timedelta(minutes=30),
+            reply_at__gte=timezone.now() - timedelta(minutes=30),
         )
         .order_by("-created_at", "-id")
         .first()
     )
     if response_to and (not previous or previous.pk != response_to):
         raise Conflict("AI savoli yangilangan. Suhbatni yangilab, joriy savolga javob bering.")
+    pending = list(
+        AssistantAssessment.objects.filter(
+            message__response_episode_id=message.response_episode_id,
+            reply_at__isnull=True,
+            suppressed_at__isnull=True,
+        )
+        .select_related("message")
+        .order_by("created_at", "id")
+    )
+    if response_to and pending:
+        raise Conflict("Yangi xabar mavjud. Joriy suhbatni yangilang.")
     context = (
         {"risk": previous.risk, "question": previous.question, "context": previous.context}
         if previous
@@ -72,7 +82,16 @@ def assessment_for_message(message, response_to=None):
     if EmergencyIncident.objects.filter(episode_id=message.response_episode_id).exists():
         context = {**(context or {}), "risk": "EMERGENCY"}
     status = getattr(message, "patientstatusupdate", None)
-    result = assess(message.text, context, status.self_reported_state if status else None)
+    text = "\n".join([row.message.text for row in pending[-9:]] + [message.text])
+    result = assess(text, context, status.self_reported_state if status else None)
+    due = min(
+        (row.reply_due_at for row in pending if row.reply_due_at),
+        default=message.sent_at + timedelta(seconds=60),
+    )
+    if pending:
+        AssistantAssessment.objects.filter(pk__in=[row.pk for row in pending]).update(
+            suppressed_at=timezone.now(), reply_reason="SUPERSEDED"
+        )
     assessment = AssistantAssessment.objects.create(
         message=message,
         risk=result.risk,
@@ -80,6 +99,7 @@ def assessment_for_message(message, response_to=None):
         reasons=result.reasons,
         question=result.question,
         context=result.context,
+        reply_due_at=due,
     )
     if assessment.risk == AssistantAssessment.Risk.EMERGENCY:
         incident, created = EmergencyIncident.objects.get_or_create(
@@ -102,8 +122,7 @@ def assessment_for_message(message, response_to=None):
             ]:
                 EmergencyEvent.objects.create(incident=incident, kind=kind, detail=detail)
             recipients = list(patient_coordinators(message.conversation.patient))
-            if message.conversation.doctor_id:
-                recipients.append(message.conversation.doctor)
+            recipients.extend(team_doctors(message.conversation.patient_id))
             enqueue(
                 None,
                 "AI_EMERGENCY_ALERT",
@@ -114,7 +133,68 @@ def assessment_for_message(message, response_to=None):
             )
             audit(message.sender, incident, "DEMO_EMERGENCY_CREATED")
     audit(message.sender, assessment, "DEMO_ASSISTANT_ASSESSED", ["risk", "engine_version"])
+    if assessment.risk == AssistantAssessment.Risk.EMERGENCY:
+        publish_assessment(assessment, "EMERGENCY")
+    elif not team_online(message.conversation.patient_id):
+        publish_assessment(assessment, "DOCTORS_OFFLINE")
     return assessment
+
+
+def publish_assessment(assessment, reason):
+    if assessment.reply_at or assessment.suppressed_at:
+        return False
+    assessment.reply_at, assessment.reply_reason = timezone.now(), reason
+    assessment.save(update_fields=["reply_at", "reply_reason"])
+    message = assessment.message
+    recipients = User.objects.filter(
+        patient_id=message.conversation.patient_id, role=Role.PATIENT, is_active=True
+    )
+    enqueue(
+        None,
+        "AI_ASSISTANT_REPLY",
+        recipients,
+        episode=message.response_episode,
+        dedupe_prefix=str(assessment.pk),
+        conversation=message.response_episode.conversation,
+    )
+    audit(message.sender, assessment, "DEMO_ASSISTANT_REPLY_PUBLISHED", ["reply_reason"])
+    return True
+
+
+@transaction.atomic
+def release_pending_assessment(pk):
+    row = (
+        AssistantAssessment.objects.filter(pk=pk)
+        .values("message__conversation__patient_id")
+        .first()
+    )
+    if not row:
+        return False
+    Patient.objects.select_for_update().get(pk=row["message__conversation__patient_id"])
+    assessment = (
+        AssistantAssessment.objects.select_for_update(of=("self",))
+        .select_related(
+            "message__conversation__patient",
+            "message__response_episode__conversation",
+            "message__sender",
+        )
+        .get(pk=pk)
+    )
+    if assessment.reply_at or assessment.suppressed_at or not assessment.reply_due_at:
+        return False
+    if not assistant_enabled() or assessment.message.response_episode.responded_at:
+        assessment.suppressed_at = timezone.now()
+        assessment.reply_reason = (
+            "DOCTOR_REPLIED" if assessment.message.response_episode.responded_at else "DISABLED"
+        )
+        assessment.save(update_fields=["suppressed_at", "reply_reason"])
+        return False
+    patient_id = assessment.message.conversation.patient_id
+    if not team_online(patient_id):
+        return publish_assessment(assessment, "DOCTORS_OFFLINE")
+    if assessment.reply_due_at <= timezone.now():
+        return publish_assessment(assessment, "NO_REPLY_60S")
+    return False
 
 
 @transaction.atomic

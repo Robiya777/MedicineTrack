@@ -23,6 +23,8 @@ const labels: Record<string, string> = {
   RESPONSE_OVERDUE: 'Murojaatga javob muddati o‘tgan',
   RESPONSE_SCHEDULE_MISSING: 'Shifokorning javob jadvali belgilanmagan',
   AI_EMERGENCY_ALERT: 'DEMO SOS · bemor shoshilinch belgi bildirgan',
+  AI_ASSISTANT_REPLY: 'AI yordamchi javob berdi',
+  CHAT_TEAM_ADDED: 'Siz bemorning chat jamoasiga qo‘shildingiz',
 }
 
 export function NotificationBell() {

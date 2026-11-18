@@ -1,5 +1,7 @@
 # Kalitsiz yordamchi va demo SOS
 
+**Yangilanish:** oddiy jamoaviy chat, shifokor onlaynligi va 60 soniyalik AI kutish tartibi [yangi yo‘riqnomada](CHAT_TEAM_AND_FALLBACK.md) keltirilgan. Bemor chatida shifokor profillari ro‘yxati ko‘rsatilmaydi.
+
 Bu funksiya bemorning mavjud suhbatiga ulangan, tashqi model kalitini talab qilmaydigan **qoidalar asosidagi demo**. Generativ LLM, klinik tashxis tizimi yoki haqiqiy 103 dispetcher integratsiyasi emas. Internetdagi AI xizmatiga bemor matni yuborilmaydi. Android va veb ishlayotgan MedicineTrack backendiga ulanishi kerak; tarmoqsiz yordamchi javobi yaratilmaydi. Telefonda 103 terish tugmasi server so‘rovi davomida ham ochiq qoladi.
 
 ## Ishga tushirish
@@ -24,7 +26,7 @@ Web: `frontend/.env`da `API_PROXY_TARGET=http://127.0.0.1:8001`, keyin `npm run 
 
 ## Namoyish
 
-1. Bemor kabinetidagi **AI yordamchi bilan suhbat** tugmasini bosing. Shifokorga biriktirilgan ochiq suhbat ishlatiladi.
+1. Bemor kabinetidagi **Shifokorlar bilan chat** avtomatik ochiladi. Androidda **Umumiy chatni ochish** tugmasidan foydalaning. Biriktirilgan shifokorlar umumiy suhbatda qatnashadi. Jamoa oflayn bo‘lsa AI darhol javob beradi; shifokor onlayn bo‘lsa 60 soniya kutiladi.
 2. `Boshim og‘riyapti` deb yozing. Bosh og‘rig‘iga mos savol chiqadi. `Yo‘q`dan keyin `2 soatdan beri, 4/10, kuchaymoqda` deb davom ettiring. Yordamchi shu suhbatdagi oldingi savolni hisobga oladi. `Ha` xavfli belgi savoliga javob bo‘lsa, demo SOS yaratiladi.
 3. `Nafas ololmayapman` yoki `Ko‘kragim qattiq og‘riyapti` deb yozing. **EMERGENCY / DEMO SOS** avtomatik yaratiladi. Boshlang‘ich lokatsiya bo‘sh; ro‘yxatdagi manzil GPS deb ko‘rsatilmaydi.
 4. Demo SOS tafsilotini oching. Haqiqiy vaziyat uchun **103** tugmasi telefon terish oynasini ochadi. Qo‘ng‘iroqni foydalanuvchi telefon ilovasida tasdiqlaydi; testda bu tugma orqali haqiqiy qo‘ng‘iroq qilinmaydi.

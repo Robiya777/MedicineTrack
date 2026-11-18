@@ -24,6 +24,7 @@ export const assessmentSchema = z.object({
   question: z.object({ key: z.string().optional(), text: z.string().optional(), choices: z.array(z.string()).optional() }),
   mode: z.literal('DEMO'), engine_version: z.string(), emergency: emergencySchema.nullable(),
   disclaimer: z.string(), created_at: date,
+  reply_at: date.nullable(), reply_reason: z.string(),
 })
 const configSchema = z.object({
   enabled: z.boolean(), mode: z.enum(['DEMO', 'DISABLED']), external_model: z.literal(false),

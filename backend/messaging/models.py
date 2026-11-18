@@ -102,6 +102,32 @@ class AssistantAssessment(UUIDModel):
     incident = models.ForeignKey(
         "EmergencyIncident", null=True, on_delete=models.PROTECT, related_name="assessments"
     )
+    reply_at = models.DateTimeField(null=True)
+    reply_due_at = models.DateTimeField(null=True, db_index=True)
+    reply_reason = models.CharField(max_length=32, blank=True)
+    suppressed_at = models.DateTimeField(null=True)
+
+
+class ChatDoctorMembership(UUIDModel):
+    patient = models.ForeignKey(
+        "care.Patient", on_delete=models.PROTECT, related_name="chat_doctors"
+    )
+    doctor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="chat_memberships"
+    )
+    added_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="added_chat_memberships"
+    )
+    removed_at = models.DateTimeField(null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["patient", "doctor"],
+                condition=Q(removed_at__isnull=True),
+                name="one_active_patient_chat_doctor",
+            )
+        ]
 
 
 class EmergencyIncident(UUIDModel):

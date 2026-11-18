@@ -100,6 +100,8 @@ class AssistantAssessmentSerializer(serializers.ModelSerializer):
             "question",
             "mode",
             "engine_version",
+            "reply_at",
+            "reply_reason",
             "emergency",
             "disclaimer",
             "created_at",

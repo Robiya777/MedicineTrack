@@ -10,7 +10,15 @@ from care.services import audit, enqueue
 from common.exceptions import Conflict
 
 from .calendar import response_deadline
-from .models import Conversation, Message, PatientStatusUpdate, ResponseEpisode, WorkSchedule
+from .groups import doctor_patient_ids, team_doctors
+from .models import (
+    AssistantAssessment,
+    Conversation,
+    Message,
+    PatientStatusUpdate,
+    ResponseEpisode,
+    WorkSchedule,
+)
 
 
 def conversations_for(user):
@@ -19,9 +27,8 @@ def conversations_for(user):
         return queryset.filter(patient_id=user.patient_id)
     if user.role == Role.DOCTOR:
         return queryset.filter(
-            doctor=user,
             status="OPEN",
-            assignment__in=active_assignments().filter(doctor=user),
+            patient_id__in=doctor_patient_ids(user),
         )
     return queryset.none()
 
@@ -145,18 +152,24 @@ def send_message(pk, user, text, request=None, status_data=None, assistant_respo
         episode = open_episode(conversation, now)
         message.response_episode = episode
         message.save(update_fields=["response_episode"])
-        recipients = (
-            [conversation.doctor]
-            if conversation.doctor_id
-            else patient_coordinators(conversation.patient)
-        )
+        recipients = list(team_doctors(conversation.patient_id))
+        if not recipients:
+            recipients = patient_coordinators(conversation.patient)
     elif user.role == Role.DOCTOR:
+        AssistantAssessment.objects.filter(
+            message__response_episode__conversation=conversation,
+            reply_at__isnull=True,
+            suppressed_at__isnull=True,
+        ).update(suppressed_at=now, reply_reason="DOCTOR_REPLIED")
         ResponseEpisode.objects.filter(conversation=conversation, responded_at__isnull=True).update(
             responded_at=now
         )
-        recipients = User.objects.filter(
-            patient_id=conversation.patient_id, role=Role.PATIENT, is_active=True
+        recipients = list(
+            User.objects.filter(
+                patient_id=conversation.patient_id, role=Role.PATIENT, is_active=True
+            )
         )
+        recipients.extend(team_doctors(conversation.patient_id).exclude(pk=user.pk))
     else:
         raise PermissionDenied()
     enqueue(

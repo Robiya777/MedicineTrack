@@ -78,7 +78,7 @@ final class Api {
     user = tokens.getJSONObject("user");
     String role = user.optString("role");
     if (!role.equals("DOCTOR") && !role.equals("PATIENT"))
-      throw new IOException("Bu ilova bemor va oilaviy shifokor uchun.");
+      throw new IOException("Bu ilova bemor va tibbiy jamoa shifokorlari uchun.");
     access = tokens.getString("access");
     refresh = tokens.getString("refresh");
     save();

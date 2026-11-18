@@ -49,23 +49,19 @@ final class AssistantUi {
 
   void entry() {
     LinearLayout card = m.card();
-    m.badge(card, "AI yordamchi · DEMO", "ACTIVE");
-    card.addView(m.text("Holatingizni yozing", 20, MainActivity.INK));
+    m.badge(card, "Tibbiy jamoa · Chat", "ACTIVE");
+    card.addView(m.text("Shifokorlaringizga yozing", 20, MainActivity.INK));
     m.label(
         card,
-        "Kalitsiz yordamchi alomatlarni aniqlashtiradi. Xavfli belgida demo SOS yaratiladi; haqiqiy"
-            + " tez yordam chaqirilmaydi.");
-    m.button(card, "AI yordamchi bilan suhbat", this::open);
+        "Avval tibbiy jamoa javob beradi. Shifokorlar oflayn bo‘lsa yoki 1 daqiqada javob kelmasa,"
+            + " kalitsiz yordamchi ulanadi. Haqiqiy tez yordam avtomatik chaqirilmaydi.");
+    m.button(card, "Umumiy chatni ochish", this::open);
     m.secondary(card, "Demo SOS yozuvlari", this::incidents);
   }
 
   void open() {
     m.execute(
         () -> {
-          JSONObject config = m.api.get("/assistant/config");
-          if (!config.optBoolean("enabled"))
-            throw new Api.Failure(
-                400, "AI yordamchi bu muhitda o‘chirilgan. Shifokorga yozishingiz mumkin.");
           return m.api.list("/conversations");
         },
         value -> {
@@ -88,6 +84,10 @@ final class AssistantUi {
     LinearLayout c = m.card();
     c.setBackground(Design.shape(m, 0xffedf4fc, 16, MainActivity.LINE));
     m.badge(c, "AI yordamchi · DEMO", "ACTIVE");
+    if (assessment.optString("reply_reason").equals("DOCTORS_OFFLINE"))
+      m.label(c, "Shifokorlar oflayn bo‘lgani uchun yordamchi javob berdi.");
+    else if (assessment.optString("reply_reason").equals("NO_REPLY_60S"))
+      m.label(c, "Shifokorlar 1 daqiqada javob bermagani uchun yordamchi javob berdi.");
     String state = assessment.optString("risk");
     m.badge(
         c,

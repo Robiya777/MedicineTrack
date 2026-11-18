@@ -1,0 +1,299 @@
+{
+  "verified_at": "2026-11-18T15:16:23.647829+05:00",
+  "behavior": {
+    "patient_doctor_profiles": false,
+    "multiple_treating_doctors": true,
+    "offline_ai": "immediate",
+    "online_reply_timeout_seconds": 60,
+    "doctor_reply_cancels_pending_ai": true,
+    "emergency_warning_waits": false,
+    "external_model": false,
+    "real_emergency_dispatch": false
+  },
+  "backend": {
+    "postgresql_passed": 185,
+    "sqlite_passed": 178,
+    "sqlite_skipped": 7,
+    "checks": [
+      "ruff",
+      "ruff format",
+      "Django check",
+      "migration drift",
+      "OpenAPI --validate --fail-on-warn"
+    ]
+  },
+  "frontend": {
+    "unit_passed": 9,
+    "eslint": true,
+    "typescript": true,
+    "production_build": true
+  },
+  "android": {
+    "group_chat_passed": 24,
+    "assistant_passed": 39,
+    "regression_passed": 88,
+    "platform": "Android 14 emulator",
+    "version": "0.5.1",
+    "version_code": 6,
+    "apk_sha256": "d95cdf531c94d2304d44ae9f03169e147c27ade00b42e24c5eb279aa5c72dda3"
+  },
+  "browser": {
+    "group": {
+      "base": "http://127.0.0.1:5173",
+      "fixture_run": "4fbc01bc",
+      "checks": [
+        {
+          "name": "Patient opens a common chat directly without doctor profiles or selection",
+          "passed": true
+        },
+        {
+          "name": "No online doctors produces an immediate labelled AI response",
+          "passed": true
+        },
+        {
+          "name": "Primary doctor adds a second treating doctor through the team dialog",
+          "passed": true
+        },
+        {
+          "name": "Second doctor participates in the same chat with a distinct sender name",
+          "passed": true
+        },
+        {
+          "name": "A team doctor replying within one minute cancels the pending AI response",
+          "passed": true
+        },
+        {
+          "name": "Real Celery worker releases AI after sixty seconds while doctors remain online",
+          "passed": true,
+          "evidence": {
+            "message_id": "d8d79466-7158-4a3f-b686-52090a8916e5",
+            "server_delay_seconds": 60.822
+          }
+        },
+        {
+          "name": "Doctors going offline release a waiting AI response immediately",
+          "passed": true
+        },
+        {
+          "name": "Emergency symptoms produce SOS without waiting for an online doctor",
+          "passed": true
+        },
+        {
+          "name": "Removing a doctor revokes chat access even for an existing session",
+          "passed": true
+        },
+        {
+          "name": "Patient common chat fits a 360px screen without profiles",
+          "passed": true
+        }
+      ],
+      "browser_errors": [],
+      "server_errors": []
+    },
+    "assistant": {
+      "base": "http://127.0.0.1:5173",
+      "fixture_run": "f86e56ab",
+      "checks": [
+        {
+          "name": "Primary frontend and backend expose the keyless demo",
+          "passed": true
+        },
+        {
+          "name": "Symptom reply and contextual quick answer render in the real browser",
+          "passed": true
+        },
+        {
+          "name": "Danger automatically creates one clearly labelled demo SOS",
+          "passed": true,
+          "evidence": {
+            "incident_id": "c3ce91c2-f891-4caf-a22a-8cf7e75b1937",
+            "conversation_id": "a5240003-4572-4bda-a001-7c0f7b8fbd3d"
+          }
+        },
+        {
+          "name": "Cancelling consent sends no coordinates",
+          "passed": true
+        },
+        {
+          "name": "Denied GPS permission reports an error without invented coordinates",
+          "passed": true
+        },
+        {
+          "name": "Explicit demo location is marked as a demonstration",
+          "passed": true
+        },
+        {
+          "name": "Consented browser GPS is saved as device coordinates",
+          "passed": true
+        },
+        {
+          "name": "Assigned doctor sees the same SOS and patient GPS",
+          "passed": true
+        },
+        {
+          "name": "Territory coordinator sees and acknowledges the demo SOS",
+          "passed": true
+        },
+        {
+          "name": "Demo SOS notification reaches the real notification worker",
+          "passed": true
+        },
+        {
+          "name": "360px mobile web keeps emergency actions within the viewport",
+          "passed": true
+        },
+        {
+          "name": "Doctor reply stays separate and closes the real response episode",
+          "passed": true
+        }
+      ],
+      "browser_errors": [],
+      "server_errors": []
+    },
+    "workflows": {
+      "base": "http://127.0.0.1:5173",
+      "fixture_run": "abaea1fc",
+      "checks": [
+        {
+          "name": "Frontend proxy reaches MedicineTrack API",
+          "passed": true,
+          "ms": 515,
+          "evidence": {
+            "api": "MedicineTrack API",
+            "version": "0.2.0"
+          }
+        },
+        {
+          "name": "Hospital login and session reload",
+          "passed": true,
+          "ms": 1047
+        },
+        {
+          "name": "Nullable medication DRAFT renders in medication workspace",
+          "passed": true,
+          "ms": 474
+        },
+        {
+          "name": "UI creates patient and discharge DRAFT",
+          "passed": true,
+          "ms": 845,
+          "evidence": {
+            "patient_id": "d48ed921-98f2-4be3-bd71-a9123965d537",
+            "discharge_id": "faa3fceb-a98c-4241-af08-91dd9e8f3c6c"
+          }
+        },
+        {
+          "name": "Discharge confirmation creates one UNASSIGNED task with 24-hour deadline",
+          "passed": true,
+          "ms": 651,
+          "evidence": {
+            "task_id": "523a516d-945f-41f1-9e63-f2cfca839b4c",
+            "due_at": "2026-11-19T10:08:12Z"
+          }
+        },
+        {
+          "name": "Coordinator assigns the same browser-created task",
+          "passed": true,
+          "ms": 1151
+        },
+        {
+          "name": "Doctor accepts task and records unsuccessful contact without closing it",
+          "passed": true,
+          "ms": 1102
+        },
+        {
+          "name": "Doctor completes task; hospital sees identical result",
+          "passed": true,
+          "ms": 1487
+        },
+        {
+          "name": "Hospital activation code creates a patient account through the live web form",
+          "passed": true,
+          "ms": 6621,
+          "evidence": {
+            "patient_id": "d48ed921-98f2-4be3-bd71-a9123965d537"
+          }
+        },
+        {
+          "name": "Two identical successful chat messages create two different messages",
+          "passed": true,
+          "ms": 1279,
+          "evidence": {
+            "message_ids": [
+              "e5b06dbe-1332-4ace-adef-c00805a8a907",
+              "ea92bf0f-de19-412e-baca-67b78e65481d"
+            ]
+          }
+        },
+        {
+          "name": "Patient worsened status reaches coordinator and doctor replies in live chat",
+          "passed": true,
+          "ms": 3427
+        },
+        {
+          "name": "Work schedule supports repeat saves and rejects stale coordinator edits",
+          "passed": true,
+          "ms": 14359
+        },
+        {
+          "name": "In-app notification bell reads delivered backend events",
+          "passed": true,
+          "ms": 2806
+        },
+        {
+          "name": "Doctor clinically approves complete DRAFT while incomplete DRAFT stays visible",
+          "passed": true,
+          "ms": 4810
+        },
+        {
+          "name": "Patient records medication and note-only correction preserves taken timestamp",
+          "passed": true,
+          "ms": 12013
+        },
+        {
+          "name": "Hospital doctors retain doctor workspace without coordinator discharge permissions",
+          "passed": true,
+          "ms": 2259
+        },
+        {
+          "name": "Technical admin lists staff, institutions and territories",
+          "passed": true,
+          "ms": 4248
+        },
+        {
+          "name": "Separate tabs retain separate user sessions and logout affects one tab",
+          "passed": true,
+          "ms": 2540
+        },
+        {
+          "name": "360px layout and mobile navigation",
+          "passed": true,
+          "ms": 6134
+        },
+        {
+          "name": "Browser JavaScript and backend 5xx errors",
+          "passed": true,
+          "ms": 17
+        }
+      ],
+      "browser_errors": [],
+      "server_errors": []
+    }
+  },
+  "local_demo": {
+    "patient": "demo.patient",
+    "doctors": [
+      "demo.doctor",
+      "demo.doctor2"
+    ],
+    "frontend": "http://127.0.0.1:5173",
+    "backend": "http://127.0.0.1:8001"
+  },
+  "limits": [
+    "Rule-based demo; no diagnosis or medical validation.",
+    "Local emulator and synthetic browser fixtures only.",
+    "Presence expires after 45 seconds; foreground sessions heartbeat every 15 seconds.",
+    "Celery worker/beat are required for delayed AI replies.",
+    "Existing Android target 34 and frontend bundle size warnings remain."
+  ]
+}

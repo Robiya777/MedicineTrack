@@ -4,8 +4,22 @@ from django.utils import timezone
 
 from care.services import enqueue
 
-from .models import ResponseEpisode
+from .models import AssistantAssessment, ResponseEpisode
 from .services import patient_coordinators
+
+
+@shared_task
+def release_assistant_replies():
+    from .assistant import release_pending_assessment
+
+    ids = list(
+        AssistantAssessment.objects.filter(
+            reply_at__isnull=True, suppressed_at__isnull=True, reply_due_at__isnull=False
+        )
+        .order_by("reply_due_at", "id")
+        .values_list("id", flat=True)[:100]
+    )
+    return sum(release_pending_assessment(pk) for pk in ids)
 
 
 @shared_task

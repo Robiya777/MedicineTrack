@@ -11,7 +11,7 @@ Repo tarkibida [backend](backend/README.md), [web frontend](frontend/README.md) 
 
 Android sinov natijalari va cheklovlari [tekshiruv hisobotida](android/VALIDATION.md) keltirilgan.
 
-Android 0.5.0 va vebda [kalitsiz yordamchi hamda demo SOS](backend/docs/ASSISTANT_DEMO.md) mavjud: alomatga mos suhbat, ichki ogohlantirish va rozilik bilan lokatsiya ulashish. Yordamchi qoidalar asosidagi demo; haqiqiy tez yordam avtomatik chaqirilmaydi va shifokor javobi alohida qoladi.
+Android 0.5.1 va vebda [umumiy tibbiy jamoa chati va shifokordan keyingi AI javobi](backend/docs/CHAT_TEAM_AND_FALLBACK.md) mavjud. Bemor chatida shifokor profillari yo‘q. AI jamoa oflayn bo‘lsa yoki 60 soniyada javob kelmasa ulanadi. [Demo SOS](backend/docs/ASSISTANT_DEMO.md) va rozilik bilan lokatsiya ulashish saqlangan; haqiqiy tez yordam avtomatik chaqirilmaydi.
 
 ## Frontendni ishga tushirish
 

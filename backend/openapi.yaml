@@ -899,6 +899,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+  /api/v1/me/presence:
+    post:
+      operationId: me_presence_create
+      tags:
+      - me
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PresenceInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PresenceInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PresenceInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PresenceOutput'
+          description: ''
   /api/v1/medication-plans/{id}:
     get:
       operationId: medication_plans_retrieve
@@ -1292,6 +1318,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivationOutput'
+          description: ''
+  /api/v1/patients/{id}/chat-doctors:
+    get:
+      operationId: patients_chat_doctors_retrieve
+      description: Hold the key lock and business changes in the same database transaction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - patients
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamOutput'
+          description: ''
+    post:
+      operationId: patients_chat_doctors_create
+      description: Hold the key lock and business changes in the same database transaction.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - patients
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TeamInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TeamInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamOutput'
           description: ''
   /api/v1/patients/{id}/medication-history:
     get:
@@ -2180,6 +2261,14 @@ components:
       - follow_up_text
       - recommendations
       - summary
+    ActionEnum:
+      enum:
+      - ADD
+      - REMOVE
+      type: string
+      description: |-
+        * `ADD` - ADD
+        * `REMOVE` - REMOVE
     ActivationInputRequest:
       type: object
       properties:
@@ -2244,6 +2333,14 @@ components:
         engine_version:
           type: string
           readOnly: true
+        reply_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        reply_reason:
+          type: string
+          readOnly: true
         emergency:
           allOf:
           - $ref: '#/components/schemas/Emergency'
@@ -2266,6 +2363,8 @@ components:
       - question
       - reasons
       - reply
+      - reply_at
+      - reply_reason
       - risk
     AssistantConfig:
       type: object
@@ -2506,15 +2605,48 @@ components:
           type: string
           format: date-time
           readOnly: true
+        patient_name:
+          type: string
+          readOnly: true
+        team:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name:
+                type: string
+              online:
+                type: boolean
+              primary:
+                type: boolean
+            required:
+            - id
+            - name
+            - online
+            - primary
+          readOnly: true
+        can_manage_team:
+          type: boolean
+          readOnly: true
+        assistant_enabled:
+          type: boolean
+          readOnly: true
       required:
+      - assistant_enabled
+      - can_manage_team
       - created_at
       - doctor
       - first_unanswered_at
       - id
       - patient
+      - patient_name
       - response_due_at
       - response_policy
       - status
+      - team
       - work_schedule
     ConversationStatusEnum:
       enum:
@@ -3421,17 +3553,36 @@ components:
         assistant:
           allOf:
           - $ref: '#/components/schemas/AssistantAssessment'
+          nullable: true
+          readOnly: true
+        assistant_status:
+          type: string
+          nullable: true
+          readOnly: true
+        assistant_due_at:
+          type: string
+          format: date-time
           readOnly: true
           nullable: true
+        sender_name:
+          type: string
+          readOnly: true
+        sender_role:
+          type: string
+          readOnly: true
       required:
       - answered_at
       - assistant
+      - assistant_due_at
+      - assistant_status
       - conversation
       - delivery_status
       - id
       - kind
       - read_at
       - sender
+      - sender_name
+      - sender_role
       - sent_at
       - text
     MessageInputRequest:
@@ -4096,6 +4247,25 @@ components:
       required:
       - lock_version
       - version
+    PresenceInputRequest:
+      type: object
+      properties:
+        active:
+          type: boolean
+      required:
+      - active
+    PresenceOutput:
+      type: object
+      properties:
+        online:
+          type: boolean
+          readOnly: true
+        expires_in:
+          type: integer
+          readOnly: true
+      required:
+      - expires_in
+      - online
     ReassignInputRequest:
       type: object
       properties:
@@ -4522,6 +4692,58 @@ components:
         * `ACCEPTED` - Qabul qilingan
         * `COMPLETED` - Bajarilgan
         * `CANCELLED` - Bekor qilingan
+    TeamDoctor:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        online:
+          type: boolean
+          readOnly: true
+        primary:
+          type: boolean
+          readOnly: true
+      required:
+      - id
+      - name
+      - online
+      - primary
+    TeamInputRequest:
+      type: object
+      properties:
+        doctor:
+          type: string
+          format: uuid
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+      required:
+      - action
+      - doctor
+    TeamOutput:
+      type: object
+      properties:
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamDoctor'
+          readOnly: true
+        available:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamDoctor'
+          readOnly: true
+        can_manage:
+          type: boolean
+          readOnly: true
+      required:
+      - available
+      - can_manage
+      - members
     Territory:
       type: object
       properties:

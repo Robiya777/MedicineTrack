@@ -5,6 +5,7 @@ import { getWorkspace } from '@/lib/workspaces'
 import { Dialog, secondaryButton } from '@/components/ui'
 import { useSessionStore } from '@/state/session'
 import { useLogout } from '@/hooks/use-logout'
+import { useDoctorPresence } from '@/hooks/use-doctor-presence'
 import { WorkspaceNavigation } from './workspace-navigation'
 import { WorkspaceSidebar } from './workspace-sidebar'
 import { WorkspaceTopbar } from './workspace-topbar'
@@ -12,6 +13,7 @@ import { WorkspaceTopbar } from './workspace-topbar'
 const workspaceRoute = getRouteApi('/(app)/kabinet/$role')
 
 export function WorkspaceLayout() {
+  useDoctorPresence()
   const user = useSessionStore((state) => state.user)
   const search = workspaceRoute.useSearch()
   const [drawer, setDrawer] = useState(false)

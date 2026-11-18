@@ -31,6 +31,7 @@ class AuthSession(UUIDModel):
     client = models.CharField(max_length=10, choices=[("web", "web"), ("android", "android")])
     expires_at = models.DateTimeField()
     revoked_at = models.DateTimeField(null=True)
+    last_seen_at = models.DateTimeField(null=True, db_index=True)
 
 
 class ActivationCode(UUIDModel):

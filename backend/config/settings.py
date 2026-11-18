@@ -161,6 +161,7 @@ CELERY_TASK_TIME_LIMIT = 40
 CELERY_TASK_SOFT_TIME_LIMIT = 30
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BEAT_SCHEDULE = {
+    "assistant-fallback": {"task": "messaging.jobs.release_assistant_replies", "schedule": 1.0},
     "medication-course-completion": {"task": "medications.jobs.complete_courses", "schedule": 60.0},
     "deadlines": {"task": "care.jobs.scan_deadlines", "schedule": 60.0},
     "outbox": {"task": "care.jobs.deliver_outbox", "schedule": 5.0},
