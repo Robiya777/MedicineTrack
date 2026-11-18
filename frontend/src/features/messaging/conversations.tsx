@@ -5,7 +5,7 @@ import { ChatTeam } from './chat-team'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
-import { ArrowLeft, MessageCircle, RefreshCw, Search, Send, CheckCheck, CalendarClock, ChevronDown, LoaderCircle, HeartPulse, History, UserRound, Stethoscope } from 'lucide-react'
+import { ArrowDown, ArrowLeft, MessageCircle, RefreshCw, Search, Send, CheckCheck, CalendarClock, ChevronDown, LoaderCircle, HeartPulse, History, UserRound, Stethoscope } from 'lucide-react'
 import {
   conversationQuery,
   conversationsQuery,
@@ -221,21 +221,40 @@ export function ConversationPage() {
     </section>
   )
 }
+function scrollToLatestMessage(area: HTMLElement | null) {
+  if (!area) return
+  const latest = area.querySelector<HTMLElement>('[data-message-id]:last-child')
+  // A long AI/SOS reply must not push the actual message above the viewport.
+  if (latest && latest.offsetHeight > area.clientHeight - 40) {
+    area.scrollTop += latest.getBoundingClientRect().top - area.getBoundingClientRect().top - 20
+  } else {
+    area.scrollTop = area.scrollHeight
+  }
+}
+function isFollowingLatestMessage(area: HTMLElement) {
+  if (area.scrollHeight - area.clientHeight - area.scrollTop < 80) return true
+  const latest = area.querySelector<HTMLElement>('[data-message-id]:last-child')
+  if (!latest) return true
+  const top = latest.getBoundingClientRect().top
+  const viewport = area.getBoundingClientRect()
+  return top >= viewport.top && top < viewport.bottom
+}
 function ConversationBody({ conversation, embedded = false }: { conversation: Conversation; embedded?: boolean }) {
   const user = useSessionStore((s) => s.user)!
   const client = useQueryClient()
   const messages = useQuery(messagesQuery(conversation.id))
   const messageScroll = useRef<HTMLElement>(null)
   const followLatest = useRef(true)
+  const [showLatestButton, setShowLatestButton] = useState(false)
   const scrollToLatest = () => {
-    const area = messageScroll.current
-    if (area) area.scrollTop = area.scrollHeight
+    followLatest.current = true
+    setShowLatestButton(false)
+    scrollToLatestMessage(messageScroll.current)
   }
   useEffect(() => {
     if (!followLatest.current || !messages.data) return
     const frame = requestAnimationFrame(() => {
-      const area = messageScroll.current
-      if (area) area.scrollTop = area.scrollHeight
+      scrollToLatestMessage(messageScroll.current)
     })
     return () => cancelAnimationFrame(frame)
   }, [messages.data, conversation.id])
@@ -343,7 +362,7 @@ function ConversationBody({ conversation, embedded = false }: { conversation: Co
           </details>
         )}
       </section>
-      <section ref={messageScroll} onScroll={(event) => { const area = event.currentTarget; followLatest.current = area.scrollHeight - area.clientHeight - area.scrollTop < 80 }} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-5" aria-label="Suhbat xabarlari">
+      <section ref={messageScroll} onScroll={(event) => { followLatest.current = isFollowingLatestMessage(event.currentTarget); setShowLatestButton(!followLatest.current) }} className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-5" aria-label="Suhbat xabarlari">
         {messages.isPending && <Notice>Xabarlar yuklanmoqda…</Notice>}
         {messages.isError && (
           <RequestError
@@ -366,33 +385,38 @@ function ConversationBody({ conversation, embedded = false }: { conversation: Co
               <li
                 key={message.id}
                 data-message-id={message.id}
-                className={
-                  'chat-bubble min-w-0 max-w-[90%] wrap-break-word rounded-2xl p-3.5 text-sm leading-6 shadow-xs sm:max-w-[80%] ' +
-                  (message.sender === user.id ? 'self-end rounded-br-sm bg-mint' : 'self-start rounded-bl-sm border border-line bg-surface')
-                }
+                className="flex min-w-0 flex-col gap-3"
               >
-                <p className="text-xs font-semibold text-muted">
-                  {message.sender === user.id
-                    ? 'Siz'
-                    : user.role === 'PATIENT'
-                      ? message.sender_name
-                      : message.sender_role === 'DOCTOR' ? message.sender_name : 'Bemor'}
-                  {message.kind === 'STATUS' ? ' · Bemor bildirgan holat' : ''}
-                </p>
-                <p className="whitespace-pre-wrap wrap-break-word">
-                  {message.text}
-                </p>
-                <p className="mt-2 flex flex-wrap items-center gap-1 text-[10px] text-muted">
-                  {message.sender === user.id && <CheckCheck size={13} aria-hidden="true"/>}{formatTashkentDateTime(message.sent_at)} (Toshkent) ·{' '}
-                  {delivery[message.delivery_status]}
-                </p>
-                {message.answered_at && (
-                  <p className="mt-cell-meta">
-                    Javob vaqti: {formatTashkentDateTime(message.answered_at)}
+                <div
+                  data-message-bubble
+                  className={
+                    'chat-bubble min-w-0 max-w-[90%] wrap-break-word rounded-2xl p-3.5 text-sm leading-6 shadow-xs sm:max-w-[80%] ' +
+                    (message.sender === user.id ? 'self-end rounded-br-sm bg-mint' : 'self-start rounded-bl-sm border border-line bg-surface')
+                  }
+                >
+                  <p className="text-xs font-semibold text-muted">
+                    {message.sender === user.id
+                      ? 'Siz'
+                      : user.role === 'PATIENT'
+                        ? message.sender_name
+                        : message.sender_role === 'DOCTOR' ? message.sender_name : 'Bemor'}
+                    {message.kind === 'STATUS' ? ' · Bemor bildirgan holat' : ''}
                   </p>
-                )}
-                {message.assistant && <AssistantReply assessment={message.assistant} conversationId={conversation.id} interactive={user.role === 'PATIENT' && conversation.status === 'OPEN' && index === (messages.data?.length || 0) - 1} />}
-                {message.assistant_status === 'WAITING' && index === (messages.data?.length || 0) - 1 && <FallbackStatus dueAt={message.assistant_due_at} />}
+                  <p className="whitespace-pre-wrap wrap-break-word">
+                    {message.text}
+                  </p>
+                  <p className="mt-2 flex flex-wrap items-center gap-1 text-[10px] text-muted">
+                    {message.sender === user.id && <CheckCheck size={13} aria-hidden="true"/>}{formatTashkentDateTime(message.sent_at)} (Toshkent) ·{' '}
+                    {delivery[message.delivery_status]}
+                  </p>
+                  {message.answered_at && (
+                    <p className="mt-cell-meta">
+                      Javob vaqti: {formatTashkentDateTime(message.answered_at)}
+                    </p>
+                  )}
+                </div>
+                {message.assistant && <div className="w-fit max-w-[95%] self-start sm:max-w-[85%]"><AssistantReply assessment={message.assistant} conversationId={conversation.id} interactive={user.role === 'PATIENT' && conversation.status === 'OPEN' && index === (messages.data?.length || 0) - 1} /></div>}
+                {message.assistant_status === 'WAITING' && index === (messages.data?.length || 0) - 1 && <div className="max-w-[95%] self-start sm:max-w-[85%]"><FallbackStatus dueAt={message.assistant_due_at} /></div>}
               </li>
             ))}
           </ol>
@@ -412,7 +436,8 @@ function ConversationBody({ conversation, embedded = false }: { conversation: Co
           </div>
         )}
       </section>
-      {!denied && conversation.status === 'OPEN' && <MessageForm conversationId={conversation.id} onSent={() => { followLatest.current = true; scrollToLatest() }} />}
+      {showLatestButton && <button type="button" className="mx-auto my-2 inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-line bg-surface px-4 text-sm font-medium text-primary shadow-xs" onClick={scrollToLatest}><ArrowDown size={16} aria-hidden="true" />Oxirgi xabarga o‘tish</button>}
+      {!denied && conversation.status === 'OPEN' && <MessageForm conversationId={conversation.id} onSent={scrollToLatest} />}
       </div>
       {user.role === 'PATIENT' ? <aside aria-label="Bemor holati va tarix" className="hidden min-h-0 space-y-4 overflow-y-auto border-l border-line bg-page p-3 xl:block">{tools}</aside> : statuses.data && statuses.data.length > 0 && <aside className="max-h-64 overflow-y-auto bg-page p-3">{tools}</aside>}
       {toolsOpen && <Dialog title="Holatim va kuzatuv tarixi" close={() => setToolsOpen(false)} scrollBody><div className="space-y-4">{tools}</div></Dialog>}
@@ -440,9 +465,15 @@ function MessageForm({ conversationId, onSent }: { conversationId: string; onSen
     event.preventDefault()
     if (mutation.isPending || !text.trim()) return
     try {
-      await mutation.mutateAsync(text.trim())
+      const message = await mutation.mutateAsync(text.trim())
+      const { queryKey } = messagesQuery(conversationId)
+      await client.cancelQueries({ queryKey })
       setText('')
       onSent?.()
+      client.setQueryData(queryKey, (previous) =>
+        [...(previous || []).filter((item) => item.id !== message.id), message]
+          .sort((a, b) => Date.parse(a.sent_at) - Date.parse(b.sent_at) || a.id.localeCompare(b.id)),
+      )
       if (composer.current) composer.current.style.height='auto'
       requestAnimationFrame(() =>
         composer.current?.focus({ preventScroll: true }),

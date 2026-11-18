@@ -39,7 +39,7 @@ export function AssistantReply({ assessment, conversationId, interactive }: { as
     onError: () => { void client.invalidateQueries({ queryKey: messagingKeys.all }) },
   })
   const questionCurrent = Date.parse(assessment.reply_at || assessment.created_at) > now - 30 * 60_000
-  return <section className="mt-4 space-y-3 rounded-xl border border-teal-200 bg-teal-50 p-4 text-ink" aria-label="AI demo javobi">
+  return <section className="space-y-3 rounded-xl border border-teal-200 bg-teal-50 p-4 text-ink" aria-label="AI demo javobi">
     <p className="font-bold">AI yordamchi · DEMO <span className={'ml-2 text-sm ' + (assessment.risk === 'EMERGENCY' ? 'text-red-800' : 'text-teal-800')}>{risks[assessment.risk]}</span></p>
     {assessment.reply_reason === 'DOCTORS_OFFLINE' && <p className="text-xs text-muted">Shifokorlar hozir oflayn bo‘lgani uchun yordamchi javob berdi.</p>}
     {assessment.reply_reason === 'NO_REPLY_60S' && <p className="text-xs text-muted">Shifokorlardan 1 daqiqada javob kelmagani uchun yordamchi javob berdi.</p>}
@@ -50,7 +50,7 @@ export function AssistantReply({ assessment, conversationId, interactive }: { as
     </div> : null}
     {response.error && <RequestError error={response.error} />}
     <p className="text-xs text-muted">{assessment.disclaimer}</p>
-    {assessment.emergency && <EmergencyCard incident={assessment.emergency} />}
+    {assessment.emergency && <EmergencyCard incident={assessment.emergency} compact />}
   </section>
 }
 export function EmergencyBoard() {
@@ -69,7 +69,7 @@ export function EmergencyBoard() {
     {rows.data && rows.data.count > 10 && <nav aria-label="SOS sahifalari" className="flex flex-wrap items-center gap-3"><button className={secondaryButton} disabled={!rows.data.previous || rows.isFetching} onClick={() => setPage(page - 1)}>Oldingi SOSlar</button><span>{page}-sahifa · Jami {rows.data.count}</span><button className={secondaryButton} disabled={!rows.data.next || rows.isFetching} onClick={() => setPage(page + 1)}>Keyingi SOSlar</button></nav>}
   </section>
 }
-function EmergencyCard({ incident }: { incident: Emergency }) {
+function EmergencyCard({ incident, compact = false }: { incident: Emergency; compact?: boolean }) {
   const user = useSessionStore((s) => s.user)!
   const client = useQueryClient()
   const [locationDialog, setLocationDialog] = useState(false)
@@ -79,12 +79,8 @@ function EmergencyCard({ incident }: { incident: Emergency }) {
     void client.invalidateQueries({ queryKey: messagingKeys.all })
   }
   const location = incident.location
-  return <article className="space-y-3 rounded-xl border border-red-200 bg-white p-4" aria-label="Demo SOS tafsiloti">
-    <div className="flex flex-wrap items-center gap-2"><strong>{incident.patient_name}</strong><span className="mt-status mt-status-danger">DEMO SOS</span><span className="text-xs text-muted">{formatTashkentDateTime(incident.created_at)}</span></div>
+  const details = <>
     <p className="break-all text-xs text-muted">{incident.reference}</p>
-    <p className="text-sm font-semibold text-red-800">{incident.notice}</p>
-    <p className="text-sm">{incident.reasons.map((reason) => reason.label).join(' · ')}</p>
-    <EmergencyPhone />
     <p className="text-sm">Ro‘yxatdagi manzil: {incident.registered_address || 'Kiritilmagan'}</p>
     {incident.contact && <p className="text-sm">Bemor telefoni: {incident.contact}</p>}
     {location ? <div className="max-w-md overflow-hidden rounded-2xl border border-line bg-surface shadow-xs" aria-label="Ulashilgan lokatsiya">
@@ -96,10 +92,17 @@ function EmergencyCard({ incident }: { incident: Emergency }) {
       <a className="flex min-h-11 items-center justify-center gap-2 border-t border-line bg-page px-4 py-3 text-sm font-semibold text-primary hover:bg-mint" href={`https://www.openstreetmap.org/?mlat=${location.latitude}&mlon=${location.longitude}#map=17/${location.latitude}/${location.longitude}`} target="_blank" rel="noopener noreferrer">Xaritada ochish<ExternalLink size={15} aria-hidden="true"/></a>
     </div> : <Notice>Lokatsiya hali ulashilmagan. Ro‘yxatdagi manzil GPS o‘rniga ishlatilmaydi.</Notice>}
     {user.role === 'PATIENT' && <button type="button" className={secondaryButton} onClick={() => setLocationDialog(true)}>Lokatsiyani ulashish</button>}
-    <p className="text-sm">{incident.acknowledged_at ? `Tibbiyot xodimi ko‘rdi: ${formatTashkentDateTime(incident.acknowledged_at)}` : 'Tibbiyot xodimining tasdig‘i kutilmoqda.'}</p>
     {['DOCTOR', 'COORDINATOR'].includes(user.role) && !incident.acknowledged_at && <button type="button" className={primaryButton} disabled={acknowledge.isPending} onClick={() => acknowledge.mutate(undefined)}>SOSni ko‘rdim</button>}
     {acknowledge.error && <RequestError error={acknowledge.error} />}
     <details><summary className="cursor-pointer text-sm font-semibold">Demo jarayon tarixi</summary><ol className="mt-2 space-y-2">{incident.events.map((event) => <li key={event.id} className="text-sm"><p>{event.detail}</p><time className="text-xs text-muted">{formatTashkentDateTime(event.created_at)}</time></li>)}</ol></details>
+  </>
+  return <article className="space-y-3 rounded-xl border border-red-200 bg-white p-4" aria-label="Demo SOS tafsiloti">
+    <div className="flex flex-wrap items-center gap-2"><strong>{incident.patient_name}</strong><span className="mt-status mt-status-danger">DEMO SOS</span><span className="text-xs text-muted">{formatTashkentDateTime(incident.created_at)}</span></div>
+    <p className="text-sm font-semibold text-red-800">{incident.notice}</p>
+    <p className="text-sm">{incident.reasons.map((reason) => reason.label).join(' · ')}</p>
+    <EmergencyPhone />
+    <p className="text-sm">{incident.acknowledged_at ? `Tibbiyot xodimi ko‘rdi: ${formatTashkentDateTime(incident.acknowledged_at)}` : 'Tibbiyot xodimining tasdig‘i kutilmoqda.'}</p>
+    {compact ? <details><summary className="cursor-pointer text-sm font-semibold text-primary">SOS tafsilotlari va lokatsiya</summary><div className="mt-3 space-y-3">{details}</div></details> : details}
     {locationDialog && <LocationDialog id={incident.id} close={() => setLocationDialog(false)} shared={refresh} />}
   </article>
 }

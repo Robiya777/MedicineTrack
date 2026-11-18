@@ -1,0 +1,98 @@
+{
+  "verified_at": "2026-11-18T17:56:36.782393+05:00",
+  "diagnosis": "Messages were persisted and accessible to the treating doctors; scrolling to the end of a tall AI/SOS card hid the human message text above the chat viewport.",
+  "frontend": {
+    "eslint": true,
+    "typescript": true,
+    "build": true,
+    "unit_passed": 10
+  },
+  "backend_business_rules_changed": false,
+  "scope": "Synthetic accounts and demo coordinates. No real emergency calls or dispatch.",
+  "local_browser": {
+    "base": "http://127.0.0.1:5173",
+    "fixture_run": "7a5e0fe9",
+    "checks": [
+      {
+        "name": "A large SOS with a shared location cannot hide the next patient message",
+        "passed": true,
+        "evidence": {
+          "message_id": "2286c61e-2ec7-415d-828b-29d4602bb6b4"
+        }
+      },
+      {
+        "name": "The primary doctor receives the same message through the conversation list",
+        "passed": true
+      },
+      {
+        "name": "A second assigned doctor receives the same common-chat message",
+        "passed": true
+      },
+      {
+        "name": "Doctor replies appear in the patient chat without a reload",
+        "passed": true
+      },
+      {
+        "name": "A confirmed message appears immediately while the subsequent history request is delayed",
+        "passed": true
+      },
+      {
+        "name": "Reading history survives polling and the latest-message button reveals a new reply",
+        "passed": true
+      },
+      {
+        "name": "A 360px mobile chat shows new text even after an expanded emergency card",
+        "passed": true
+      },
+      {
+        "name": "Reload keeps the latest patient text visible on mobile",
+        "passed": true
+      }
+    ],
+    "browser_errors": [],
+    "server_errors": []
+  },
+  "ngrok_browser": {
+    "base": "https://patti-unlengthened-elroy.ngrok-free.dev",
+    "fixture_run": "7a5e0fe9",
+    "checks": [
+      {
+        "name": "A large SOS with a shared location cannot hide the next patient message",
+        "passed": true,
+        "evidence": {
+          "message_id": "a13b432b-dfe9-439e-b665-b0fb513964a9"
+        }
+      },
+      {
+        "name": "The primary doctor receives the same message through the conversation list",
+        "passed": true
+      },
+      {
+        "name": "A second assigned doctor receives the same common-chat message",
+        "passed": true
+      },
+      {
+        "name": "Doctor replies appear in the patient chat without a reload",
+        "passed": true
+      },
+      {
+        "name": "A confirmed message appears immediately while the subsequent history request is delayed",
+        "passed": true
+      },
+      {
+        "name": "Reading history survives polling and the latest-message button reveals a new reply",
+        "passed": true
+      },
+      {
+        "name": "A 360px mobile chat shows new text even after an expanded emergency card",
+        "passed": true
+      },
+      {
+        "name": "Reload keeps the latest patient text visible on mobile",
+        "passed": true
+      }
+    ],
+    "browser_errors": [],
+    "server_errors": []
+  }
+}

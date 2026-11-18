@@ -5,7 +5,7 @@ type Request = InternalAxiosRequestConfig & { feedbackKey?: string }
 const timers = new Map<string, ReturnType<typeof setTimeout>>()
 function emit(value: ActionFeedback) { window.dispatchEvent(new CustomEvent(feedbackEvent, {detail:value})) }
 function eligible(config: Request) {
-  return ['post','put','patch','delete'].includes(config.method?.toLowerCase() || '') && !/\/auth\/(refresh|csrf)|\/notifications\/|\/me\/presence/.test(config.url || '')
+  return ['post','put','patch','delete'].includes(config.method?.toLowerCase() || '') && !/\/auth\/(refresh|csrf)|\/notifications\/|\/me\/presence|\/conversations\/[^/]+\/(messages|read)$/.test(config.url || '')
 }
 function success(url: string, method?: string) {
   if(url.endsWith('/auth/login')) return 'Tizimga kirdingiz'

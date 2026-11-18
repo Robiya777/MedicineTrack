@@ -301,3 +301,32 @@ tanlash kartalari chiqadi. Loading/xato/bo‘sh ro‘yxat holatlari ajratilgan.
 Chromium localhostda 1440/360 px, tez tanlash bilan kalendarni ochish, tanlovni
 tozalash va bo‘sh shifokorlar javobi tekshirildi. Saqlash amali tanlovsiz
 ko‘rinmaydi; overflow/runtime xatosi aniqlanmadi. Lint/typecheck/build o‘tdi.
+
+## Chatdagi yangi xabar ko‘rinishi — 2026-11-18
+
+Xabar serverda saqlangan va shifokorga ochilgan bo‘lsa ham, uning ichidagi uzun
+AI/SOS kartasining oxiriga avtomatik surilish bemor yozgan matnni ko‘rinish
+chegarasidan chiqarib yuborgan. Bemor va shifokorning haqiqiy demo chatida shu
+holat takrorlandi. Oddiy xabar va AI javobi alohida pufaklarda chiqadi; chatdagi
+SOS lokatsiyasi va tarixi ochiladigan bo‘limga yig‘ildi. Shoshilinch ogohlantirish
+va telefon tugmasi ko‘rinib turadi.
+
+Surilish uzun javobda oxirgi xabarning boshini ko‘rsatadi. Tarixni o‘qiyotganda
+polling joyni o‘zgartirmaydi; «Oxirgi xabarga o‘tish» tugmasi mavjud. POST
+tasdiqlagan yozuv qayta GETni kutmasdan keshga qo‘shiladi; oldingi polling
+bekor qilinadi va ayni ID dublikat bo‘lmaydi. Xabar va o‘qilganlik uchun global
+toast chiqarilmaydi; yuborish holati chatda, xato esa formaning o‘zida ko‘rinadi.
+
+ESLint, TypeScript, build va 10 unit testi o‘tdi. Sintetik akkauntlar bilan
+Chromiumda localhost va ngrok orqali 8 tadan jonli brauzer sinovi o‘tdi:
+uzun SOS/GPSdan keyingi matn ko‘rinishi,
+ikki shifokorga ayni xabar yetishi, shifokor javobining reloadsiz chiqishi,
+GET ushlab turilganda POST tasdiqlagan matnning chiqishi, tarixni o‘qish,
+360 px ekran va reload. Test matnning chat chegarasida ekanini, animatsiyadan
+keyingi ko‘rinishini va ustini boshqa element yopmaganini tekshiradi.
+
+Takrorlash: sintetik fixture bilan `scripts/chat-visibility-check.mjs`ni ishga
+tushiring. `QA_FIXTURE`, `QA_BASE_URL`, `QA_OUTPUT` va
+`PLAYWRIGHT_PACKAGE_DIR` parametrlarini qo‘llaydi. Natijalar:
+[chat ko‘rinishi hisoboti](../docs/qa/chat-visibility-2026-11-18.json).
+Backend biznes qoidalari o‘zgartirilmadi.

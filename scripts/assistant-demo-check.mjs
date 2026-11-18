@@ -98,6 +98,7 @@ try {
     return { incident_id: emergency.id, conversation_id: fixture.conversation_id }
   })
   await check('Cancelling consent sends no coordinates', async () => {
+    await latest(patient).getByText('SOS tafsilotlari va lokatsiya', { exact: true }).click()
     await latest(patient).getByRole('button', { name: 'Lokatsiyani ulashish', exact: true }).click()
     await patient.getByRole('dialog').getByRole('button', { name: 'Bekor qilish', exact: true }).click()
     await latest(patient).getByText('Lokatsiya hali ulashilmagan.', { exact: false }).waitFor()
