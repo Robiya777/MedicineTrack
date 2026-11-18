@@ -5,7 +5,7 @@ import { ChatTeam } from './chat-team'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
-import { ArrowLeft, MessageCircle, RefreshCw, Search, Send, CheckCheck, CalendarClock, ChevronDown, LoaderCircle } from 'lucide-react'
+import { ArrowLeft, MessageCircle, RefreshCw, Search, Send, CheckCheck, CalendarClock, ChevronDown, LoaderCircle, HeartPulse, History, UserRound, Stethoscope } from 'lucide-react'
 import {
   conversationQuery,
   conversationsQuery,
@@ -38,6 +38,7 @@ import {
 } from '@/hooks/use-idempotent-mutation'
 import {
   Facts,
+  Dialog,
   Field,
   inputStyle,
   Notice,
@@ -59,12 +60,7 @@ export function PatientDashboard() {
   const discharges = useQuery(dischargePageQuery(page))
   return (
     <section className="space-y-6">
-      <div className="mt-page-heading">
-        <div>
-          <h1>{patient.data?.full_name || 'Bemor kabineti'}</h1>
-          <p>Chiqarish ma’lumotlari va shifokoringiz bilan aloqa.</p>
-        </div>
-      </div>
+      <header className="flex items-center gap-3"><span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-line bg-surface text-primary"><UserRound size={22} aria-hidden="true"/></span><div><p className="text-xs text-muted">Bemor kabineti</p><h1 className="mt-0.5 text-xl font-semibold tracking-tight">{patient.data?.full_name || 'Mening kabinetim'}</h1></div></header>
       {patient.isError && (
         <RequestError
           error={patient.error}
@@ -139,10 +135,10 @@ function PatientChat() {
   const active = conversations.data?.find((item) => item.status === 'OPEN')
   const history = conversations.data?.filter((item) => item.status === 'CLOSED') || []
   return <section className="space-y-4" aria-label="Shifokorlar bilan umumiy chat">
-    <header className="flex items-center justify-between gap-3"><div><h2 className="text-2xl font-semibold">Shifokorlar bilan chat</h2><p className="mt-1 text-sm text-muted">Xabarlaringiz sizga biriktirilgan tibbiy jamoaga yuboriladi.</p></div><button type="button" className={secondaryButton} aria-label="Suhbatni yangilash" disabled={conversations.isFetching} onClick={() => void conversations.refetch()}><RefreshCw size={17} aria-hidden="true" /></button></header>
+    <header className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><MessageCircle size={20} className="text-primary" aria-hidden="true"/><h2 className="text-lg font-semibold">Shifokorlar bilan chat</h2></div><button type="button" className={secondaryButton} aria-label="Suhbatni yangilash" disabled={conversations.isFetching} onClick={() => void conversations.refetch()}><RefreshCw size={17} aria-hidden="true" /></button></header>
     {conversations.isPending && <Notice>Suhbat yuklanmoqda…</Notice>}
     {conversations.isError && <RequestError error={conversations.error} retry={() => void conversations.refetch()} />}
-    {!conversations.isError && active && <div className="h-[min(780px,calc(100dvh-220px))] min-h-[480px] overflow-hidden rounded-3xl border border-line bg-surface shadow-xs"><ConversationBody key={active.id} conversation={active} embedded /></div>}
+    {!conversations.isError && active && <div className="h-[max(640px,calc(100dvh-230px))] overflow-hidden rounded-3xl border border-line bg-surface shadow-xs"><ConversationBody key={active.id} conversation={active} embedded /></div>}
     {!conversations.isPending && !conversations.isError && !active && <Notice>Suhbat tayyorlanmoqda. Mas’ul tibbiyot xodimi bilan bog‘laning.</Notice>}
     {history.length > 0 && <details className="text-sm"><summary className="cursor-pointer font-medium text-muted">Oldingi yozishmalar</summary><ul className="mt-3 space-y-2">{history.map((item) => <li key={item.id}><Link className="mt-link" to="/kabinet/$role/suhbat/$conversationId" params={{ role: 'bemor', conversationId: item.id }} search={{}}>Suhbat tarixi · {formatTashkentDateTime(item.created_at)}</Link></li>)}</ul></details>}
   </section>
@@ -281,11 +277,51 @@ function ConversationBody({ conversation, embedded = false }: { conversation: Co
   }, [incoming, conversation.status, mark, messages.isError, visible])
   const denied = messages.isError || statuses.isError
   const snapshot = conversation.work_schedule
+  const [toolsOpen, setToolsOpen] = useState(false)
   const online = conversation.team.filter((member) => member.online).length
+  const tools = <>
+        <div className="px-1"><h2 className="flex items-center gap-2 text-sm font-semibold"><HeartPulse size={17} className="text-primary" aria-hidden="true"/>Kuzatuv paneli</h2><p className="mt-1 text-xs leading-5 text-muted">Holatingizni bildiring va avvalgi qaydlarni ko‘ring.</p></div>
+      {!denied && conversation.status === 'OPEN' && (
+        <>
+          {user.role === 'PATIENT' && (
+            <details open className="rounded-2xl border border-line bg-surface px-4 py-3"><summary className="cursor-pointer text-sm font-medium text-primary"><HeartPulse size={16} className="mr-2 inline" aria-hidden="true"/>Holatimni bildirish</summary><StatusForm conversationId={conversation.id} /></details>
+          )}
+        </>
+      )}
+      {!denied && statuses.data && statuses.data.length > 0 && (
+        <details className="rounded-2xl border border-line bg-surface px-4 py-3"><summary className="cursor-pointer text-sm font-medium text-muted"><History size={16} className="mr-2 inline text-primary" aria-hidden="true"/>Holatlar tarixi</summary><section className="space-y-4 py-4">
+          <h2 className="text-xl font-semibold">Bemor bildirgan holatlar</h2>
+          {statuses.data.map((item) => (
+            <article
+              key={item.id}
+              className="space-y-2 border-t border-line pt-3"
+            >
+              <span
+                className={
+                  'mt-status mt-status-' +
+                  (item.self_reported_state === 'WORSENED'
+                    ? 'danger'
+                    : 'accepted')
+                }
+              >
+                {states[item.self_reported_state]}
+              </span>
+              <p className="whitespace-pre-wrap wrap-break-word">{item.note}</p>
+              <p className="text-sm text-muted">
+                Kuzatuv: {formatTashkentDateTime(item.observed_at)} · Qabul
+                qilindi: {formatTashkentDateTime(item.received_at)} (Toshkent)
+              </p>
+              <p className="text-xs text-muted">Bemor bildirgan ma’lumot</p>
+            </article>
+          ))}
+        </section></details>
+      )}
+  </>
   return (
-    <div className={'chat-wallpaper flex min-h-0 flex-col ' + (embedded ? 'h-full' : 'h-[min(780px,calc(100dvh-180px))] min-h-[480px] overflow-hidden rounded-3xl border border-line')}>
-      <section className="shrink-0 space-y-3 border-b border-line bg-surface p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">{user.role === 'DOCTOR' ? conversation.patient_name : 'Tibbiy jamoa'}</h2><p className="mt-1 flex items-center gap-2 text-xs text-muted"><span className={'size-2 rounded-full ' + (online ? 'bg-emerald-500' : 'bg-slate-400')} aria-hidden="true" />{online ? `${online} shifokor onlayn` : 'Shifokorlar oflayn'} · {conversation.team.length} shifokor</p></div>{user.role === 'PATIENT' ? <EmergencyPhone /> : conversation.can_manage_team && <ChatTeam patientId={conversation.patient} />}</div>
+    <div className={(user.role === 'PATIENT' ? 'patient-chat-layout grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_290px] ' : 'flex flex-col ') + 'min-h-0 ' + (embedded ? 'h-full' : 'h-[max(640px,calc(100dvh-180px))] overflow-hidden rounded-3xl border border-line')}>
+      <div className="chat-wallpaper flex min-h-0 min-w-0 flex-1 flex-col">
+      <section className="shrink-0 space-y-2 border-b border-line bg-surface px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-mint text-primary"><Stethoscope size={20} aria-hidden="true"/></span><div><h2 className="font-semibold">{user.role === 'DOCTOR' ? conversation.patient_name : 'Tibbiy jamoa'}</h2><p className="mt-1 flex items-center gap-2 text-xs text-muted"><span className={'size-2 rounded-full ' + (online ? 'bg-emerald-500' : 'bg-slate-400')} aria-hidden="true" />{online ? `${online} shifokor onlayn` : 'Shifokorlar oflayn'} · {conversation.team.length} shifokor</p></div></div>{user.role === 'PATIENT' ? <div className="flex items-center gap-2"><button type="button" aria-label="Holat va tarix" className="flex size-11 items-center justify-center rounded-xl border border-line text-primary xl:hidden" onClick={() => setToolsOpen(true)}><HeartPulse size={20} aria-hidden="true"/></button><EmergencyPhone /></div> : conversation.can_manage_team && <ChatTeam patientId={conversation.patient} />}</div>
         <p className="text-xs text-muted">{user.role === 'PATIENT' ? conversation.assistant_enabled ? 'Avval shifokorlar javob beradi. Jamoa oflayn bo‘lsa yoki 1 daqiqada javob kelmasa, AI yordamchi javob beradi.' : 'Xabarlaringizga sizga biriktirilgan tibbiy jamoa javob beradi.' : conversation.response_policy}</p>
         {conversation.status === 'CLOSED' && (
           <p role="status" className="text-sm text-warning">
@@ -376,42 +412,11 @@ function ConversationBody({ conversation, embedded = false }: { conversation: Co
           </div>
         )}
       </section>
-      {!denied && statuses.data && statuses.data.length > 0 && (
-        <details className="max-h-[40dvh] shrink-0 overflow-y-auto border-t border-line bg-surface px-4 py-3"><summary className="cursor-pointer text-sm font-medium text-muted">Bemor bildirgan holatlar tarixi</summary><section className="space-y-4 py-4">
-          <h2 className="text-xl font-semibold">Bemor bildirgan holatlar</h2>
-          {statuses.data.map((item) => (
-            <article
-              key={item.id}
-              className="space-y-2 border-t border-line pt-3"
-            >
-              <span
-                className={
-                  'mt-status mt-status-' +
-                  (item.self_reported_state === 'WORSENED'
-                    ? 'danger'
-                    : 'accepted')
-                }
-              >
-                {states[item.self_reported_state]}
-              </span>
-              <p className="whitespace-pre-wrap wrap-break-word">{item.note}</p>
-              <p className="text-sm text-muted">
-                Kuzatuv: {formatTashkentDateTime(item.observed_at)} · Qabul
-                qilindi: {formatTashkentDateTime(item.received_at)} (Toshkent)
-              </p>
-              <p className="text-xs text-muted">Bemor bildirgan ma’lumot</p>
-            </article>
-          ))}
-        </section></details>
-      )}
-      {!denied && conversation.status === 'OPEN' && (
-        <>
-          {user.role === 'PATIENT' && (
-            <details className="max-h-[45dvh] shrink-0 overflow-y-auto border-t border-line bg-surface px-4 py-3"><summary className="cursor-pointer text-sm font-medium text-primary">Holatimni bildirish</summary><StatusForm conversationId={conversation.id} /></details>
-          )}
-          <MessageForm conversationId={conversation.id} onSent={() => { followLatest.current = true; scrollToLatest() }} />
-        </>
-      )}
+      {!denied && conversation.status === 'OPEN' && <MessageForm conversationId={conversation.id} onSent={() => { followLatest.current = true; scrollToLatest() }} />}
+      </div>
+      {user.role === 'PATIENT' ? <aside aria-label="Bemor holati va tarix" className="hidden min-h-0 space-y-4 overflow-y-auto border-l border-line bg-page p-3 xl:block">{tools}</aside> : statuses.data && statuses.data.length > 0 && <aside className="max-h-64 overflow-y-auto bg-page p-3">{tools}</aside>}
+      {toolsOpen && <Dialog title="Holatim va kuzatuv tarixi" close={() => setToolsOpen(false)} scrollBody><div className="space-y-4">{tools}</div></Dialog>}
+
     </div>
   )
 }
@@ -504,12 +509,12 @@ function StatusForm({ conversationId }: { conversationId: string }) {
   }
   return (
     <form
-      className="mt-card space-y-4 p-5"
+      className="space-y-4 pt-4"
       onSubmit={submit}
       aria-busy={mutation.isPending}
     >
-      <h2 className="text-xl font-semibold">Holatimni bildirish</h2>
-      <p className="text-sm text-warning">
+      <p className="text-xs leading-5 text-muted">Shifokorga holatingiz haqida qisqa ma’lumot yuboring.</p>
+      <p className="rounded-xl bg-warning-wash p-3 text-xs leading-5 text-warning">
         Holatingiz yomonlashsa yoki shoshilinch yordam kerak bo‘lsa, chat
         javobini kutmang. Shoshilinch tibbiy yordamga murojaat qiling.
       </p>

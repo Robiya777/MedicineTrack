@@ -69,6 +69,7 @@ const patient = patientIdSchema.parse(response.data)
 | Yo‘nalish | Mas’ul |
 |---|---|
 | PM | @robiya777 |
+| Business analyst | @akmalorinov |
 | Frontend | @nuraziz07 |
 | Android / APK | @akashishunichiro |
 | Backend | @sunnatila |
