@@ -48,6 +48,10 @@ class ActivationThrottle(LoginThrottle):
     scope = "activation"
 
 
+class RefreshThrottle(LoginThrottle):
+    scope = "refresh"
+
+
 def csrf_check(request):
     check = CSRFCheck(lambda request: None)
     check.process_request(request)
@@ -144,7 +148,7 @@ class LoginView(PublicAuthView):
 class RefreshView(PublicAuthView):
     permission_classes = [AllowAny]
     authentication_classes = []
-    throttle_classes = [LoginThrottle]
+    throttle_classes = [RefreshThrottle]
 
     @extend_schema(request=RefreshInput, responses=TokenOutput)
     def post(self, request):

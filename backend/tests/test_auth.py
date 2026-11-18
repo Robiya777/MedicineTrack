@@ -133,7 +133,10 @@ def test_tab_web_cookies_are_independent(world, settings):
     a = login(client, client="web", tab_id=tab_a)
     b = login(client, username=world.doctor.username, client="web", tab_id=tab_b)
     assert a.status_code == b.status_code == 200
-    name_a, name_b = "refresh_token_" + tab_a.replace("-", ""), "refresh_token_" + tab_b.replace("-", "")
+    name_a, name_b = (
+        "refresh_token_" + tab_a.replace("-", ""),
+        "refresh_token_" + tab_b.replace("-", ""),
+    )
     assert a.cookies[name_a]["httponly"] and b.cookies[name_b]["httponly"]
     assert a.cookies[name_a]["secure"] and b.cookies[name_b]["secure"]
     assert "refresh" not in a.data and "refresh" not in b.data
@@ -142,7 +145,9 @@ def test_tab_web_cookies_are_independent(world, settings):
     refreshed_b = client.post("/api/v1/auth/refresh", {"tab_id": tab_b}, format="json")
     assert refreshed_a.data["user"]["id"] == a.data["user"]["id"]
     assert refreshed_b.data["user"]["id"] == b.data["user"]["id"]
-    client.credentials(HTTP_X_CSRFTOKEN=csrf, HTTP_AUTHORIZATION=f"Bearer {refreshed_a.data['access']}")
+    client.credentials(
+        HTTP_X_CSRFTOKEN=csrf, HTTP_AUTHORIZATION=f"Bearer {refreshed_a.data['access']}"
+    )
     out = client.post("/api/v1/auth/logout", {"tab_id": tab_a}, format="json")
     assert out.status_code == 204 and out.cookies[name_a]["max-age"] == 0
     assert name_b not in out.cookies
@@ -153,5 +158,8 @@ def test_tab_web_cookies_are_independent(world, settings):
 def test_tab_refresh_does_not_fall_back_to_shared_cookie(world):
     client = APIClient()
     assert login(client, client="web").status_code == 200
-    assert client.post("/api/v1/auth/refresh", {"tab_id": str(uuid4())}, format="json").status_code == 401
+    assert (
+        client.post("/api/v1/auth/refresh", {"tab_id": str(uuid4())}, format="json").status_code
+        == 401
+    )
     assert login(client, client="web", tab_id="not-a-uuid").status_code == 400

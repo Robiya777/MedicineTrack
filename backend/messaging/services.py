@@ -98,6 +98,10 @@ def locked_conversation(pk, user):
         raise PermissionDenied()
     if conversation.status != "OPEN":
         raise Conflict("Yopiq suhbatga yozib bo‘lmaydi.")
+    assignment = active_assignments().filter(patient_id=conversation.patient_id).first()
+    current_target = (assignment.pk, assignment.doctor_id) if assignment else (None, None)
+    if (conversation.assignment_id, conversation.doctor_id) != current_target:
+        raise Conflict("Mas’ul shifokor biriktirilishi o‘zgargan. Suhbatlar ro‘yxatini yangilang.")
     return conversation
 
 

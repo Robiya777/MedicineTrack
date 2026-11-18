@@ -1,0 +1,4 @@
+<resources>
+ <string name="clarification_needed">Ko‘rsatmani shifokor bilan aniqlashtirish kerak</string>
+ <string name="exclude_medication">Bu dorini saqlanadigan jadvaldan chiqarish</string>
+</resources>

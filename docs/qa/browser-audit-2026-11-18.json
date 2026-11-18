@@ -1,0 +1,129 @@
+{
+  "base": "http://localhost:5173",
+  "fixture_run": "c629dcc6",
+  "checks": [
+    {
+      "name": "Frontend proxy reaches MedicineTrack API",
+      "passed": true,
+      "ms": 170,
+      "evidence": {
+        "api": "MedicineTrack API",
+        "version": "0.2.0"
+      }
+    },
+    {
+      "name": "Hospital login and session reload",
+      "passed": true,
+      "ms": 512
+    },
+    {
+      "name": "Nullable medication DRAFT renders in live discharge",
+      "passed": true,
+      "ms": 409
+    },
+    {
+      "name": "UI creates patient and discharge DRAFT",
+      "passed": true,
+      "ms": 737,
+      "evidence": {
+        "patient_id": "92f80e5c-830b-4380-b059-752102400f9b",
+        "discharge_id": "3e4f9558-5c98-4255-85b6-95b536cb7747"
+      }
+    },
+    {
+      "name": "Discharge confirmation creates one UNASSIGNED task with 24-hour deadline",
+      "passed": true,
+      "ms": 671,
+      "evidence": {
+        "task_id": "11f20334-142d-454d-9665-0bd53f9dd6c8",
+        "due_at": "2026-11-19T05:44:27Z"
+      }
+    },
+    {
+      "name": "Coordinator assigns the same browser-created task",
+      "passed": true,
+      "ms": 739
+    },
+    {
+      "name": "Doctor accepts task and records unsuccessful contact without closing it",
+      "passed": true,
+      "ms": 715
+    },
+    {
+      "name": "Doctor completes task; hospital sees identical result",
+      "passed": true,
+      "ms": 695
+    },
+    {
+      "name": "Hospital activation code creates a patient account through the live web form",
+      "passed": true,
+      "ms": 6294,
+      "evidence": {
+        "patient_id": "92f80e5c-830b-4380-b059-752102400f9b"
+      }
+    },
+    {
+      "name": "Two identical successful chat messages create two different messages",
+      "passed": true,
+      "ms": 704,
+      "evidence": {
+        "message_ids": [
+          "959b4385-f3ea-4307-9f82-ea167c596164",
+          "fc9a6514-c0ef-48d6-a53d-99ce709c8b0d"
+        ]
+      }
+    },
+    {
+      "name": "Patient worsened status reaches coordinator and doctor replies in live chat",
+      "passed": true,
+      "ms": 3472
+    },
+    {
+      "name": "Work schedule supports repeat saves and rejects stale coordinator edits",
+      "passed": true,
+      "ms": 12960
+    },
+    {
+      "name": "In-app notification bell reads delivered backend events",
+      "passed": true,
+      "ms": 4125
+    },
+    {
+      "name": "Doctor clinically approves complete DRAFT while incomplete DRAFT stays visible",
+      "passed": true,
+      "ms": 4522
+    },
+    {
+      "name": "Patient records medication and note-only correction preserves taken timestamp",
+      "passed": true,
+      "ms": 10591
+    },
+    {
+      "name": "Hospital DOCTOR reaches own hospital discharge and can approve own plan",
+      "passed": true,
+      "ms": 1525
+    },
+    {
+      "name": "Technical admin lists staff, institutions and territories",
+      "passed": true,
+      "ms": 2462
+    },
+    {
+      "name": "Separate tabs retain separate user sessions and logout affects one tab",
+      "passed": true,
+      "ms": 776
+    },
+    {
+      "name": "360px layout and mobile navigation",
+      "passed": true,
+      "ms": 4514
+    },
+    {
+      "name": "Browser JavaScript and backend 5xx errors",
+      "passed": true,
+      "ms": 1
+    }
+  ],
+  "browser_errors": [],
+  "server_errors": []
+}

@@ -1,84 +1,10 @@
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { apiClient } from './client'
+import { occurrence, planSchema, recordSchema, type ItemInput, type Occurrence, type Plan, type RecordInput } from './medication-schemas'
+export { itemInput, occurrence, planSchema } from './medication-schemas'
+export type { ItemInput, Occurrence, Plan, RecordInput } from './medication-schemas'
 const date = z.iso.datetime({ offset: true })
-export const itemInput = z.object({
-  name: z.string(),
-  prescribed_dose_text: z.string(),
-  route: z.string(),
-  instructions: z.string(),
-  source_reference: z.string(),
-  start_date: z.string().nullable(),
-  end_date: z.string().nullable(),
-  timezone: z.string(),
-  local_times: z.array(z.string()),
-  schedule_type: z.literal('FIXED_TIMES'),
-  needs_clarification: z.boolean(),
-  clarification_reason: z.string(),
-})
-const item = itemInput.extend({
-  id: z.uuid(),
-  missing_fields: z.array(z.string()),
-})
-export const planSchema = z.object({
-  id: z.uuid(),
-  patient: z.uuid(),
-  discharge: z.uuid(),
-  series_id: z.uuid(),
-  version: z.number(),
-  lock_version: z.number(),
-  status: z.enum(['DRAFT', 'ACTIVE', 'STOPPED', 'COMPLETED']),
-  items: z.array(item),
-  approved_at: date.nullable(),
-  supersedes: z.uuid().nullable(),
-  stop_reason: z.string(),
-  created_at: date,
-})
-const values = z.object({
-  result: z.enum(['TAKEN', 'SKIPPED']),
-  reported_taken_at: date.nullable(),
-  client_recorded_at: date,
-  note: z.string(),
-})
-const record = values.extend({
-  id: z.uuid(),
-  version: z.number(),
-  patient_reported: z.boolean(),
-  server_received_at: date,
-  late_recorded: z.boolean(),
-  recorded_against_inactive_plan: z.boolean(),
-  original: values,
-  corrections: z.array(
-    values.extend({
-      id: z.uuid(),
-      version: z.number(),
-      reason: z.string(),
-      created_at: date,
-    }),
-  ),
-})
-export const occurrence = z.object({
-  id: z.uuid(),
-  item_details: item,
-  plan_id: z.uuid(),
-  plan_version: z.number(),
-  plan_status: z.string(),
-  scheduled_at: date,
-  cancelled_at: date.nullable(),
-  status: z.enum([
-    'UPCOMING',
-    'UNRECORDED',
-    'CANCELLED',
-    'TAKEN',
-    'SKIPPED',
-    'NOT_AVAILABLE',
-  ]),
-  record: record.nullable().optional(),
-})
-export type Plan = z.infer<typeof planSchema>
-export type ItemInput = z.infer<typeof itemInput>
-export type Occurrence = z.infer<typeof occurrence>
-export type RecordInput = z.infer<typeof values> & { plan_version: number }
 const keys = ['medications'] as const
 export { keys as medicationKeys }
 async function pages<T extends z.ZodType>(
@@ -203,5 +129,5 @@ export async function saveRecord(
     : await apiClient.post(`/dose-occurrences/${item.id}/record`, input, {
         headers: { 'Idempotency-Key': key },
       })
-  return record.parse(response.data)
+  return recordSchema.parse(response.data)
 }

@@ -42,16 +42,13 @@ def scan_deadlines():
 def event_is_current(event):
     if not event.recipient.is_active:
         return False
+    if event.recipient.organization_id and not event.recipient.organization.active:
+        return False
     if event.task_id:
         task = event.task
         if task.status not in OPEN_STATUSES:
             return False
-        if event.recipient.role == Role.DOCTOR and task.assigned_doctor_id != event.recipient_id:
-            return False
-        if (
-            event.recipient.role == Role.COORDINATOR
-            and not tasks_for(event.recipient).filter(pk=task.pk).exists()
-        ):
+        if not tasks_for(event.recipient).filter(pk=task.pk).exists():
             return False
     if event.conversation_id and event.recipient.role == Role.DOCTOR:
         from messaging.services import conversations_for

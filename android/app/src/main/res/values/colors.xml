@@ -1,1 +1,6 @@
-<resources><color name="brand">#176B56</color></resources>
+<resources>
+ <color name="brand">#0F766E</color>
+ <color name="page">#F5F8F7</color>
+ <color name="ink">#18332F</color>
+ <color name="muted">#52645E</color>
+</resources>

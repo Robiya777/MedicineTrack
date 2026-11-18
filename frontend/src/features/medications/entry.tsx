@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { z } from 'zod'
 import { useSessionStore } from '@/state/session'
+import { getWorkspace } from '@/lib/workspaces'
 import { Field, inputStyle, primaryButton } from '@/components/ui'
 import { MedicationPanel } from './patient-medications'
 export function MedicationEntry() {
@@ -32,7 +33,7 @@ export function MedicationEntry() {
         <Link
           to="/kabinet/$role/dorilar/$patientId"
           params={{
-            role: user.role === 'HOSPITAL' ? 'statsionar' : 'shifokor',
+            role: getWorkspace(user).slug,
             patientId: id,
           }}
           search={{}}
@@ -46,11 +47,12 @@ export function MedicationEntry() {
 }
 
 export function MedicationTaskLink({ dischargeId }: { dischargeId: string }) {
+  const user = useSessionStore((s) => s.user)!
   const discharge = useQuery(dischargeQuery(dischargeId))
   return discharge.data && !discharge.isError ? (
     <Link
       to="/kabinet/$role/dorilar/$patientId"
-      params={{ role: 'shifokor', patientId: discharge.data.patient }}
+      params={{ role: getWorkspace(user).slug, patientId: discharge.data.patient }}
       search={{}}
       className={primaryButton}
     >

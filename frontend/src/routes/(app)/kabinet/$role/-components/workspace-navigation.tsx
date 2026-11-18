@@ -41,7 +41,7 @@ export function WorkspaceNavigation({
         onClick={onNavigate}
       >
         <LayoutDashboard className="shrink-0" size={19} aria-hidden="true" />
-        <span>{role === 'HOSPITAL' ? 'Chiqarishlar' : 'Ish stoli'}</span>
+        <span>{workspace.slug === 'statsionar' ? 'Chiqarishlar' : 'Ish stoli'}</span>
       </Link>
 
       {['PATIENT', 'DOCTOR', 'HOSPITAL'].includes(role) && (
@@ -58,7 +58,7 @@ export function WorkspaceNavigation({
         </Link>
       )}
 
-      {['PATIENT', 'DOCTOR'].includes(role) && (
+      {(['PATIENT', 'DOCTOR'].includes(role) && workspace.slug !== 'statsionar') && (
         <Link
           to="/kabinet/$role/suhbat"
           params={{ role: workspace.slug }}

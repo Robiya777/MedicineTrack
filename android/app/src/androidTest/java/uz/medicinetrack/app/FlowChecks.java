@@ -91,6 +91,51 @@ public final class FlowChecks extends Instrumentation {
     }
   }
 
+  View described(View root, String description) {
+    if (description.equals(String.valueOf(root.getContentDescription()))) return root;
+    if (root instanceof ViewGroup) {
+      ViewGroup group = (ViewGroup) root;
+      for (int i = 0; i < group.getChildCount(); i++) {
+        View result = described(group.getChildAt(i), description);
+        if (result != null) return result;
+      }
+    }
+    return null;
+  }
+
+  void setField(String name, String value) {
+    ui(
+        () -> {
+          View field = described(activity.root, name);
+          if (!(field instanceof EditText)) throw new AssertionError("Field missing: " + name);
+          ((EditText) field).setText(value);
+        });
+  }
+
+  void navSelected(String name) throws Exception {
+    Thread.sleep(150);
+    waitForIdleSync();
+    ui(
+        () -> {
+          View tab = described(activity.root, name);
+          check(tab != null && tab.isSelected(), "Active bottom navigation: " + name);
+          check(tab.getHeight() >= activity.dp(44), "Navigation touch target: " + name);
+          if (tab instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) tab;
+            for (int i = 0; i < group.getChildCount(); i++) {
+              View child = group.getChildAt(i);
+              if (child instanceof TextView) {
+                TextView label = (TextView) child;
+                check(
+                    label.getLayout() != null
+                        && label.getLayout().getLineWidth(0) <= label.getWidth() + 1,
+                    "Navigation label fits: " + name);
+              }
+            }
+          }
+        });
+  }
+
   void screenshot(String name) throws Exception {
     Thread.sleep(400);
     Bitmap b = getUiAutomation().takeScreenshot();
@@ -101,11 +146,79 @@ public final class FlowChecks extends Instrumentation {
     }
   }
 
+  void layoutScreens(Api patient, Vault vault, String base, String password) throws Exception {
+    ui(() -> activity.medications());
+    idle();
+    navSelected("Dorilar");
+    check(activity.doses.length() > 0, "Medication rows loaded for compact layout");
+    screenshot("layout-medications");
+    JSONArray conversations = patient.list("/conversations");
+    check(conversations.length() > 0, "Conversation available for keyboard layout");
+    ui(() -> activity.chat(conversations.optJSONObject(0).optString("id"), false));
+    idle();
+    navSelected("Suhbatlar");
+    ui(
+        () -> {
+          activity.chatInput.requestFocus();
+          ((android.view.inputmethod.InputMethodManager)
+                  activity.getSystemService(Context.INPUT_METHOD_SERVICE))
+              .showSoftInput(
+                  activity.chatInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        });
+    Thread.sleep(1200);
+    waitForIdleSync();
+    ui(
+        () -> {
+          View tab = described(activity.root, "Suhbatlar");
+          check(tab != null && !tab.isShown(), "Keyboard leaves room for the message composer");
+          android.graphics.Rect visible = new android.graphics.Rect();
+          check(
+              activity.chatInput.getGlobalVisibleRect(visible)
+                  && visible.height() >= activity.dp(44),
+              "Message input remains visible above keyboard");
+        });
+    screenshot("layout-keyboard");
+    ui(
+        () ->
+            ((android.view.inputmethod.InputMethodManager)
+                    activity.getSystemService(Context.INPUT_METHOD_SERVICE))
+                .hideSoftInputFromWindow(activity.chatInput.getWindowToken(), 0));
+    Thread.sleep(400);
+    ui(() -> activity.account());
+    navSelected("Hisob");
+    screenshot("layout-account");
+    Reminders.clear(getTargetContext());
+    Api doctor = new Api(vault);
+    doctor.login(base, args.getString("doctorUser", "demo.doctor"), password);
+    ui(
+        () -> {
+          activity.api = doctor;
+          activity.home();
+        });
+    ui(() -> activity.loadTasks());
+    idle();
+    navSelected("Chaqiruvlar");
+    screenshot("layout-doctor-tasks");
+    JSONArray tasks = doctor.list("/tasks");
+    check(tasks.length() > 0, "Doctor tasks available for compact layout");
+    ui(() -> activity.openTask(tasks.optJSONObject(0).optString("id")));
+    idle();
+    screenshot("layout-task-detail");
+    patient.login(base, args.getString("patientUser", "demo.patient"), password);
+    ui(
+        () -> {
+          activity.api = patient;
+          activity.home();
+        });
+    navSelected("Asosiy");
+    screenshot("layout-home");
+  }
+
   @Override
   public void onStart() {
     Bundle report = new Bundle();
     try {
-      String base = args.getString("base", "http://10.0.2.2:8011/api/v1"),
+      String base = args.getString("base", MainActivity.DEFAULT_API),
           password = args.getString("password");
       check(password != null && !password.isEmpty(), "Supply a synthetic demo password");
       Vault vault = new Vault(getTargetContext());
@@ -117,10 +230,30 @@ public final class FlowChecks extends Instrumentation {
                   new Intent(getTargetContext(), MainActivity.class)
                       .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
       idle();
-      visible("Parvarish davom etadi.");
+      visible("Kabinetga kirish");
       screenshot("01-login");
-      Api patient = new Api(vault);
-      patient.login(base, "demo.patient", password);
+      click("Kirish");
+      ui(
+          () ->
+              check(
+                  ((EditText) described(activity.root, "Login")).getError() != null,
+                  "Empty login has a field error"));
+      click("Server sozlamalari");
+      setField("API manzili", base);
+      click("Server sozlamalari");
+      setField("Login", args.getString("patientUser", "demo.patient"));
+      setField("Parol", password);
+      ui(
+          () -> {
+            EditText secret = (EditText) described(activity.root, "Parol");
+            described(activity.root, "Parolni ko‘rsatish").performClick();
+            check(secret.getTransformationMethod() == null, "Show password");
+            described(activity.root, "Parolni yashirish").performClick();
+            check(secret.getTransformationMethod() != null, "Hide password");
+          });
+      click("Kirish");
+      idle();
+      Api patient = activity.api;
       check(patient.user.getString("role").equals("PATIENT"), "patient login");
       Api restored = new Api(vault);
       restored.restore();
@@ -132,10 +265,19 @@ public final class FlowChecks extends Instrumentation {
             activity.home();
           });
       visible("Uyda ham yolg‘iz emassiz.");
+      navSelected("Asosiy");
       screenshot("02-patient-home");
+      if (args.getString("mode", "full").equals("layout")) {
+        layoutScreens(patient, vault, base, password);
+        report.putString(
+            "stream", "PASS: " + checks + " compact layout, navigation and keyboard checks.\n");
+        finish(Activity.RESULT_OK, report);
+        return;
+      }
       ui(() -> activity.medications());
       idle();
       visible("Demo dori A");
+      navSelected("Dorilar");
       check(activity.doses.length() > 0, "Medication occurrences loaded");
       screenshot("03-medications");
       String cache = vault.get("doses");
@@ -180,6 +322,32 @@ public final class FlowChecks extends Instrumentation {
         JSONObject b =
             patient.post("/dose-occurrences/" + due.getString("id") + "/record", payload, key);
         check(a.getString("id").equals(b.getString("id")), "Dose retry deduplicated");
+      }
+      JSONArray doseHistory = patient.list("/patients/" + patientId + "/medication-history");
+      for (int i = 0; i < doseHistory.length(); i++) {
+        JSONObject occurrence = doseHistory.getJSONObject(i),
+            r = occurrence.optJSONObject("record");
+        if (r == null || !r.optString("result").equals("TAKEN")) continue;
+        String original = r.getString("reported_taken_at");
+        ui(() -> new ClinicalUi(activity).correction(occurrence, patientId));
+        setField("Izoh", "Faqat izoh tuzatildi");
+        setField("Tuzatish sababi", "Sintetik aniqlashtirish");
+        click("Tuzatishni saqlash");
+        idle();
+        JSONArray updated = patient.list("/patients/" + patientId + "/medication-history");
+        for (int j = 0; j < updated.length(); j++) {
+          JSONObject u = updated.getJSONObject(j);
+          if (u.getString("id").equals(occurrence.getString("id"))) {
+            check(
+                Instant.parse(u.getJSONObject("record").getString("reported_taken_at"))
+                    .equals(Instant.parse(original)),
+                "Note correction preserves exact intake timestamp");
+            check(
+                u.getJSONObject("record").getInt("version") == r.getInt("version") + 1,
+                "Native correction reaches backend");
+          }
+        }
+        break;
       }
       JSONArray freshPlans = patient.list("/patients/" + patientId + "/medication-plans");
       JSONObject freshPlan = freshPlans.getJSONObject(0);
@@ -282,7 +450,18 @@ public final class FlowChecks extends Instrumentation {
       ui(() -> activity.chat(id, true));
       idle();
       visible("Yuborish");
+      navSelected("Suhbatlar");
       screenshot("04-chat");
+      ui(() -> activity.onBackPressed());
+      idle();
+      visible("Suhbatlar");
+      navSelected("Suhbatlar");
+      ui(() -> activity.account());
+      click("Bildirishnomalar");
+      idle();
+      visible("Bildirishnomalar");
+      navSelected("Hisob");
+      screenshot("13-notifications");
       String key = Api.key();
       JSONObject msg =
           MainActivity.json("text", "Sintetik Android tekshiruvi: holatim o‘zgarmadi.");
@@ -317,6 +496,7 @@ public final class FlowChecks extends Instrumentation {
       ui(() -> activity.loadTasks());
       idle();
       visible("Mening chaqiruvlarim");
+      navSelected("Chaqiruvlar");
       screenshot("05-doctor-tasks");
       JSONObject task = tasks.getJSONObject(0);
       for (int i = 0; i < tasks.length(); i++)
@@ -377,6 +557,30 @@ public final class FlowChecks extends Instrumentation {
               .list("/patients/" + patientId + "/medication-plans")
               .getJSONObject(0)
               .getString("discharge");
+      doctor.post(
+          "/patients/" + patientId + "/medication-plans",
+          MainActivity.json(
+              "discharge_id",
+              discharge,
+              "items",
+              new JSONArray()
+                  .put(
+                      MainActivity.json(
+                          "name",
+                          JSONObject.NULL,
+                          "prescribed_dose_text",
+                          JSONObject.NULL,
+                          "route",
+                          JSONObject.NULL,
+                          "needs_clarification",
+                          true,
+                          "local_times",
+                          new JSONArray()))),
+          Api.key());
+      ui(() -> new ClinicalUi(activity).plans(patientId, discharge));
+      idle();
+      visible("Dori nomi aniqlashtirilmagan");
+      screenshot("09-nullable-draft");
       ui(() -> new ClinicalUi(activity).edit(patientId, discharge, null));
       ui(
           () -> {
@@ -535,16 +739,11 @@ public final class FlowChecks extends Instrumentation {
               MainActivity.json("phone_verified", true),
               null);
       ui(() -> new ClinicalUi(activity).activation());
-      ui(
-          () -> {
-            java.util.ArrayList<EditText> input = new java.util.ArrayList<>();
-            fields(activity.root, input);
-            input.get(0).setText(base);
-            input.get(1).setText(newPatient.optString("id"));
-            input.get(2).setText(code.optString("code"));
-            input.get(3).setText(password);
-            input.get(4).setText(password);
-          });
+      setField("API manzili", base);
+      setField("Bemor IDsi", newPatient.optString("id"));
+      setField("Aktivatsiya kodi", code.optString("code"));
+      setField("Yangi parol", password);
+      setField("Parolni takrorlang", password);
       click("Hisobni aktivlashtirish");
       idle();
       visible("Uyda ham yolg‘iz emassiz.");
@@ -605,6 +804,80 @@ public final class FlowChecks extends Instrumentation {
             activity.home();
           });
       screenshot("07-final-home");
+      if (args.containsKey("linkedBase")) {
+        JSONObject fixture = new JSONObject(args.getString("linkedFixture"));
+        String linkedBase = args.getString("linkedBase"),
+            linkedPassword = args.getString("linkedPassword");
+        Reminders.clear(getTargetContext());
+        vault.clear();
+        Api linkedPatient = new Api(vault);
+        linkedPatient.login(
+            linkedBase,
+            fixture.getJSONObject("users").getJSONObject("patient").getString("username"),
+            linkedPassword);
+        check(
+            linkedPatient.user.getString("patient").equals(fixture.getString("patient_id")),
+            "Web and Android share the same patient");
+        ui(
+            () -> {
+              activity.api = linkedPatient;
+              activity.home();
+            });
+        ui(() -> activity.medications());
+        idle();
+        visible("Sintetik QA dori " + fixture.getString("run_id"));
+        navSelected("Dorilar");
+        screenshot("10-linked-web-medications");
+        ui(() -> activity.chat(fixture.optString("conversation_id"), false));
+        idle();
+        visible("Shifokor bilan suhbat");
+        screenshot("11-linked-web-chat");
+        Api linkedDoctor = new Api(vault);
+        linkedDoctor.login(
+            linkedBase,
+            fixture.getJSONObject("users").getJSONObject("doctor").getString("username"),
+            linkedPassword);
+        ui(
+            () -> {
+              activity.api = linkedDoctor;
+              activity.home();
+            });
+        String linkedTaskId = fixture.optString("web_task_id", fixture.getString("task_id"));
+        JSONObject linkedTask = linkedDoctor.get("/tasks/" + linkedTaskId);
+        check(
+            fixture.has("web_task_id")
+                ? linkedTask.getString("status").equals("COMPLETED")
+                : linkedTask.getString("id").equals(linkedTaskId),
+            "Android reads the task completed by the web UI");
+        check(
+            linkedTask
+                .getJSONObject("patient")
+                .getString("id")
+                .equals(fixture.optString("web_patient_id", fixture.getString("patient_id"))),
+            "Task patient matches the web fixture");
+        ui(() -> activity.openTask(linkedTaskId));
+        idle();
+        visible(linkedTask.getJSONObject("patient").getString("full_name"));
+        screenshot("12-linked-web-task");
+        ui(() -> activity.loadConversations());
+        idle();
+        visible(fixture.getString("patient_name"));
+        linkedPatient.login(
+            linkedBase,
+            fixture.getJSONObject("users").getJSONObject("patient").getString("username"),
+            linkedPassword);
+        ui(
+            () -> {
+              activity.api = linkedPatient;
+              activity.home();
+            });
+        ui(
+            () -> {
+              activity.getPreferences(0).edit().putString("server", linkedBase).apply();
+              activity.medications();
+            });
+        idle();
+      }
       report.putString(
           "stream",
           "PASS: "

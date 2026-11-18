@@ -8,7 +8,7 @@ import {
   readNotification,
 } from '@/api/notifications'
 import { useSessionStore } from '@/state/session'
-import { workspaces } from '@/lib/workspaces'
+import { getWorkspace } from '@/lib/workspaces'
 import { Dialog, Notice, RequestError, secondaryButton, iconButton } from '@/components/ui'
 import { formatTashkentDateTime } from '@/lib/date'
 
@@ -36,7 +36,7 @@ export function NotificationBell() {
     },
   })
   const unread = query.data?.filter((item) => !item.read_at).length || 0
-  const role = workspaces[user.role].slug
+  const role = getWorkspace(user).slug
 
   return (
     <>
@@ -101,7 +101,7 @@ export function NotificationBell() {
                   </p>
                   <div className="flex flex-wrap gap-2.5">
                     {item.task &&
-                      ['DOCTOR', 'COORDINATOR'].includes(user.role) && (
+                      ['DOCTOR', 'COORDINATOR'].includes(user.role) && role !== 'statsionar' && (
                         <Link
                           className={secondaryButton}
                           to="/kabinet/$role/chaqiruv/$taskId"
@@ -116,7 +116,7 @@ export function NotificationBell() {
                         </Link>
                       )}
                     {item.conversation &&
-                      ['DOCTOR', 'PATIENT'].includes(user.role) && (
+                      ['DOCTOR', 'PATIENT'].includes(user.role) && role !== 'statsionar' && (
                         <Link
                           className={secondaryButton}
                           to="/kabinet/$role/suhbat/$conversationId"

@@ -403,7 +403,7 @@ class ExtractionViewSet(mixins.RetrieveModelMixin, ScopedViewSet):
     def get_queryset(self):
         if not is_hospital_staff(self.request.user):
             return AIExtraction.objects.none()
-        return AIExtraction.objects.filter(discharge__created_by=self.request.user)
+        return AIExtraction.objects.filter(discharge__in=discharges_for(self.request.user))
 
     @extend_schema(request=AIReviewInput, responses=ExtractionSerializer)
     @action(detail=True, methods=["post"])

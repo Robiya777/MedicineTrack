@@ -75,3 +75,16 @@ idempotent replay, report author/role/field/reason restrictions, own DRAFT-only
 patient contact editing, and admin password reset revoking existing sessions
 without returning the password. Existing account/reference permission tests pass.
 Chromium web integration is documented in frontend/docs/STAGE6_ACCEPTANCE.md.
+
+## Integrated backend audit — 2026-11-18
+
+- PostgreSQL suite: **112 passed**. SQLite suite: **106 passed, 6 skipped** (PostgreSQL-specific concurrency tests).
+- Django system checks, migration drift check, Ruff lint/format and OpenAPI validation pass.
+- Fixed clinic-transfer task scope and old-hospital AI extraction scope; former clinical objects and queued task notifications are no longer exposed after the account changes institution.
+- Chat writes revalidate the active assignee. Deactivation or assignment expiry returns 409 until the patient refreshes to the safe unassigned conversation; a stale doctor is not silently retained as the recipient.
+- Work-schedule PUT requires the last read `version`, or 0 for creation. Two editors using one original version cannot overwrite each other's saves; stale writes return 409. Existing unanswered episode deadlines remain unchanged.
+- Login/refresh/profile return read-only `organization_type` so the web client can route hospital DOCTOR users correctly.
+- Refresh has an independent 60/min IP budget. Anonymous tab restoration no longer consumes the TZ's separate 10/min login budget; both limits are tested.
+- Corrected the notification management-command test to use a real transaction lifecycle on PostgreSQL, since the standalone command deliberately manages its own DB connections.
+
+Live browser and combined frontend/backend evidence is reported separately by the integration audit. This backend suite does not establish real AI/SMS/push integration, production hosting, physical Android behavior or the five-minute 1,000-record load target.

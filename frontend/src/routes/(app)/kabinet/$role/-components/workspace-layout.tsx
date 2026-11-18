@@ -1,7 +1,7 @@
 import { Navigate, Outlet, getRouteApi, useRouter } from '@tanstack/react-router'
 import { LogOut, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
-import { workspaces } from '@/lib/workspaces'
+import { getWorkspace } from '@/lib/workspaces'
 import { Dialog, secondaryButton } from '@/components/ui'
 import { useSessionStore } from '@/state/session'
 import { useLogout } from '@/hooks/use-logout'
@@ -23,7 +23,7 @@ export function WorkspaceLayout() {
     )
   }
 
-  const workspace = workspaces[user.role]
+  const workspace = getWorkspace(user)
   const fullName =
     [user.first_name, user.last_name].filter(Boolean).join(' ') || user.username
 

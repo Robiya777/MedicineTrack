@@ -3,6 +3,7 @@ import { ScheduleCalendar } from './schedule-calendar'
 import { Save, Globe2, RefreshCw, Clock3, MessageCircle, Stethoscope, TriangleAlert, UserRound } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type SubmitEvent } from 'react'
+import { isAxiosError } from 'axios'
 import { doctorName, doctorsQuery } from '@/api/tasks'
 import { doctorNameQuery, hospitalPatientQuery } from '@/api/hospital'
 import {
@@ -39,6 +40,7 @@ const weekdays = [
 ]
 type Interval = { start: string; end: string }
 const defaultInput: ScheduleInput = {
+  version: 0,
   timezone: 'Asia/Tashkent',
   shifts: [],
   exceptions: {},
@@ -90,6 +92,7 @@ export function SchedulePage() {
           key={id + ':' + (schedule.data?.version || 0)}
           doctorId={id}
           initial={schedule.data || defaultInput}
+          reload={() => void schedule.refetch()}
         />
       )}
     </section>
@@ -98,9 +101,11 @@ export function SchedulePage() {
 function ScheduleEditor({
   doctorId,
   initial,
+  reload,
 }: {
   doctorId: string
   initial: ScheduleInput
+  reload: () => void
 }) {
   const client = useQueryClient()
   const [input, setInput] = useState<ScheduleInput>(initial)
@@ -113,6 +118,7 @@ function ScheduleEditor({
     saveSchedule(doctorId, data, key),
   )
   const [saved, setSaved] = useState(false)
+  const conflict = isAxiosError(mutation.error) && mutation.error.response?.status === 409
   function change(value: ScheduleInput) {
     setDirty(true)
     setInput(value)
@@ -130,7 +136,7 @@ function ScheduleEditor({
   }
   async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (mutation.isPending) return
+    if (mutation.isPending || conflict) return
     if (
       weekdays.some((_, day) =>
         validate(input.shifts.filter((s) => s.weekday === day)),
@@ -144,7 +150,8 @@ function ScheduleEditor({
     }
     setError('')
     try {
-      await mutation.mutateAsync(input)
+      const savedSchedule = await mutation.mutateAsync(input)
+      setInput(savedSchedule)
       setSaved(true)
       setDirty(false)
       void client.invalidateQueries({
@@ -167,7 +174,7 @@ function ScheduleEditor({
           <button type="button" className={secondaryButton} onClick={()=>setZoneOpen(true)} disabled={mutation.isPending}><Globe2 size={16} aria-hidden="true" />{input.timezone}</button>
 
           <span role="status" className="hidden text-xs text-warning lg:block">{dirty ? 'Saqlanmagan' : ''}</span>
-          <button type="submit" className={primaryButton} disabled={mutation.isPending}><Save size={16} aria-hidden="true" />{mutation.isPending ? 'Saqlanmoqda…' : 'Saqlash'}</button>
+          <button type="submit" className={primaryButton} disabled={mutation.isPending || conflict}><Save size={16} aria-hidden="true" />{mutation.isPending ? 'Saqlanmoqda…' : 'Saqlash'}</button>
         </div>
       </ScheduleToolbar>
       {zoneOpen && <Dialog title="Vaqt zonasi" close={()=>setZoneOpen(false)}>
@@ -248,6 +255,12 @@ function ScheduleEditor({
         </p>
       )}
       {mutation.error && <RequestError error={mutation.error} />}
+      {conflict && (
+        <div className="space-y-3 rounded-lg border border-line bg-warning-wash p-4" role="alert">
+          <p>Jadval boshqa foydalanuvchi tomonidan o‘zgartirilgan. Kiritgan qiymatlaringiz saqlandi. Joriy jadvalni yuklash ularni almashtiradi.</p>
+          <button type="button" className={secondaryButton} onClick={reload}>Joriy jadvalni yuklash</button>
+        </div>
+      )}
       {saved && (
         <p role="status" className="text-sm text-action">
           Jadval saqlandi. Oldingi javobsiz murojaatlarning muddati o‘zgarmaydi.

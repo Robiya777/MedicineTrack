@@ -33,16 +33,35 @@ final class MedicationSync {
   }
 
   static JSONArray fetch(Api api, String patient) throws Exception {
+    return fetch(api, patient, "");
+  }
+
+  static JSONArray fetchToday(Api api, String patient) throws Exception {
+    java.time.ZonedDateTime start =
+        java.time.LocalDate.now(java.time.ZoneId.of("Asia/Tashkent"))
+            .atStartOfDay(java.time.ZoneId.of("Asia/Tashkent"));
+    return fetch(
+        api,
+        patient,
+        "&scheduled_from="
+            + start.toInstant()
+            + "&scheduled_to="
+            + start.plusDays(1).toInstant().minusNanos(1));
+  }
+
+  private static JSONArray fetch(Api api, String patient, String range) throws Exception {
     JSONArray plans = api.list("/patients/" + patient + "/medication-plans"),
         rows = new JSONArray();
     for (int i = 0; i < plans.length(); i++) {
       JSONObject plan = plans.getJSONObject(i);
+      if (plan.optString("status").equals("DRAFT")) continue;
       JSONArray all =
           api.list(
               "/medication-plans/"
                   + plan.getString("id")
                   + "/occurrences?plan_version="
-                  + plan.getInt("version"));
+                  + plan.getInt("version")
+                  + range);
       for (int j = 0; j < all.length(); j++) rows.put(all.get(j));
     }
     return rows;

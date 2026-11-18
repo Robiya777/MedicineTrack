@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { workspaceSearch } from '@/lib/workspace-search'
 import { restoreSession } from '@/api/session'
-import { workspaces } from '@/lib/workspaces'
+import { getWorkspace } from '@/lib/workspaces'
 import { SessionError, WorkspaceLayout } from './-components/workspace-layout'
 
 export const Route = createFileRoute('/(app)/kabinet/$role')({
@@ -10,7 +10,7 @@ export const Route = createFileRoute('/(app)/kabinet/$role')({
     const user = await restoreSession()
     if (!user) throw redirect({ to: '/login', search: {}, replace: true })
 
-    const { slug } = workspaces[user.role]
+    const { slug } = getWorkspace(user)
     if (params.role !== slug) {
       throw redirect({
         to: '/kabinet/$role',

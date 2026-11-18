@@ -79,7 +79,7 @@ Task amallarida oxirgi javobdagi `version`ni yuboring. `409` kelsa taskni qayta 
 {"code":"VALIDATION_ERROR","message":"Maydonlarni tekshiring","fields":{"performed_at":["..."]},"request_id":"uuid"}
 ```
 
-`401`: sessiya, `403`: vakolat, `404`: topilmagan yoki yashirilgan obyekt, `409`: holat/versiya, `413`: PDF hajmi, `429`: limit. Login IP bo‘yicha 10/min, xabar va holat birgalikda foydalanuvchi bo‘yicha 20/min. Xabarlar foregroundda 15 soniyada polling/refresh orqali olinishi mumkin.
+`401`: sessiya, `403`: vakolat, `404`: topilmagan yoki yashirilgan obyekt, `409`: holat/versiya, `413`: PDF hajmi, `429`: limit. Login IP bo‘yicha 10/min, sessiya refreshi alohida 60/min; yangi tabdagi sessiya tiklash login urinishlari hisobini sarflamaydi. Xabar va holat birgalikda foydalanuvchi bo‘yicha 20/min. Xabarlar foregroundda 15 soniyada polling/refresh orqali olinishi mumkin.
 
 ## Asosiy oqim
 
@@ -102,10 +102,12 @@ Statsionar tekshirilgan telefon uchun `POST /patients/{id}/activation`ga `{"phon
 Koordinator `GET/PUT /doctors/{id}/work-schedule` orqali jadval beradi:
 
 ```json
-{"timezone":"Asia/Tashkent","shifts":[{"weekday":0,"start":"09:00","end":"18:00"}],"exceptions":{"2026-12-08":[]}}
+{"version":0,"timezone":"Asia/Tashkent","shifts":[{"weekday":0,"start":"09:00","end":"18:00"}],"exceptions":{"2026-12-08":[]}}
 ```
 
 `weekday`: dushanba 0, yakshanba 6. Tanaffus uchun bir kunda bir nechta kesishmaydigan interval yoziladi. `exceptions` sanada odatdagi jadvalni almashtiradi; bo‘sh ro‘yxat — dam olish kuni. Javob muddati birinchi javobsiz xabardan 4 ish soati. Keyingi xabarlar, qayta biriktirish va jadval o‘zgarishi mavjud deadline’ni yangilamaydi. Jadval bo‘lmasa `response_due_at=null` va konfiguratsiya bildirishnomasi yaratiladi.
+
+Yangi ish jadvalida `version: 0`, tahrirda esa oxirgi GET/PUT javobidagi `version` majburiy. Stale versiya `409` qaytaradi va boshqa muharrirning o‘zgarishini bosib yozmaydi. Login, refresh va `/me` javobidagi `user.organization_type` (`HOSPITAL`, `CLINIC` yoki `null`) DOCTOR rolidagi statsionar xodimini tegishli kabinetga yo‘naltirishga imkon beradi.
 
 Shifokor almashganda eski suhbat yozish uchun yopiladi, eski shifokorning kirishi bekor qilinadi, bemorda tarix qoladi. Yangi shifokor oldingi chat matnini avtomatik ko‘rmaydi. Task yakunlansa ham faol PatientAssignment bilan chat davom etadi. `/dashboard/unanswered` koordinatorga vaqt va identifikatorlarni beradi; klinik chat matnini bermaydi. `WORSENED` alohida ustuvor bildirishnoma va navbat belgisini yaratadi. Chat dastlabki patronaj taskini avtomatik yopmaydi.
 

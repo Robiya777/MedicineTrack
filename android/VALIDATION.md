@@ -1,8 +1,46 @@
-# Android validation — 2026-11-17
+# Android validation — 2026-11-18 / 0.3.0
+
+Frontend bilan umumiy teal/mint dizayn Android native ekranlariga ulandi. Kod `android/` ichida; backenddagi yagona konfiguratsiya qo‘shimchasi emulator uchun `10.0.2.2` hostidir.
+
+## Yakuniy natija
+
+| Tekshiruv | Natija |
+|---|---|
+| `:app:assembleDebug` | PASS |
+| `:app:assembleDebugAndroidTest` | PASS |
+| `:app:lintDebug` | PASS: 0 error, 1 `OldTargetApi` warning |
+| Android 14 / API 34, 360 dp, 100% shrift | **81 tekshiruv PASS** |
+| Android 14 / API 34, 320 dp, 130% shrift | **31 tekshiruv PASS** |
+| Albom holati, cold start va sessiya tiklanishi | Qo‘lda tekshirildi, PASS |
+| APK imzosi | APK Signature Scheme v2: verified |
+| Android crash buffer | 0 yozuv |
+
+JDK 17, Gradle 8.14, AGP 8.11.1; compile SDK 36, build-tools 35.0.0, min SDK 26, target SDK 34. Debug APK: `app/build/outputs/apk/debug/app-debug.apk`.
+
+## Tekshirilgan oqimlar
+
+- Native kirish formasi, bo‘sh login validatsiyasi, parolni ko‘rsatish/yashirish, patient/doctor sessiyasi, Keystore orqali shifrlash va access refresh.
+- Bemor bosh sahifasi va API asosidagi ko‘rsatkichlar; dori jadvali; TAKEN qaydi; ayni so‘rovning qaytariq dublikat himoyasi; faqat izoh tuzatilganda original qabul vaqti, soniyalar va kasr qismi saqlanishi.
+- Offline SKIPPED navbati transport xatosida saqlanadi va server tasdig‘idan keyin tozalanadi; haqiqiy AlarmManager receiver generic notification chiqardi; tozalash, shifrlangan kesh va periodic sync job tekshirildi.
+- Chat, yuborish kontrakti va retry dublikat himoyasi, bemor holati, shifokor javobi, o‘qilganlik, saqlangan chernovik, orqaga qaytish, bildirishnoma ekrani.
+- Chaqiruv ro‘yxati/tafsiloti, qabul qilish/yakunlash APIlari, native hisobot correction formasi; dori DRAFT formasi, nullable ko‘rsatma, approve/revision/stop va aktivatsiya formasi.
+- Har ikki rolda pastki menyuning faol bo‘limi, matnning sig‘ishi va kamida 44 dp bosish sohasi; 320 dp/130% rejimida klaviatura ochilganda menyu yashirilishi va xabar maydonining ko‘rinishi.
+
+Asosiy yozuvchi tekshiruvlar alohida yangi sintetik SQLite backendda (`8013`) bajarildi. Ishlayotgan webning PostgreSQL backendiga (`8001`) Android orqali alohida ulanildi: avvalgi web auditning `c629dcc6` bemori, dori jadvali va suhbati ko‘rindi; webda yaratilgan va yakunlangan `11f20334-142d-454d-9665-0bd53f9dd6c8` chaqiruvi ham ayni holatda o‘qildi. Web testining hisobotidan aniq patient/task ID olinadi va fixture run mosligi tekshiriladi. Bu bosqich klinik yozuvlarni o‘zgartirmaydi.
+
+Dalillar: [JSON hisobot](../docs/qa/android-2026-11-18/report.json), [kirish](../docs/qa/android-2026-11-18/login.png), [bemor](../docs/qa/android-2026-11-18/patient-home.png), [shifokor](../docs/qa/android-2026-11-18/doctor-tasks.png), [320 dp / 130%](../docs/qa/android-2026-11-18/doctor-320-font130.png), [klaviatura](../docs/qa/android-2026-11-18/keyboard-320-font130.png), [webdagi chaqiruv Androidda](../docs/qa/android-2026-11-18/linked-web-task.png).
+
+## Takrorlash va chegaralar
+
+`README.md`dagi build va `scripts/run_checks.py` asosiy sintetik testni ishga tushiradi. Web bilan bog‘lanish uchun qo‘shimcha `--linked-base`, `--linked-fixture`, `--linked-report` va `MEDICINETRACK_LINKED_PASSWORD` kerak. Kichik ekran tekshiruvi uchun `--mode layout --patient-user ... --doctor-user ...` ishlatiladi; oldin emulator density/font scale moslanadi. Parollar, tokenlar va aktivatsiya kodlari hisobotga yozilmaydi.
+
+Sinovlar API assertionlari va native forma/menyu amallarini birlashtiradi; har bir tugmani haqiqiy koordinata orqali bosadigan to‘liq test emas. Fizik telefonlar, uzoq batareya sinovi, barcha Android/OEM versiyalari va Play release tekshirilmagan. Target 34 sabab Play uchun target/edge-to-edge ishlari alohida qoladi. Eski reboot dalili quyida tarix sifatida saqlangan; yangi versiyada reboot qayta bajarilmadi.
+
+## Oldingi 0.2.0 tekshiruvi — 2026-11-17
 
 Backend baseline: `7e6e705`; Android version: `0.2.0`, application ID `uz.medicinetrack.app`.
 
-## Verified
+### Verified
 
 - `:app:assembleDebug`, `:app:assembleDebugAndroidTest`, `:app:lintDebug`: PASS.
 - Android 14 / API 34 x86_64 emulator `qurmart_test`, device `emulator-5554`.
@@ -17,7 +55,7 @@ Backend baseline: `7e6e705`; Android version: `0.2.0`, application ID `uz.medici
 
 Screenshots and local APK are outside source control at `/home/java/MedicineTrack-artifacts/`; no passwords, tokens, local DBs or secret files are committed. Test runner requires an environment variable for the synthetic password. Earlier notification-cleanup timing failure was fixed by waiting for asynchronous system cancellation; the fresh-database rerun passed.
 
-## 0.2.0 additional evidence
+### 0.2.0 additional evidence
 
 - Patient activation form was filled and submitted in the emulator with a newly issued synthetic one-use code; it created and opened the expected patient account.
 - Native multi-field medication form created a server DRAFT. Clinical approval, revision (old ACTIVE retained until approval), replacement approval and STOPPED state were checked against the backend. Plan form and correction screens rendered.
@@ -28,7 +66,7 @@ Screenshots and local APK are outside source control at `/home/java/MedicineTrac
 - The actual emulator was rebooted: BOOT_COMPLETED restored `ReminderReceiver` alarms (observed in `dumpsys alarm`), and persistent job 2401 remained `waiting`. This is emulator evidence only.
 - A missing ACCESS_NETWORK_STATE permission found by the first job-enabled run was fixed; subsequent complete run passed. Final source builds and lint pass.
 
-## Limits
+### Limits
 
 Lint: 0 errors, 3 warnings (OldTargetApi, ObsoleteSdkInt, SetTextI18n). The artifact is a **debug prototype**, not a Play-ready release. Tests combine API checks and native screen/form interactions; not every dialog/control or every TZ acceptance criterion has an independent end-to-end test.
 

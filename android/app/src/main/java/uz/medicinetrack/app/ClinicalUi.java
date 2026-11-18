@@ -18,16 +18,17 @@ final class ClinicalUi {
   void activation() {
     m.screen = "Aktivatsiya";
     m.frame("Bemor hisobini ochish", false);
+    m.backAction = m::loginUI;
     LinearLayout c = m.card();
     m.label(c, "Muassasangiz bergan bemor IDsi va bir martalik kodni kiriting.");
-    EditText
-        base =
-            m.field(
-                c,
-                "API manzili",
-                m.getPreferences(0).getString("server", "http://10.0.2.2:8011/api/v1"),
-                false),
-        id = m.field(c, "Bemor IDsi", "", false),
+    LinearLayout settings = m.column();
+    EditText base =
+        m.field(
+            settings,
+            "API manzili",
+            m.getPreferences(0).getString("server", MainActivity.DEFAULT_API),
+            false);
+    EditText id = m.field(c, "Bemor IDsi", "", false),
         code = m.field(c, "Aktivatsiya kodi", "", true),
         password = m.field(c, "Yangi parol", "", true),
         repeat = m.field(c, "Parolni takrorlang", "", true);
@@ -63,14 +64,24 @@ final class ClinicalUi {
                 m.home();
               });
         });
-    m.button(c, "Kirishga qaytish", m::loginUI);
+    m.secondary(c, "Kirishga qaytish", m::loginUI);
+    m.secondary(
+        m.body,
+        "Server sozlamalari",
+        () ->
+            settings.setVisibility(
+                settings.getVisibility() == android.view.View.GONE
+                    ? android.view.View.VISIBLE
+                    : android.view.View.GONE));
+    settings.setVisibility(android.view.View.GONE);
+    m.body.addView(settings);
   }
 
   void plans(String patient, String discharge) {
     m.execute(
         () -> m.api.list("/patients/" + patient + "/medication-plans"),
         v -> {
-          m.screen = "Jadvallar";
+          m.screen = "Jadvallar:" + patient + ":" + discharge;
           m.frame("Dori jadvallarini boshqarish", true);
           m.label(
               m.body, "Mavjud shifokor ko‘rsatmasini kiriting. Ilova dori yoki doza tanlamaydi.");
@@ -79,21 +90,34 @@ final class ClinicalUi {
           for (int i = 0; i < rows.length(); i++) {
             JSONObject p = rows.getJSONObject(i);
             LinearLayout c = m.card();
-            m.label(c, m.status(p.optString("status")) + " · Versiya " + p.optInt("version"));
+            m.badge(
+                c,
+                m.status(p.optString("status")) + " · Versiya " + p.optInt("version"),
+                p.optString("status"));
             JSONArray items = p.getJSONArray("items");
             for (int j = 0; j < items.length(); j++) {
               JSONObject item = items.getJSONObject(j);
-              c.addView(m.text(item.optString("name"), 20, MainActivity.INK));
-              m.label(c, item.optString("prescribed_dose_text") + " · " + item.optString("route"));
-              m.label(c, item.optString("start_date") + " — " + item.optString("end_date"));
+              c.addView(
+                  m.text(
+                      m.val(item, "name").isEmpty()
+                          ? "Dori nomi aniqlashtirilmagan"
+                          : m.val(item, "name"),
+                      20,
+                      MainActivity.INK));
+              m.label(c, m.val(item, "prescribed_dose_text") + " · " + m.val(item, "route"));
+              m.label(c, m.val(item, "start_date") + " — " + m.val(item, "end_date"));
               m.label(
                   c,
-                  item.optJSONArray("local_times").toString() + " · " + item.optString("timezone"));
-              m.label(c, "Manba: " + item.optString("source_reference"));
+                  (item.optJSONArray("local_times") == null
+                          ? "[]"
+                          : item.optJSONArray("local_times").toString())
+                      + " · "
+                      + m.val(item, "timezone"));
+              m.label(c, "Manba: " + m.val(item, "source_reference"));
             }
             String state = p.optString("status");
             if (state.equals("DRAFT")) {
-              m.button(c, "Loyihani tahrirlash", () -> edit(patient, discharge, p));
+              m.secondary(c, "Loyihani tahrirlash", () -> edit(patient, discharge, p));
               if (m.api.user.optBoolean("can_approve_medication_schedule"))
                 m.button(
                     c,
@@ -120,7 +144,7 @@ final class ClinicalUi {
                             .show());
             }
             if (state.equals("ACTIVE")) {
-              m.button(
+              m.secondary(
                   c,
                   "Yangi versiya tayyorlash",
                   () ->
@@ -131,10 +155,10 @@ final class ClinicalUi {
                                   versions(p),
                                   Api.key()),
                           out -> edit(patient, discharge, (JSONObject) out)));
-              m.button(c, "Jadvalni to‘xtatish", () -> stop(p, patient, discharge));
+              m.danger(c, "Jadvalni to‘xtatish", () -> stop(p, patient, discharge));
             }
           }
-          m.button(m.body, "Qabul tarixini ko‘rish", () -> m.loadMedication(patient));
+          m.secondary(m.body, "Qabul tarixini ko‘rish", () -> m.loadMedication(patient));
         });
   }
 
@@ -144,45 +168,39 @@ final class ClinicalUi {
   }
 
   void stop(JSONObject plan, String patient, String discharge) {
-    LinearLayout box = m.column();
-    box.setPadding(m.dp(20), m.dp(12), m.dp(20), 0);
-    EditText reason = m.field(box, "To‘xtatish sababi", "", false);
-    AlertDialog dialog =
-        new AlertDialog.Builder(m)
-            .setTitle("Jadvalni to‘xtatish")
-            .setView(box)
-            .setNegativeButton("Orqaga", null)
-            .setPositiveButton("To‘xtatish", null)
-            .create();
-    dialog.setOnShowListener(
-        d ->
-            dialog
-                .getButton(-1)
-                .setOnClickListener(
-                    view -> {
-                      String r = reason.getText().toString().trim();
-                      if (r.isEmpty()) {
-                        reason.setError("Sabab majburiy");
-                        return;
-                      }
-                      dialog.dismiss();
-                      m.execute(
-                          () -> {
-                            JSONObject data = versions(plan);
-                            data.put("reason", r);
-                            return m.api.post(
-                                "/medication-plans/" + plan.getString("id") + "/stop",
-                                data,
-                                Api.key());
-                          },
-                          v -> plans(patient, discharge));
-                    }));
-    dialog.show();
+    m.screen = "To‘xtatish:" + plan.optString("id") + ":" + plan.optInt("lock_version");
+    m.frame("Jadvalni to‘xtatish", true);
+    m.backAction = () -> plans(patient, discharge);
+    LinearLayout c = m.card();
+    m.badge(c, "Kelajakdagi qabullar bekor qilinadi", "PENDING");
+    m.label(c, "Oldingi qabul qaydlari tarixda saqlanadi. To‘xtatish sababini kiriting.");
+    EditText reason = m.field(c, "To‘xtatish sababi", "", false);
+    m.multiline(reason);
+    String key = Api.key();
+    m.danger(
+        c,
+        "Tasdiqlab to‘xtatish",
+        () -> {
+          String value = reason.getText().toString().trim();
+          if (value.isEmpty()) {
+            reason.setError("Sabab majburiy");
+            reason.requestFocus();
+            return;
+          }
+          m.mutate(
+              () ->
+                  m.api.post(
+                      "/medication-plans/" + plan.getString("id") + "/stop",
+                      versions(plan).put("reason", value),
+                      key),
+              v -> plans(patient, discharge));
+        });
+    m.secondary(c, "Jadvallarga qaytish", () -> plans(patient, discharge));
   }
 
   final class ItemForm {
     final EditText name, dose, route, source, start, end, times, zone, note;
-    final CheckBox excluded;
+    final CheckBox excluded, clarification;
 
     ItemForm(JSONObject item) {
       LinearLayout c = m.card();
@@ -203,8 +221,17 @@ final class ClinicalUi {
           m.field(
               c, "Vaqt zonasi", item == null ? "Asia/Tashkent" : m.val(item, "timezone"), false);
       note = m.field(c, "Qo‘shimcha ko‘rsatma", m.val(item, "instructions"), false);
+      m.multiline(note);
+      clarification = new CheckBox(m);
+      clarification.setText(R.string.clarification_needed);
+      clarification.setTextColor(MainActivity.INK);
+      clarification.setMinHeight(m.dp(48));
+      clarification.setChecked(item != null && item.optBoolean("needs_clarification"));
+      c.addView(clarification);
       excluded = new CheckBox(m);
-      excluded.setText("Bu dorini saqlanadigan jadvaldan chiqarish");
+      excluded.setText(R.string.exclude_medication);
+      excluded.setMinHeight(m.dp(48));
+      excluded.setTextColor(MainActivity.MUTED);
       c.addView(excluded);
     }
 
@@ -234,7 +261,7 @@ final class ClinicalUi {
           "instructions",
           note.getText().toString(),
           "needs_clarification",
-          false);
+          clarification.isChecked());
     }
 
     Object emptyDate(EditText e) {
@@ -245,6 +272,8 @@ final class ClinicalUi {
   void edit(String patient, String discharge, JSONObject plan) {
     m.screen =
         "Jadval formasi:"
+            + discharge
+            + ":"
             + patient
             + ":"
             + (plan == null ? "new" : plan.optString("id") + ":" + plan.optInt("lock_version"));
@@ -261,7 +290,7 @@ final class ClinicalUi {
     int savedCount = Math.min(20, m.restoredFields.length() / 9);
     while (forms.size() < savedCount) forms.add(new ItemForm(null));
     LinearLayout actions = m.card();
-    m.button(
+    m.secondary(
         actions,
         "Yana dori qo‘shish",
         () -> {
@@ -270,6 +299,8 @@ final class ClinicalUi {
             return;
           }
           forms.add(new ItemForm(null));
+          m.body.removeView(actions);
+          m.body.addView(actions);
         });
     String key = Api.key();
     m.button(
@@ -298,7 +329,7 @@ final class ClinicalUi {
             m.message("Maydonlarni tekshiring.");
           }
         });
-    m.button(actions, "Jadvallarga qaytish", () -> plans(patient, discharge));
+    m.secondary(actions, "Jadvallarga qaytish", () -> plans(patient, discharge));
   }
 
   void correction(JSONObject dose, String patient) {
@@ -306,6 +337,7 @@ final class ClinicalUi {
       JSONObject record = dose.getJSONObject("record");
       m.screen = "Qayd tuzatish:" + dose.optString("id") + ":" + record.optInt("version");
       m.frame("Dori qaydini tuzatish", true);
+      m.backAction = () -> m.loadMedication(patient);
       LinearLayout c = m.card();
       m.label(c, "Oldingi qayd tarixda qoladi. Tuzatish sababini yozing.");
       Spinner result = m.spinner(c, new String[] {"Ichdim", "O‘tkazib yubordim"});
@@ -320,6 +352,8 @@ final class ClinicalUi {
       EditText time = m.field(c, "Ichilgan vaqt (YYYY-MM-DD HH:mm, Toshkent)", local, false),
           note = m.field(c, "Izoh", record.optString("note"), false),
           reason = m.field(c, "Tuzatish sababi", "", false);
+      m.multiline(note);
+      m.multiline(reason);
       String key = Api.key();
       m.button(
           c,
@@ -329,12 +363,14 @@ final class ClinicalUi {
               String state = result.getSelectedItemPosition() == 0 ? "TAKEN" : "SKIPPED";
               Object taken =
                   state.equals("TAKEN")
-                      ? LocalDateTime.parse(
-                              time.getText().toString().trim(),
-                              DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
-                          .atZone(ZoneId.of("Asia/Tashkent"))
-                          .toInstant()
-                          .toString()
+                      ? (!initial.isEmpty() && time.getText().toString().trim().equals(local))
+                          ? initial
+                          : LocalDateTime.parse(
+                                  time.getText().toString().trim(),
+                                  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+                              .atZone(ZoneId.of("Asia/Tashkent"))
+                              .toInstant()
+                              .toString()
                       : JSONObject.NULL;
               JSONObject payload =
                   MainActivity.json(
@@ -380,7 +416,11 @@ final class ClinicalUi {
               m.body,
               "Qayd server tasdiqlamaguncha shu qurilmada qoladi. Tashlab yuborish serverdagi"
                   + " tarixni o‘chirmaydi.");
-          if (rows.length() == 0) m.label(m.body, "Barcha qaydlar yuborilgan.");
+          if (rows.length() == 0)
+            m.empty(
+                "Barcha qaydlar yuborilgan.",
+                "Server tasdiqlagan qaydlar tarixda saqlanadi.",
+                "check");
           m.button(
               m.body,
               "Qayta sinxronlash",
@@ -400,7 +440,7 @@ final class ClinicalUi {
                 "Qayd vaqti: "
                     + m.when(entry.getJSONObject("payload").optString("client_recorded_at")));
             m.label(c, entry.optString("error", "Server tasdig‘i kutilmoqda"));
-            m.button(
+            m.danger(
                 c,
                 "Qaydni qurilmadan olib tashlash",
                 () ->
@@ -440,7 +480,11 @@ final class ClinicalUi {
           m.screen = "Bildirishnomalar";
           m.frame("Bildirishnomalar", true);
           JSONArray rows = (JSONArray) v;
-          if (rows.length() == 0) m.label(m.body, "Yangi bildirishnoma yo‘q.");
+          if (rows.length() == 0)
+            m.empty(
+                "Yangi bildirishnoma yo‘q.",
+                "Parvarish bo‘yicha yangiliklar shu yerda ko‘rinadi.",
+                "bell");
           for (int i = 0; i < rows.length(); i++) {
             JSONObject n = rows.getJSONObject(i);
             LinearLayout c = m.card();
@@ -462,7 +506,7 @@ final class ClinicalUi {
                 c,
                 m.when(n.optString("created_at"))
                     + (n.isNull("read_at") ? " · O‘qilmagan" : " · Ko‘rilgan"));
-            m.button(
+            m.secondary(
                 c,
                 "Ochish",
                 () ->
@@ -479,17 +523,20 @@ final class ClinicalUi {
                           else notifications();
                         }));
           }
-          m.button(m.body, "Yangilash", this::notifications);
+          m.secondary(m.body, "Yangilash", this::notifications);
         });
   }
 
   void reportCorrection(JSONObject task) {
     m.screen = "Hisobotni tuzatish:" + task.optString("id");
     m.frame("Tashrif natijasini tuzatish", true);
+    m.backAction = () -> m.openTask(task.optString("id"));
     LinearLayout c = m.card();
     Spinner field = m.spinner(c, new String[] {"Kuzatuv", "Bajarilgan ishlar", "Keyingi reja"});
     EditText text = m.field(c, "Tuzatilgan matn", "", false),
         reason = m.field(c, "Tuzatish sababi", "", false);
+    m.multiline(text);
+    m.multiline(reason);
     m.label(c, "Original hisobot tarixda saqlanadi. Vaqt va task holati o‘zgarmaydi.");
     String key = Api.key();
     m.button(

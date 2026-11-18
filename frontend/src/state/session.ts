@@ -9,6 +9,7 @@ export type SessionUser = {
   last_name: string
   role: UserRole
   organization: string | null
+  organization_type: 'HOSPITAL' | 'CLINIC' | null
   patient: string | null
   can_approve_medication_schedule: boolean
 }

@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from accounts.models import Role, User
 from care.services import audit, require_role
 from care.views import ScopedViewSet
+from common.exceptions import Conflict
 from common.idempotency import IdempotencyMixin
 from common.pagination import StandardPagination
 
@@ -141,6 +142,9 @@ class ScheduleView(IdempotencyMixin, APIView):
         schedule = WorkSchedule.objects.filter(doctor=doctor).first()
         serializer = ScheduleSerializer(schedule, data=request.data)
         serializer.is_valid(raise_exception=True)
+        expected_version = serializer.validated_data.pop("version")
+        if expected_version != (schedule.version if schedule else 0):
+            raise Conflict("Ish jadvali o‘zgargan. Yangilangan jadvalni olib, qayta tekshiring.")
         obj = serializer.save(
             doctor=doctor,
             organization=doctor.organization,

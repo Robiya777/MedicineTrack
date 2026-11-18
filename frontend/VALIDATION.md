@@ -1,5 +1,33 @@
 # Web tekshiruvi
 
+## Integratsiya regressiyasi — 2026-11-18
+
+- Committed lockfiledagi versiyasiz optional lightningcss yozuvi `npm ci`ni
+  to‘xtatayotgan edi; lockfile tuzatildi va toza `npm ci` o‘tdi.
+- `npm test`: 9 ta regressiya sinovi o‘tdi. Yo‘qolgan javobdan keyingi retry
+  kaliti saqlanishi, muvaffaqiyatli bir xil xabarning yangi kalit olishi,
+  parallel urinishlar, nullable dori DRAFTi va haqiqiy noto‘g‘ri turli javobni
+  rad etish tekshirildi.
+- Statsionar DOCTOR tashkilot turiga qarab statsionar kabinetini oladi;
+  oilaviy shifokor va qolgan rollarning marshrutlari saqlandi. Oilaviy chat,
+  patronaj amallari va qabul tarixi statsionar klinik akkauntga ko‘rsatilmaydi.
+- Faqat izohini tuzatishda asl dori qabul vaqti, jumladan millisekundlari,
+  saqlanishi sinovdan o‘tdi. Vaqt foydalanuvchi o‘zgartirgandagina almashtiriladi.
+- Ish jadvali PUTi aniq `version` yuboradi: yangi jadvalda 0, tahrirda server
+  qaytargan versiya. Muvaffaqiyatdan keyin keyingi saqlash yangi versiyani
+  ishlatadi. 409da forma saqlanadi va joriy jadvalni yuklash alohida amal.
+- `npm run lint`, `npm run typecheck` va `npm run build` o‘tdi.
+
+Bu bo‘lim kontrakt/unit/build natijalarini qayd etadi; joriy brauzer va
+ko‘p rol bilan ishlash tekshiruvi umumiy loyiha integratsiya auditida ajratiladi.
+Webdagi PDF yuklash va AI review ishchi ekranlari hali ulanmagan.
+
+`npm audit` dev/build vositalarida picomatch ReDoS sababli 16 ta yuqori darajali
+zanjir yozuvini qaytardi. Registrydagi eng yangi 4.0.7 ham ta’sirlangan;
+[rasmiy advisory](https://github.com/advisories/GHSA-fc5q-39xc-vjpf)da tuzatilgan
+versiya yo‘q. Mos bo‘lmagan downgrade yoki auditni yashiradigan override qo‘llanmadi.
+`npm audit --omit=dev` production dependencylarida 0 ta topilma qaytardi.
+
 Sana 2026-11-17. 2-bosqich statsionar oqimi. Sintetik ma’lumotli lokal Django
 backend, alohida SQLite baza va Playwright boshqaruvidagi Chromium ishlatildi.
 

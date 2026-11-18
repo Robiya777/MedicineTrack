@@ -4,6 +4,10 @@ from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    organization_type = serializers.CharField(
+        source="organization.type", read_only=True, allow_null=True
+    )
+
     class Meta:
         model = User
         fields = [
@@ -13,6 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "role",
             "organization",
+            "organization_type",
             "patient",
             "can_approve_medication_schedule",
         ]

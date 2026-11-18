@@ -43,6 +43,14 @@ ko‘rsatiladi.
 
 Tekshiruv natijalari [VALIDATION.md](VALIDATION.md)da keltirilgan.
 
+`npm test` API kontrakti, idempotent retry, kabinet tanlash va qabul vaqti
+tuzatishining regressiya sinovlarini bajaradi. Node 24 kerak.
+
+Statsionarda ishlovchi `DOCTOR` uchun kabinet `organization_type=HOSPITAL`
+bo‘yicha statsionar oqimini ochadi. Klinik dori tasdig‘i alohida ruxsat bilan
+beriladi; oilaviy shifokorga tegishli chat va qabul tarixi bu kabinetga
+avtomatik ochilmaydi.
+
 ## Koordinator va shifokor oqimi
 
 `demo.coordinator` uchun hududiy KPI, barcha chaqiruvlar, mas’ulsiz,

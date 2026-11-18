@@ -4,7 +4,7 @@ import { Eye, EyeOff, HeartPulse, ShieldCheck } from 'lucide-react'
 import { useState, type SubmitEvent } from 'react'
 import { signIn } from '@/api/session'
 import { inputStyle, primaryButton } from '@/components/ui'
-import { workspaces } from '@/lib/workspaces'
+import { getWorkspace } from '@/lib/workspaces'
 
 const inputClass = `${inputStyle} min-h-12 border-input-line text-base`
 
@@ -43,7 +43,7 @@ export function LoginForm() {
       const user = await signIn(username, password)
       await navigate({
         to: '/kabinet/$role',
-        params: { role: workspaces[user.role].slug },
+        params: { role: getWorkspace(user).slug },
         replace: true,
       })
     } catch (cause) {

@@ -685,6 +685,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/ScheduleRequest'
+        required: true
       security:
       - jwtAuth: []
       responses:
@@ -3829,7 +3830,7 @@ components:
         exceptions: {}
         version:
           type: integer
-          readOnly: true
+          minimum: 0
       required:
       - doctor
       - id
@@ -3844,6 +3845,11 @@ components:
           maxLength: 80
         shifts: {}
         exceptions: {}
+        version:
+          type: integer
+          minimum: 0
+      required:
+      - version
     ScheduleTypeEnum:
       enum:
       - FIXED_TIMES
@@ -4230,6 +4236,10 @@ components:
           format: uuid
           readOnly: true
           nullable: true
+        organization_type:
+          type: string
+          readOnly: true
+          nullable: true
         patient:
           type: string
           format: uuid
@@ -4244,6 +4254,7 @@ components:
       - id
       - last_name
       - organization
+      - organization_type
       - patient
       - role
       - username

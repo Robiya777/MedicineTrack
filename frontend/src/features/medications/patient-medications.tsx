@@ -16,6 +16,8 @@ import {
   type RecordInput,
 } from '@/api/medications'
 import { useSessionStore } from '@/state/session'
+import { isHospitalWorkspaceUser } from '@/lib/workspaces'
+import { takenDateForCorrection, takenInputValue } from '@/lib/medication-record'
 import {
   Field,
   inputStyle,
@@ -33,8 +35,6 @@ import {
 } from '@/lib/errors'
 import {
   formatTashkentDateTime,
-  parseTashkentInput,
-  tashkentInputValue,
 } from '@/lib/date'
 import { MedicationEditor } from './editor'
 const route = getRouteApi('/(app)/kabinet/$role/dorilar/$patientId/')
@@ -167,7 +167,7 @@ export function MedicationPanel({
               refresh={refresh}
             />
           ))}
-          {['PATIENT', 'DOCTOR'].includes(user.role) && (
+          {['PATIENT', 'DOCTOR'].includes(user.role) && !isHospitalWorkspaceUser(user) && (
             <section className="mt-card space-y-4 p-5">
               <button
                 className={secondaryButton}
@@ -319,7 +319,7 @@ function PlanCard({
           refresh={refresh}
         />
       )}
-      {plan.status !== 'DRAFT' && ['PATIENT', 'DOCTOR'].includes(user.role) && (
+      {plan.status !== 'DRAFT' && ['PATIENT', 'DOCTOR'].includes(user.role) && !isHospitalWorkspaceUser(user) && (
         <Occurrences plan={plan} day={day} />
       )}
     </article>
@@ -556,7 +556,7 @@ function RecordForm({ item, close }: { item: Occurrence; close: () => void }) {
     ),
     [error, setError] = useState(''),
     [base] = useState(item),
-    [initial] = useState(() => tashkentInputValue(new Date()))
+    [initial] = useState(() => takenInputValue(item.record?.reported_taken_at))
   const snapshot = useRef<{ fingerprint: string; recordedAt: string } | null>(
     null,
   )
@@ -572,7 +572,9 @@ function RecordForm({ item, close }: { item: Occurrence; close: () => void }) {
     const f = new FormData(e.currentTarget),
       now = new Date(),
       taken =
-        result === 'TAKEN' ? parseTashkentInput(String(f.get('taken'))) : null
+        result === 'TAKEN'
+          ? takenDateForCorrection(String(f.get('taken')), initial, base.record?.reported_taken_at)
+          : null
     if (
       taken &&
       (!Number.isFinite(taken.getTime()) ||

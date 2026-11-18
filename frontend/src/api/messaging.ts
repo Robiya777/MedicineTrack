@@ -5,6 +5,7 @@ import { apiClient } from './client'
 const date = z.iso.datetime({ offset: true })
 export const intervalSchema = z.object({ start: z.string(), end: z.string() })
 export const scheduleInputSchema = z.object({
+  version: z.number().int().min(0),
   timezone: z.string().min(1),
   shifts: z.array(
     intervalSchema.extend({ weekday: z.number().int().min(0).max(6) }),
@@ -168,6 +169,7 @@ export function scheduleQuery(id: string) {
       }
     },
     retry: false,
+    refetchOnWindowFocus: false,
   })
 }
 export async function saveSchedule(

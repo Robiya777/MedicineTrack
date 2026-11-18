@@ -46,7 +46,7 @@ def tasks_for(user):
             discharge__created_by=user, discharge__hospital_id=user.organization_id
         )
     if user.role == Role.DOCTOR:
-        return queryset.filter(assigned_doctor=user)
+        return queryset.filter(assigned_doctor=user, receiving_org_id=user.organization_id)
     if user.role == Role.COORDINATOR:
         return queryset.filter(coordinator_scope(user))
     if user.role == Role.PATIENT:

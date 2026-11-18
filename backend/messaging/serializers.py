@@ -113,10 +113,12 @@ class StatusSerializer(serializers.ModelSerializer):
 
 
 class ScheduleSerializer(serializers.ModelSerializer):
+    version = serializers.IntegerField(min_value=0)
+
     class Meta:
         model = WorkSchedule
         fields = ["id", "doctor", "organization", "timezone", "shifts", "exceptions", "version"]
-        read_only_fields = ["id", "doctor", "organization", "version"]
+        read_only_fields = ["id", "doctor", "organization"]
 
     def validate_timezone(self, value):
         try:

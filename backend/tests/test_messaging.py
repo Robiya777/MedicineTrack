@@ -191,6 +191,7 @@ def test_schedule_changes_preserve_existing_episode_deadline(world, client_for):
     response = client_for(world.coordinator).put(
         url,
         {
+            "version": 1,
             "timezone": "Asia/Tashkent",
             "shifts": [{"weekday": 1, "start": "10:00", "end": "12:00"}],
             "exceptions": {},
@@ -206,6 +207,7 @@ def test_invalid_overlapping_schedule_is_rejected(world, client_for):
     response = client_for(world.coordinator).put(
         f"/api/v1/doctors/{world.doctor.id}/work-schedule",
         {
+            "version": 1,
             "timezone": "Asia/Tashkent",
             "shifts": [
                 {"weekday": 0, "start": "09:00", "end": "12:00"},
