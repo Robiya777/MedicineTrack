@@ -1,3 +1,4 @@
+import { RefreshCw } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type SubmitEvent } from 'react'
 import { doctorName, doctorsQuery } from '@/api/tasks'
@@ -366,6 +367,7 @@ export function UnansweredPage() {
           disabled={query.isFetching}
           onClick={() => void query.refetch()}
         >
+          <RefreshCw size={17} aria-hidden="true" />
           Yangilash
         </button>
       </div>

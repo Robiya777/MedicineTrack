@@ -94,6 +94,7 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
         className={tasks.isFetching ? 'animate-spin' : undefined}
         aria-hidden="true"
       />
+      <RefreshCw size={17} aria-hidden="true" />
       Yangilash
     </button>
   )
