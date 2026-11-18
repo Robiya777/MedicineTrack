@@ -75,3 +75,14 @@ idempotent replay, report author/role/field/reason restrictions, own DRAFT-only
 patient contact editing, and admin password reset revoking existing sessions
 without returning the password. Existing account/reference permission tests pass.
 Chromium web integration is documented in frontend/docs/STAGE6_ACCEPTANCE.md.
+
+## Koordinator birlashtirish: 1–2-bosqich — 2026-11-18
+
+SQLite regressiyasi: **97 passed, 6 skipped** (PostgreSQL-specific). Eski
+HOSPITAL akkaunt va hujjat bilan alohida DB migratsiyasi, sessiya/access token
+bekori, bir muassasadagi birgalikdagi DRAFT, poliklinikadan kasalxona tanlash,
+aktivatsiya, idempotent confirm va klinik ruxsatlar tekshirildi. Yangi DBda
+migrate va seed_demo ikki marta o‘tdi. Django check, migration drift dry-run va
+OpenAPI sxemasini generatsiya qilish o‘tdi. Lokal ishlayotgan baza o‘zgartirilmadi;
+frontendning 3-bosqichi bilan birga API migratsiyasi chiqarilishi kerak.
+Batafsil: docs/COORDINATOR_MIGRATION.md.

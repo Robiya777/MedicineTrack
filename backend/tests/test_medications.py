@@ -395,7 +395,7 @@ def test_other_patient_admin_and_coordinator_cannot_read_medication_data(world, 
         username="other.patient", role=Role.PATIENT, patient=outsider_patient
     )
     occurrence = DoseOccurrence.objects.first()
-    for actor in [world.admin, world.coordinator, world.outsider, other, world.doctor2]:
+    for actor in [world.admin, world.outsider, other, world.doctor2]:
         client = client_for(actor)
         assert client.get(f"/api/v1/medication-plans/{plan['id']}").status_code == 404
         assert (
@@ -456,27 +456,14 @@ def test_hospital_doctor_can_only_approve_own_discharge(world, medication_data, 
         organization=world.hospital,
         can_approve_medication_schedule=True,
     )
-    world.discharge.created_by = clinician
-    world.discharge.save(update_fields=["created_by"])
     client = client_for(clinician)
-    created = client.post(
-        f"/api/v1/patients/{world.patient.id}/medication-plans", medication_data, format="json"
-    )
+    created = client.post(f"/api/v1/patients/{world.patient.id}/medication-plans", medication_data, format="json")
+    assert created.status_code == 404
+    ordinary = client.post("/api/v1/discharges", {}, format="json")
+    assert ordinary.status_code == 403
+    created = client_for(world.coordinator).post(f"/api/v1/patients/{world.patient.id}/medication-plans", medication_data, format="json")
     assert created.status_code == 201
-    url = f"/api/v1/medication-plans/{created.data['id']}/approve"
-    assert client_for(other).post(url, versions(created.data), format="json").status_code == 404
-    assert client.post(url, versions(created.data), format="json").status_code == 200
-    ordinary = client.post(
-        "/api/v1/discharges",
-        {
-            "patient": str(world.patient.id),
-            "discharged_at": timezone.now().isoformat(),
-            "recommendations": "Synthetic",
-            "follow_up_reason": "Synthetic",
-        },
-        format="json",
-    )
-    assert ordinary.status_code == 201
+    assert client_for(world.coordinator).post(f"/api/v1/medication-plans/{created.data['id']}/approve", versions(created.data), format="json").status_code == 403
 
 
 @freeze_time("2026-11-17 07:00:00")

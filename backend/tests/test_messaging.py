@@ -88,7 +88,7 @@ def test_unanswered_period_not_extended_by_more_messages(world, client_for):
     with freeze_time(original_due + timedelta(seconds=1)):
         scan_responses()
         scan_responses()
-    assert OutboxEvent.objects.filter(event_type="RESPONSE_OVERDUE").count() == 1
+    assert OutboxEvent.objects.filter(event_type="RESPONSE_OVERDUE", recipient=world.coordinator).count() == 1
     response = client_for(world.coordinator).get("/api/v1/dashboard/unanswered")
     assert response.data["count"] == 1
     assert "text" not in response.data["results"][0]
@@ -145,9 +145,9 @@ def test_worsened_status_is_self_reported_and_escalated(world, client_for):
     }
     response = client_for(world.patient_user).post(url, payload, format="json")
     assert response.status_code == 201 and response.data["patient_reported"] is True
-    assert OutboxEvent.objects.filter(event_type="PATIENT_WORSENED").count() == 1
+    assert OutboxEvent.objects.filter(event_type="PATIENT_WORSENED", recipient=world.coordinator).count() == 1
     deliver_outbox()
-    assert Notification.objects.filter(event_type="PATIENT_WORSENED").count() == 1
+    assert Notification.objects.filter(event_type="PATIENT_WORSENED", recipient=world.coordinator).count() == 1
     assert client_for(world.doctor).get(url).data["count"] == 1
     assert client_for(world.doctor).post(url, payload, format="json").status_code == 403
 

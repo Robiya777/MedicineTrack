@@ -48,13 +48,13 @@ def test_report_correction_requires_author_and_reason(world, task, client_for):
     assert RecordCorrection.objects.count() == 1
 
 
-def test_contact_edit_requires_own_draft_and_is_audited(world, client_for):
+def test_contact_edit_requires_own_organization_draft_and_is_audited(world, client_for):
     client = client_for(world.staff)
     url = f"/api/v1/patients/{world.patient.id}"
-    other = User.objects.create_user(username="other.staff", role=Role.HOSPITAL, organization=world.hospital)
-    assert client_for(other).patch(url, {"address": "Other change"}, format="json").status_code == 403
+    other = User.objects.create_user(username="other.staff", role=Role.COORDINATOR, organization=world.hospital)
+    assert client_for(other).patch(url, {"address": "Other change"}, format="json").status_code == 200
     assert client.patch(url, {"address": "Draft contact change"}, format="json").status_code == 200
-    assert AuditEvent.objects.filter(action="PATIENT_UPDATED").count() == 1
+    assert AuditEvent.objects.filter(action="PATIENT_UPDATED").count() == 2
     assert client.post(f"/api/v1/discharges/{world.discharge.id}/confirm", {}, format="json").status_code == 201
     assert client.patch(url, {"address": "Too late"}, format="json").status_code == 409
     world.patient.refresh_from_db()
