@@ -1,6 +1,6 @@
 # MedicineTrack — texnik topshiriq
 
-Versiya: 1.4 • Sana: 2026-11-18 • Holat: ishlab chiqish uchun bazaviy loyiha.
+Versiya: 1.5 • Sana: 2026-11-18 • Holat: ishlab chiqish uchun bazaviy loyiha.
 
 ## 1. Hujjat asosi va chegaralari
 
@@ -589,6 +589,16 @@ Bemorning 3 soatlik avtomatik holat budilnigi, dori eslatmasi, AI yoki tizim xab
 
 ### 26.3. Ekranlar va ko‘rsatkichlar
 
+
+**Asosiy ish ssenariysi — bugungi qo‘ng‘iroqlar ro‘yxati:** oddiy telefon qo‘ng‘irog‘i bemor bilan gaplashish uchun yetishi mumkin. Tizim bugun kimga qo‘ng‘iroq qilish kerakligini, kim mas’ulligini va qaysi bemor bilan hali bog‘lanilmaganini ko‘rsatadi. Ilova ichidagi audioqo‘ng‘iroq yoki suhbatni yozib olish bu ssenariy uchun shart emas.
+
+- **“Bugun qo‘ng‘iroq qilish kerak”**: dastlabki patronaj yoki faol kuzatuv rejasining bugungi (Asia/Tashkent 00:00–24:00) ochiq majburiyatlari. Oldingi kundan kechikkanlari alohida “Muddati o‘tgan” guruhida turadi; faqat bugungi sana filtri sabab yo‘qolmaydi. Bitta bemorning bir nechta majburiyati bo‘lsa, bitta karta ichida sabablari va eng yaqin muddat ko‘rsatiladi; majburiyatlar mustaqil saqlanadi.
+- Har kartada bemor F.I.Sh., vakolatga mos telefon raqami, mas’ul shifokor va muassasa, qo‘ng‘iroq sababi, deadline, oxirgi natijali aloqa va joriy natija bo‘ladi. Raqam yo‘q bo‘lsa “Telefon raqami yo‘q”, mas’ul yo‘q bo‘lsa “Mas’ul tayinlanmagan” deb koordinator navbatida ko‘rinadi; uydirma ma’lumot qo‘yilmaydi.
+- **“Hali bog‘lanilmagan”**: tegishli ochiq majburiyat yaratilganidan beri natijali aloqa qayd etilmagan bemorlar. Bir marta ham aloqa qaydi yo‘q va faqat javobsiz urinishlari bor holatlar alohida belgilanadi. Oldingi kuzatuvdagi suhbat yangi majburiyatni avtomatik bajarmaydi.
+- **“Qo‘ng‘iroq qilish”** APKda telefonning odatiy raqam terish oynasini ochadi; qo‘ng‘iroqni foydalanuvchi boshlaydi. Webda raqam va qurilma qo‘llasa telefon havolasi beriladi. Ushbu tugmani bosish, qo‘ng‘iroq davomiyligi yoki oynadan qaytish “Bog‘lanildi” deb avtomatik belgilanmaydi.
+- Qo‘ng‘iroqdan keyin shifokor “Bog‘lanildi / Javob bermadi / Raqam noto‘g‘ri / Rad etdi” natijasi, vaqt va qisqa izohni kiritadi. Javobsiz urinish keyingi harakat bilan ochiq qoladi. “Bog‘lanildi” qaydi shifokor bildirgan natija sifatida ko‘rsatiladi; mavjud majburiyatning zarur kuzatuv/yakunlash maydonlari to‘lmaguncha task avtomatik yopilmaydi.
+- Koordinator bemor bo‘yicha mas’ulni, bog‘lanilgan/bog‘lanilmagan holatni va kechikishni ko‘radi; shifokor va holat bo‘yicha filtrlaydi. Shifokor faqat o‘z faol bemorlari navbatini ko‘radi. Navbatdagi ko‘rsatkichlar server tasdiqlagan qaydlardan yangilanadi.
+
 **Bemor kartasi (web va APK):** mas’ul shifokor; oxirgi shifokor xabari/urinishi; oxirgi natijali aloqa va uning manbasi; qancha vaqt o‘tgani; keyingi aloqa vaqti; reja holati. Tarixda vaqt, kanal, yo‘nalish (kim boshladi), natija va qayd muallifi ko‘rsatiladi. Telefon/tashrif foydalanuvchi qaydi ekanligi belgilanadi.
 
 **Shifokor kabineti:** “Bugun xabar olish kerak”, “Muddati o‘tgan”, “Bemor javobi kutilmoqda”, “Reja belgilanmagan” navbatlari; tegishli bemorni ochish va aloqa natijasini kiritish. Chat funksiyasi ichidagi shifokor javobi mavjud xabardan bog‘lanadi, qayta qo‘lda yozish talab qilinmaydi.
@@ -644,5 +654,8 @@ Javobga `as_of`, timezone, hisoblash davri va manba toifasi qo‘shiladi. Server
 | AT-54 | Shifokor almashadi yoki aloqa kech kiritiladi | Muallif/assignment tarixi saqlanadi; eski shifokor ishi yangisiga yozilmaydi; KPI orqaga sana bilan yaxshilanmaydi |
 | AT-55 | Begona bemor IDsi yoki boshqa hudud filtri yuboriladi | Object-level ruxsat rad etadi; agregatlardan ham begona ma’lumot chiqmaydi |
 | AT-56 | 7/30 kunlik davr, chegaradagi vaqtlar va nol denominator | Toshkent kuni/UTC chegarasi to‘g‘ri, dublikat yo‘q, “Majburiyat yo‘q” |
+| AT-57 | Bugungi va oldingi kundan kechikkan ochiq majburiyatlar bor | Bugungi qo‘ng‘iroqlar va kechikkanlar ko‘rinadi; mas’ul/telefon yo‘qligi aniq belgilanadi |
+| AT-58 | Qo‘ng‘iroq tugmasi bosiladi yoki bemor javob bermaydi | Tugma dialerni ochadi; aloqa avtomatik bajarilgan hisoblanmaydi, bemor bog‘lanilmaganlar navbatida qoladi |
+| AT-59 | Shifokor natijali aloqani qayd etadi | Server tasdig‘idan keyin tegishli navbat va tarix yangilanadi; boshqa ochiq majburiyatlar avtomatik yopilmaydi |
 
-Demo: bemorga kuzatuv rejasi → avtomatik holat budilnigi (shifokor KPI o‘zgarmaydi) → shifokor xabari (javob kutiladi) → bemor javobi (aloqa epizodi) → javobsiz telefon urinishi → keyingi deadline kechikishi → koordinator navbati va 7 kunlik tarix. DoD: AT-49…AT-56, OpenAPI kontrakti, rol/hudud tekshiruvi va web/APKda bir xil summary natijasi. Kod va integratsiya ushbu TZ qo‘shimchasidan keyin alohida bajariladi.
+Demo: bemorga kuzatuv rejasi → avtomatik holat budilnigi (shifokor KPI o‘zgarmaydi) → shifokor xabari (javob kutiladi) → bemor javobi (aloqa epizodi) → javobsiz telefon urinishi → keyingi deadline kechikishi → koordinator navbati va 7 kunlik tarix. DoD: AT-49…AT-59, OpenAPI kontrakti, rol/hudud tekshiruvi va web/APKda bir xil summary natijasi. Kod va integratsiya ushbu TZ qo‘shimchasidan keyin alohida bajariladi.
