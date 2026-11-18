@@ -19,7 +19,7 @@ const proxyTargetSchema = z.string().refine((value) => {
 })
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), 'API_PROXY_TARGET')
+  const env = loadEnv(mode, process.cwd(), ['API_PROXY_TARGET', 'DEV_ALLOWED_HOSTS'])
   const target = proxyTargetSchema.safeParse(env.API_PROXY_TARGET ?? 'http://127.0.0.1:8000')
 
   if (!target.success) {
@@ -27,6 +27,10 @@ export default defineConfig(({ mode }) => {
   }
 
   const backend = { target: target.data, changeOrigin: true }
+  const allowedHosts = (env.DEV_ALLOWED_HOSTS ?? '')
+    .split(',')
+    .map((host) => host.trim())
+    .filter(Boolean)
 
   return {
     resolve: {
@@ -41,6 +45,7 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
     ],
     server: {
+      allowedHosts,
       proxy: {
         '^/api(?:/|$)': backend,
         '^/health(?:/|$)': backend,

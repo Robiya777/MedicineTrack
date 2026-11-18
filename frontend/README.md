@@ -4,6 +4,26 @@
 
 [Nurazizning frontend rejasi](../docs/FRONTEND_PLAN_UZ.md)
 
+## Ngrok orqali ochish
+
+`ngrok http 5173` manzilidagi domenni `frontend/.env`ga protokol va yo‘lsiz kiriting:
+
+```dotenv
+API_PROXY_TARGET=http://127.0.0.1:8001
+DEV_ALLOWED_HOSTS=your-domain.ngrok-free.dev
+```
+
+Bir nechta domen vergul bilan ajratiladi. Web login uchun to‘liq HTTPS originini
+backendning `CSRF_TRUSTED_ORIGINS` ro‘yxatiga ham qo‘shing va backend xizmatini
+yangilangan muhit bilan qayta ishga tushiring. Frontendni qayta ishga tushirgach,
+ngrok havolasini oching. API so‘rovlari shu havoladagi `/api` proksisi orqali backendga boradi.
+[Vite allowedHosts hujjati](https://vite.dev/config/server-options#server-allowedhosts).
+
+Ngrokda tayyor buildni kamroq so‘rov bilan yuklash uchun `frontend/` ichida
+`npm run demo` ishlating. U buildni tekshiradi va 5173-portda ochadi; oldingi
+5173 serverni avval to‘xtating. Kod o‘zgarganda shu buyruqni qayta bajaring.
+Kod yozish va avtomatik yangilanish uchun `npm run dev` ishlatiladi.
+
 ## Web sessiyasini lokal tekshirish
 
 Backendni `main` checkoutidan alohida ishga tushiring va `DEMO_MODE=true` bilan
