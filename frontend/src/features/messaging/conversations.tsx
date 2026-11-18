@@ -2,7 +2,7 @@ import {DischargeCorrections} from '@/features/records/corrections'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
-import { ArrowLeft, MessageCircle, RefreshCw } from 'lucide-react'
+import { ArrowLeft, MessageCircle, RefreshCw, Search, Send, CheckCheck } from 'lucide-react'
 import {
   conversationQuery,
   conversationsQuery,
@@ -130,98 +130,33 @@ export function PatientDashboard() {
 export function ConversationList() {
   const user = useSessionStore((s) => s.user)!
   const conversations = useQuery(conversationsQuery())
-  return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-semibold">Suhbatlar</h2>
-        <button
-          className={secondaryButton}
-          disabled={conversations.isFetching}
-          onClick={() => void conversations.refetch()}
-        >
-          <RefreshCw size={16} aria-hidden="true" />
-          Yangilash
-        </button>
+  const [selected, setSelected] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const active = conversations.data?.find(item => item.id === selected)
+  return <section className="space-y-4">
+    <header className="flex items-center justify-between gap-3"><div><h1 className="text-2xl font-semibold">Suhbatlar</h1><p className="mt-1 text-sm text-muted">Bemorlar bilan yozishmalar va kuzatuv.</p></div><button className={secondaryButton} aria-label="Suhbatlarni yangilash" disabled={conversations.isFetching} onClick={() => void conversations.refetch()}><RefreshCw size={17} aria-hidden="true" /></button></header>
+    <div className="grid min-h-[560px] overflow-hidden rounded-3xl border border-line bg-surface shadow-xs md:h-[min(760px,calc(100dvh-230px))] md:min-h-[520px] md:grid-cols-[290px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)]">
+      <aside aria-label="Suhbatlar ro‘yxati" className={(active ? 'hidden md:flex ' : 'flex ')+'min-h-0 flex-col border-line md:border-r'}>
+        <div className="border-b border-line p-4"><label className="relative block"><span className="sr-only">Suhbat qidirish</span><Search size={17} className="absolute left-3 top-3.5 text-muted" aria-hidden="true"/><input className={inputStyle+' pl-10'} placeholder="Ism bo‘yicha qidirish" value={search} onChange={e=>setSearch(e.target.value)} /></label></div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-2">
+          {conversations.isPending && <Notice>Suhbatlar yuklanmoqda…</Notice>}
+          {conversations.isError && <RequestError error={conversations.error} retry={()=>void conversations.refetch()}/>}
+          {!conversations.isError && conversations.data?.map(item=><ConversationCard key={item.id} conversation={item} patient={user.role==='PATIENT'} search={search} selected={selected===item.id} choose={()=>setSelected(item.id)}/>)}
+          {!conversations.isPending && !conversations.isError && <p className="px-3 py-5 text-center text-xs text-muted">{conversations.data?.length ? 'Kerakli suhbatni ro‘yxatdan tanlang.' : 'Hozircha suhbatlar yo‘q.'}</p>}
+        </div>
+      </aside>
+      <div className={(active ? 'flex ' : 'hidden md:flex ')+'min-h-0 min-w-0 flex-col bg-page'}>
+        {active ? <><button className="flex items-center gap-2 border-b border-line bg-surface p-4 text-sm font-medium text-primary md:hidden" onClick={()=>setSelected(null)}><ArrowLeft size={18} aria-hidden="true"/>Suhbatlar</button><div className="min-h-0 flex-1 overflow-y-auto"><ConversationBody key={active.id} conversation={active}/></div></> : <div className="m-auto max-w-sm px-6 py-16 text-center"><span className="mx-auto mb-5 flex size-20 items-center justify-center rounded-3xl bg-mint text-primary"><MessageCircle size={36} aria-hidden="true"/></span><h2 className="text-xl font-semibold">Suhbatni tanlang</h2><p className="mt-2 text-sm leading-6 text-muted">Xabarlarni ko‘rish va javob yozish uchun chapdagi ro‘yxatdan bemorni tanlang.</p></div>}
       </div>
-      {conversations.isPending && <Notice>Suhbatlar yuklanmoqda…</Notice>}
-      {conversations.isError && (
-        <RequestError
-          error={conversations.error}
-          retry={() => void conversations.refetch()}
-        />
-      )}
-      {conversations.data?.length === 0 && (
-        <Notice>
-          Suhbatlar hali yo‘q. Biriktirish yangilangach ro‘yxatni qayta
-          tekshiring.
-        </Notice>
-      )}
-      {!conversations.isError &&
-        conversations.data?.map((item) => (
-          <ConversationCard
-            key={item.id}
-            conversation={item}
-            patient={user.role === 'PATIENT'}
-          />
-        ))}
-    </section>
-  )
+    </div>
+  </section>
 }
-function ConversationCard({
-  conversation,
-  patient,
-}: {
-  conversation: Conversation
-  patient: boolean
-}) {
-  const doctor = useQuery(doctorNameQuery(conversation.doctor))
-  const person = useQuery({
-    ...hospitalPatientQuery(conversation.patient),
-    enabled: !patient,
-    retry: false,
-  })
-  return (
-    <Link
-      to="/kabinet/$role/suhbat/$conversationId"
-      params={{
-        role: patient ? 'bemor' : 'shifokor',
-        conversationId: conversation.id,
-      }}
-      search={{}}
-      className="mt-card mt-conversation-card"
-    >
-      <MessageCircle size={23} aria-hidden="true" />
-      <div>
-        <h3 className="font-semibold">
-          {patient
-            ? conversation.doctor
-              ? doctor.data || 'Mas’ul shifokor'
-              : 'Mas’ul tayinlanmoqda'
-            : person.data?.full_name ||
-              'Bemor ' + conversation.patient.slice(0, 8)}
-        </h3>
-        <p className="mt-cell-meta">
-          {conversation.status === 'CLOSED'
-            ? 'Yopilgan suhbat · Tarix'
-            : conversation.response_policy}
-        </p>
-        {conversation.response_due_at && (
-          <p className="text-sm text-muted">
-            Javob muddati:{' '}
-            {formatTashkentDateTime(conversation.response_due_at)} (Toshkent)
-          </p>
-        )}
-      </div>
-      <span
-        className={
-          'mt-status mt-status-' +
-          (conversation.status === 'OPEN' ? 'accepted' : 'cancelled')
-        }
-      >
-        {conversation.status === 'OPEN' ? 'Ochiq' : 'Yopiq'}
-      </span>
-    </Link>
-  )
+function ConversationCard({conversation, patient, search, selected, choose}: {conversation: Conversation; patient: boolean; search: string; selected: boolean; choose:()=>void}) {
+  const doctor=useQuery(doctorNameQuery(conversation.doctor))
+  const person=useQuery({...hospitalPatientQuery(conversation.patient),enabled:!patient,retry:false})
+  const name=patient ? (conversation.doctor ? doctor.data || 'Mas’ul shifokor' : 'Mas’ul tayinlanmoqda') : person.data?.full_name || 'Bemor '+conversation.patient.slice(0,8)
+  if(!name.toLocaleLowerCase().includes(search.toLocaleLowerCase())) return null
+  return <button type="button" onClick={choose} aria-pressed={selected} className={'mb-1 flex w-full items-start gap-3 rounded-2xl p-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-primary '+(selected?'bg-mint':'hover:bg-page')}><span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-line bg-surface font-semibold text-primary">{name.slice(0,1).toLocaleUpperCase()}</span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold">{name}</span><span className="mt-1 block text-xs text-muted">{conversation.status==='CLOSED'?'Yopilgan suhbat':'Ochiq suhbat'}</span>{conversation.response_due_at && <span className="mt-2 block text-[11px] text-primary">Javob: {formatTashkentDateTime(conversation.response_due_at)}</span>}</span>{conversation.first_unanswered_at && conversation.status==='OPEN' && <span className="mt-1 size-2 shrink-0 rounded-full bg-primary" title="Javob kutilmoqda"/>}</button>
 }
 export function ConversationPage() {
   const { conversationId, role } = route.useParams()
@@ -315,8 +250,8 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
   const denied = messages.isError || statuses.isError
   const snapshot = conversation.work_schedule
   return (
-    <>
-      <section className="mt-card space-y-3 p-5">
+    <div className="flex min-h-full flex-col">
+      <section className="space-y-3 border-b border-line bg-surface p-5">
         <h2 className="font-semibold">
           {user.role === 'DOCTOR' ? patient.data?.full_name || 'Bemor ' + conversation.patient.slice(0, 8) : conversation.doctor
             ? doctor.data || 'Mas’ul shifokor'
@@ -370,7 +305,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
           </details>
         )}
       </section>
-      <section className="mt-card space-y-4 p-5" aria-label="Suhbat xabarlari">
+      <section className="flex-1 space-y-4 p-5" aria-label="Suhbat xabarlari">
         {messages.isPending && <Notice>Xabarlar yuklanmoqda…</Notice>}
         {messages.isError && (
           <RequestError
@@ -388,13 +323,13 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
           <Notice>Suhbatda hali xabar yo‘q.</Notice>
         )}
         {!denied && (
-          <ol className="mt-message-list">
+          <ol className="flex flex-col gap-4" aria-label="Xabarlar">
             {messages.data?.map((message) => (
               <li
                 key={message.id}
                 className={
-                  'mt-message' +
-                  (message.sender === user.id ? ' mt-message-own' : '')
+                  'max-w-[90%] rounded-2xl p-3.5 text-sm leading-6 shadow-xs sm:max-w-[80%] ' +
+                  (message.sender === user.id ? 'self-end rounded-br-sm bg-mint' : 'self-start rounded-bl-sm border border-line bg-surface')
                 }
               >
                 <p className="text-xs font-semibold text-muted">
@@ -408,8 +343,8 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
                 <p className="whitespace-pre-wrap wrap-break-word">
                   {message.text}
                 </p>
-                <p className="mt-cell-meta">
-                  {formatTashkentDateTime(message.sent_at)} (Toshkent) ·{' '}
+                <p className="mt-2 flex flex-wrap items-center gap-1 text-[10px] text-muted">
+                  {message.sender === user.id && <CheckCheck size={13} aria-hidden="true"/>}{formatTashkentDateTime(message.sent_at)} (Toshkent) ·{' '}
                   {delivery[message.delivery_status]}
                 </p>
                 {message.answered_at && (
@@ -437,7 +372,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
         )}
       </section>
       {!denied && statuses.data && statuses.data.length > 0 && (
-        <section className="mt-card space-y-4 p-5">
+        <section className="space-y-4 p-5">
           <h2 className="text-xl font-semibold">Bemor bildirgan holatlar</h2>
           {statuses.data.map((item) => (
             <article
@@ -472,7 +407,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
           )}
         </>
       )}
-    </>
+    </div>
   )
 }
 function MessageForm({ conversationId }: { conversationId: string }) {
@@ -498,7 +433,7 @@ function MessageForm({ conversationId }: { conversationId: string }) {
   }
   return (
     <form
-      className="mt-card space-y-4 p-5"
+      className="sticky bottom-0 space-y-3 border-t border-line bg-surface p-4"
       onSubmit={submit}
       aria-busy={mutation.isPending}
     >
@@ -507,7 +442,8 @@ function MessageForm({ conversationId }: { conversationId: string }) {
           <textarea
             {...a11y}
             className={inputStyle}
-            rows={3}
+            rows={2}
+            placeholder="Xabar yozing…"
             maxLength={4000}
             ref={composer}
             value={text}
@@ -522,7 +458,7 @@ function MessageForm({ conversationId }: { conversationId: string }) {
         className={primaryButton}
         disabled={mutation.isPending || !text.trim()}
       >
-        {mutation.isPending ? 'Yuborilmoqda…' : 'Xabarni yuborish'}
+        <Send size={17} aria-hidden="true" />{mutation.isPending ? 'Yuborilmoqda…' : 'Yuborish'}
       </button>
     </form>
   )
