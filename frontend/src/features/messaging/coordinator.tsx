@@ -1,4 +1,4 @@
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, Clock3, MessageCircle, Stethoscope, TriangleAlert, UserRound } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type SubmitEvent } from 'react'
 import { doctorName, doctorsQuery } from '@/api/tasks'
@@ -10,6 +10,7 @@ import {
   type ScheduleInput,
 } from '@/api/messaging'
 import {
+  PageHeader,
   Field,
   inputStyle,
   Notice,
@@ -357,41 +358,22 @@ export function UnansweredPage() {
     )
   return (
     <section className="space-y-5">
-      <div className="mt-page-heading">
-        <div>
-          <h1>Javobsiz murojaatlar</h1>
-          <p>Bemor xabarlari va holatlariga javob nazorati.</p>
-        </div>
-        <button
-          className={secondaryButton}
-          disabled={query.isFetching}
-          onClick={() => void query.refetch()}
-        >
-          <RefreshCw size={17} aria-hidden="true" />
+      <PageHeader title="Javobsiz murojaatlar" description="Bemor xabarlari va javob muddatlarini kuzating."
+        action={<button type="button" className={secondaryButton} disabled={query.isFetching} onClick={() => void query.refetch()}>
+          <RefreshCw size={17} className={query.isFetching ? 'motion-safe:animate-spin' : undefined} aria-hidden="true" />
           Yangilash
-        </button>
-      </div>
-      <div
-        className="flex flex-wrap gap-3"
-        role="group"
-        aria-label="Murojaat filtri"
-      >
-        {(
-          [
-            ['ALL', 'Barchasi'],
-            ['WORSENED', 'Yomonlashdi'],
-            ['OVERDUE', 'Kechikkan'],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            key={value}
-            className={filter === value ? primaryButton : secondaryButton}
-            aria-pressed={filter === value}
-            onClick={() => setFilter(value)}
-          >
-            {label}
-          </button>
-        ))}
+        </button>} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex flex-wrap gap-1 rounded-xl border border-line bg-surface p-1" role="group" aria-label="Murojaat filtri">
+          {([['ALL', 'Barchasi'], ['WORSENED', 'Yomonlashdi'], ['OVERDUE', 'Kechikkan']] as const).map(([value, label]) => (
+            <button type="button" key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}
+              className={`inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold transition ${filter === value ? 'bg-mint text-primary-hover' : 'text-muted hover:bg-page'}`}>
+              {label}
+              <span className="rounded-md bg-page px-1.5 py-0.5 text-xs tabular-nums">{query.data?.filter(item => value === 'ALL' || (value === 'WORSENED' ? item.priority === 'WORSENED' : item.overdue)).length ?? '—'}</span>
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-muted">Avval yomonlashgan va kechikkan murojaatlar</p>
       </div>
       {query.isPending && <Notice>Murojaatlar yuklanmoqda…</Notice>}
       {query.isError && (
@@ -426,45 +408,25 @@ function UnansweredCard({
   })
   const doctor = useQuery(doctorNameQuery(item.doctor_id))
   return (
-    <article className="mt-card space-y-4 p-5">
-      <div className="flex flex-wrap justify-between gap-3">
-        <h2 className="font-semibold">
-          {patient.data?.full_name || 'Bemor ' + item.patient_id.slice(0, 8)}
-        </h2>
-        <span
-          className={
-            'mt-status mt-status-' +
-            (item.priority === 'WORSENED'
-              ? 'danger'
-              : item.overdue
-                ? 'unassigned'
-                : 'new')
-          }
-        >
-          {item.priority === 'WORSENED'
-            ? 'Yomonlashdi'
-            : item.overdue
-              ? 'Kechikkan'
-              : 'Javob kutilmoqda'}
+    <article className="rounded-2xl border border-line bg-surface p-5 shadow-xs sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-mint text-primary"><UserRound size={21} aria-hidden="true" /></span>
+          <div className="min-w-0">
+            <h2 className="break-words text-base font-semibold text-ink">{patient.data?.full_name || 'Bemor ' + item.patient_id.slice(0, 8)}</h2>
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-muted"><Stethoscope size={15} className="shrink-0" aria-hidden="true" />{item.doctor_id ? doctor.data || 'Shifokor yuklanmoqda…' : 'Mas’ul tayinlanmagan'}</p>
+          </div>
+        </div>
+        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${item.priority === 'WORSENED' ? 'bg-danger-wash text-danger' : item.overdue ? 'bg-warning-wash text-warning' : 'bg-blue-wash text-blue'}`}>
+          {item.priority === 'WORSENED' || item.overdue ? <TriangleAlert size={14} aria-hidden="true" /> : <Clock3 size={14} aria-hidden="true" />}
+          {item.priority === 'WORSENED' ? 'Yomonlashdi' : item.overdue ? 'Kechikkan' : 'Javob kutilmoqda'}
         </span>
       </div>
-      <p className="text-sm">
-        Mas’ul:{' '}
-        {item.doctor_id
-          ? doctor.data || item.doctor_id
-          : 'Mas’ul tayinlanmoqda'}
-      </p>
-      <p className="text-sm text-muted">
-        Birinchi javobsiz xabar:{' '}
-        {formatTashkentDateTime(item.first_unanswered_at)} (Toshkent)
-      </p>
-      <p className="text-sm">
-        {item.response_due_at
-          ? 'Javob muddati: ' +
-            formatTashkentDateTime(item.response_due_at) +
-            ' (Toshkent)'
-          : 'Javob vaqti belgilanmagan. Shifokor ish jadvalini tekshiring.'}
-      </p>
+      <dl className="mt-5 grid gap-4 border-t border-line pt-4 sm:grid-cols-2">
+        <div><dt className="flex items-center gap-2 text-xs text-muted"><MessageCircle size={15} aria-hidden="true" />Birinchi javobsiz xabar</dt><dd className="mt-2 text-sm font-medium">{formatTashkentDateTime(item.first_unanswered_at)}</dd></div>
+        <div><dt className="flex items-center gap-2 text-xs text-muted"><Clock3 size={15} aria-hidden="true" />Javob muddati</dt><dd className={`mt-2 text-sm font-medium ${item.overdue ? 'text-danger' : 'text-ink'}`}>{item.response_due_at ? formatTashkentDateTime(item.response_due_at) : 'Belgilanmagan'}</dd></div>
+      </dl>
+      {(!item.response_due_at || item.schedule_missing) && <p className="mt-4 flex items-start gap-2 rounded-lg bg-warning-wash p-3 text-xs leading-5 text-warning"><TriangleAlert size={16} className="mt-0.5 shrink-0" aria-hidden="true" />Shifokorning ish jadvalini tekshiring: javob muddati belgilanmagan.</p>}
     </article>
   )
 }
