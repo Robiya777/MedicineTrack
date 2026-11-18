@@ -267,6 +267,14 @@ public final class FlowChecks extends Instrumentation {
       visible("Uyda ham yolg‘iz emassiz.");
       navSelected("Asosiy");
       screenshot("02-patient-home");
+      if (args.getString("mode", "full").equals("assistant")) {
+        assistantScreens(patient, vault, base, password);
+        report.putString(
+            "stream",
+            "PASS: " + checks + " assistant, demo SOS, consent and device location checks.\n");
+        finish(Activity.RESULT_OK, report);
+        return;
+      }
       if (args.getString("mode", "full").equals("layout")) {
         layoutScreens(patient, vault, base, password);
         report.putString(
@@ -936,9 +944,183 @@ public final class FlowChecks extends Instrumentation {
               + " checks against the actual local backend; patient/doctor UI screenshots saved.\n");
       finish(Activity.RESULT_OK, report);
     } catch (Throwable error) {
+      try {
+        screenshot("failed-flow");
+      } catch (Exception ignored) {
+      }
       report.putString(
-          "stream", "FAIL: " + error.getClass().getSimpleName() + ": " + error.getMessage() + "\n");
+          "stream",
+          "FAIL: "
+              + error.getClass().getSimpleName()
+              + ": "
+              + error.getMessage()
+              + " after "
+              + checks
+              + " checks.\n");
       finish(Activity.RESULT_CANCELED, report);
     }
+  }
+
+  void systemClick(String text) throws Exception {
+    for (int attempt = 0; attempt < 40; attempt++) {
+      android.view.accessibility.AccessibilityNodeInfo root =
+          getUiAutomation().getRootInActiveWindow();
+      if (root != null)
+        for (android.view.accessibility.AccessibilityNodeInfo node :
+            root.findAccessibilityNodeInfosByText(text))
+          if (node.isClickable()
+              && node.performAction(
+                  android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK)) {
+            Thread.sleep(250);
+            return;
+          }
+      Thread.sleep(100);
+    }
+    throw new AssertionError("System dialog button missing: " + text);
+  }
+
+  JSONObject lastMessage(Api patient, String conversation) throws Exception {
+    JSONArray rows = patient.list("/conversations/" + conversation + "/messages");
+    return rows.getJSONObject(rows.length() - 1);
+  }
+
+  void typeChat(String text) {
+    ui(
+        () -> {
+          activity.chatInput.requestFocus();
+          activity.chatInput.setText(text);
+        });
+  }
+
+  void assistantScreens(Api patient, Vault vault, String base, String password) throws Exception {
+    check(patient.get("/assistant/config").getBoolean("enabled"), "Keyless assistant enabled");
+    visible("AI yordamchi · DEMO");
+    click("AI yordamchi bilan suhbat");
+    idle();
+    String conversation = activity.conversationId;
+    check(!conversation.isEmpty(), "Assistant entry opens assigned conversation");
+    typeChat("Boshim og‘riyapti");
+    click("Yuborish");
+    idle();
+    JSONObject headache = lastMessage(patient, conversation);
+    check(
+        headache.getJSONObject("assistant").getString("risk").equals("DOCTOR_REVIEW"),
+        "Symptom-specific demo reply reaches mobile");
+    check(headache.isNull("answered_at"), "AI does not claim a doctor has answered");
+    visible("Og‘riq to‘satdan juda kuchli boshlandimi");
+    typeChat("Yuborilmagan shaxsiy qoralama");
+    click("Yo‘q");
+    idle();
+    JSONObject follow = lastMessage(patient, conversation).getJSONObject("assistant");
+    check(
+        follow.getJSONObject("question").getString("key").equals("duration_severity"),
+        "Quick answer follows the current assistant question");
+    ui(
+        () ->
+            check(
+                activity.chatInput.getText().toString().equals("Yuborilmagan shaxsiy qoralama"),
+                "Quick answer preserves unsent composer draft"));
+    typeChat("Nafas ololmayapman");
+    click("Yuborish");
+    idle();
+    JSONObject danger = lastMessage(patient, conversation);
+    JSONObject incident = danger.getJSONObject("assistant").getJSONObject("emergency");
+    String id = incident.getString("id"), path = "/assistant/emergencies/" + id;
+    check(
+        danger.getJSONObject("assistant").getString("risk").equals("EMERGENCY"),
+        "Danger automatically creates an SOS");
+    check(
+        incident.getBoolean("demo") && incident.getString("state").equals("DEMO_SIMULATED"),
+        "SOS is explicitly a simulation");
+    check(incident.isNull("location"), "No automatic GPS capture or invented patient coordinates");
+    check(
+        incident.getJSONArray("events").length() == 3,
+        "Demo timeline has detection, simulated call and staff alert");
+    Intent dial = AssistantUi.emergencyDialIntent();
+    check(
+        Intent.ACTION_DIAL.equals(dial.getAction()) && "tel:103".equals(dial.getDataString()),
+        "Real emergency action opens a dialer; no automatic call");
+    ui(
+        () -> {
+          activity.working(activity.root, true);
+          View phone = described(activity.root, "O‘zbekiston: 103 telefon oynasini ochish");
+          check(phone != null && phone.isEnabled(), "103 stays available during a network request");
+          activity.working(activity.root, false);
+        });
+    screenshot("assistant-emergency-chat");
+    ui(
+        () -> {
+          View sos = activity.root.findViewWithTag("assistant-emergency:" + id);
+          check(sos != null, "SOS action belongs to the triggering assessment");
+          sos.performClick();
+        });
+    idle();
+    visible("DEMO · Haqiqiy tez yordam chaqirilmagan");
+    visible("Lokatsiya ulashilmagan.");
+    click("Hozirgi lokatsiyamni ulashish");
+    systemClick("Bekor qilish");
+    check(patient.get(path).isNull("location"), "Cancelling location consent uploads nothing");
+    click("Demo lokatsiyani ulashish");
+    systemClick("Demo nuqtani ulashish");
+    idle();
+    check(
+        patient.get(path).getJSONObject("location").getString("source").equals("DEMO"),
+        "Demo location is saved with a demo source");
+    visible("Sizning GPSingiz emas");
+    screenshot("assistant-demo-location");
+    // Grant foreground permissions, then inject a synthetic GPS fix into the emulator.
+    getUiAutomation()
+        .grantRuntimePermission(
+            getTargetContext().getPackageName(),
+            android.Manifest.permission.ACCESS_COARSE_LOCATION);
+    getUiAutomation()
+        .grantRuntimePermission(
+            getTargetContext().getPackageName(), android.Manifest.permission.ACCESS_FINE_LOCATION);
+    click("Hozirgi lokatsiyamni ulashish");
+    systemClick("Roziman, lokatsiyani ulashish");
+    for (int attempt = 0; attempt < 150; attempt++) {
+      JSONObject row = patient.get(path).optJSONObject("location");
+      if (row != null && row.optString("source").equals("DEVICE")) break;
+      Thread.sleep(100);
+    }
+    idle();
+    JSONObject device = patient.get(path).getJSONObject("location");
+    check(
+        device.getString("source").equals("DEVICE") && device.getBoolean("consented"),
+        "Foreground GPS uploads only after explicit confirmation");
+    check(
+        Math.abs(device.getDouble("latitude") - 41.312345) < .00001,
+        "Device GPS is distinct from the fixed demo location");
+    visible("Bemor roziligi bilan qurilma lokatsiyasi");
+    screenshot("assistant-device-location");
+    Api doctor = new Api(vault);
+    doctor.login(base, args.getString("doctorUser", "demo.doctor"), password);
+    check(
+        doctor.get(path).getJSONObject("location").getDouble("latitude")
+            == device.getDouble("latitude"),
+        "Assigned doctor receives the same consented GPS");
+    ui(
+        () -> {
+          activity.api = doctor;
+          new AssistantUi(activity).incident(id);
+        });
+    idle();
+    visible("DEMO · Haqiqiy tez yordam chaqirilmagan");
+    click("Yozuvni ko‘rdim");
+    idle();
+    check(!doctor.get(path).isNull("acknowledged_at"), "Doctor acknowledgement reaches backend");
+    check(
+        patient.get("/conversations/" + conversation).getString("response_due_at").length() > 0,
+        "Staff SOS acknowledgement does not answer the clinical episode");
+    doctor.post(
+        "/conversations/" + conversation + "/messages",
+        MainActivity.json("text", "Sintetik shifokor javobi"),
+        Api.key());
+    check(
+        !lastMessage(patient, conversation).has("assistant")
+            || lastMessage(patient, conversation).isNull("assistant"),
+        "Doctor reply is separate from demo AI");
+    screenshot("assistant-doctor-acknowledged");
+    Reminders.clear(getTargetContext());
   }
 }

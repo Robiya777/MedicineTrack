@@ -127,6 +127,7 @@ REST_FRAMEWORK = {
         "login": "10/min",
         "refresh": "60/min",
         "messages": "20/min",
+        "assistant_actions": "10/min",
         "activation": "10/min",
     },
 }
@@ -168,4 +169,5 @@ CELERY_BEAT_SCHEDULE = {
 }
 DEMO_MODE = env_bool("DEMO_MODE", False)
 AI_MODE = os.getenv("AI_MODE", "disabled")
+ASSISTANT_MODE = os.getenv("ASSISTANT_MODE", "demo" if DEMO_MODE else "disabled")
 COMPLETION_CHANNELS = env_list("COMPLETION_CHANNELS", "PHONE,HOME_VISIT")

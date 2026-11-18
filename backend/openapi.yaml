@@ -58,6 +58,122 @@ paths:
               schema:
                 $ref: '#/components/schemas/Extraction'
           description: ''
+  /api/v1/assistant/config:
+    get:
+      operationId: assistant_config_retrieve
+      tags:
+      - assistant
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssistantConfig'
+          description: ''
+  /api/v1/assistant/emergencies:
+    get:
+      operationId: assistant_emergencies_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - assistant
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEmergencyList'
+          description: ''
+  /api/v1/assistant/emergencies/{id}:
+    get:
+      operationId: assistant_emergencies_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - assistant
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Emergency'
+          description: ''
+  /api/v1/assistant/emergencies/{id}/acknowledge:
+    post:
+      operationId: assistant_emergencies_acknowledge_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - assistant
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Emergency'
+          description: ''
+  /api/v1/assistant/emergencies/{id}/location:
+    post:
+      operationId: assistant_emergencies_location_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      tags:
+      - assistant
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmergencyLocationInputRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmergencyLocationInputRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmergencyLocationInputRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Emergency'
+          description: ''
   /api/v1/attachments/{id}/download:
     get:
       operationId: attachments_download_retrieve
@@ -2104,6 +2220,82 @@ components:
       - code
       - expires_at
       - patient_id
+    AssistantAssessment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        risk:
+          allOf:
+          - $ref: '#/components/schemas/RiskEnum'
+          readOnly: true
+        reply:
+          type: string
+          readOnly: true
+        reasons:
+          readOnly: true
+        question:
+          readOnly: true
+        mode:
+          type: string
+          readOnly: true
+        engine_version:
+          type: string
+          readOnly: true
+        emergency:
+          allOf:
+          - $ref: '#/components/schemas/Emergency'
+          readOnly: true
+          nullable: true
+        disclaimer:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - disclaimer
+      - emergency
+      - engine_version
+      - id
+      - mode
+      - question
+      - reasons
+      - reply
+      - risk
+    AssistantConfig:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          readOnly: true
+        mode:
+          allOf:
+          - $ref: '#/components/schemas/ModeEnum'
+          readOnly: true
+        external_model:
+          type: boolean
+          readOnly: true
+        real_dispatch:
+          type: boolean
+          readOnly: true
+        country:
+          type: string
+          readOnly: true
+        emergency_number:
+          type: string
+          readOnly: true
+      required:
+      - country
+      - emergency_number
+      - enabled
+      - external_model
+      - mode
+      - real_dispatch
     Attachment:
       type: object
       properties:
@@ -2767,6 +2959,116 @@ components:
       description: |-
         * `TAKEN` - Ichdim
         * `SKIPPED` - O‘tkazib yubordim
+    Emergency:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        reference:
+          type: string
+          readOnly: true
+        state:
+          type: string
+          readOnly: true
+        demo:
+          type: boolean
+          readOnly: true
+        emergency_number:
+          type: string
+          readOnly: true
+        patient:
+          type: string
+          format: uuid
+          readOnly: true
+        patient_name:
+          type: string
+          readOnly: true
+        contact:
+          type: string
+          readOnly: true
+        registered_address:
+          type: string
+          readOnly: true
+        conversation:
+          type: string
+          format: uuid
+          readOnly: true
+        risk:
+          type: string
+          readOnly: true
+        reasons:
+          readOnly: true
+        location:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          readOnly: true
+        events:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          readOnly: true
+        notice:
+          type: string
+          readOnly: true
+        acknowledged_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - acknowledged_at
+      - contact
+      - conversation
+      - created_at
+      - demo
+      - emergency_number
+      - events
+      - id
+      - location
+      - notice
+      - patient
+      - patient_name
+      - reasons
+      - reference
+      - registered_address
+      - risk
+      - state
+    EmergencyLocationInputRequest:
+      type: object
+      properties:
+        consent:
+          type: boolean
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          default: DEVICE
+        latitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        longitude:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+        accuracy_m:
+          type: number
+          format: double
+          maximum: 100000
+          minimum: 0
+          nullable: true
+        recorded_at:
+          type: string
+          format: date-time
+      required:
+      - consent
     Extraction:
       type: object
       properties:
@@ -3116,8 +3418,14 @@ components:
           type: string
           nullable: true
           readOnly: true
+        assistant:
+          allOf:
+          - $ref: '#/components/schemas/AssistantAssessment'
+          readOnly: true
+          nullable: true
       required:
       - answered_at
+      - assistant
       - conversation
       - delivery_status
       - id
@@ -3133,8 +3441,19 @@ components:
           type: string
           minLength: 1
           maxLength: 4000
+        assistant_response_to:
+          type: string
+          format: uuid
       required:
       - text
+    ModeEnum:
+      enum:
+      - DEMO
+      - DISABLED
+      type: string
+      description: |-
+        * `DEMO` - DEMO
+        * `DISABLED` - DISABLED
     Notification:
       type: object
       properties:
@@ -3303,6 +3622,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DoseOccurrence'
+    PaginatedEmergencyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Emergency'
     PaginatedMedicationPlanList:
       type: object
       required:
@@ -3819,6 +4161,18 @@ components:
       - id
       - observation
       - performed_at
+    RiskEnum:
+      enum:
+      - EMERGENCY
+      - DOCTOR_REVIEW
+      - SELF_MONITOR
+      - NEEDS_INFO
+      type: string
+      description: |-
+        * `EMERGENCY` - Shoshilinch belgi
+        * `DOCTOR_REVIEW` - Shifokor tekshiruvi kerak
+        * `SELF_MONITOR` - Kuzatuvni davom ettiring
+        * `NEEDS_INFO` - Qo‘shimcha ma’lumot kerak
     Schedule:
       type: object
       properties:
@@ -3876,6 +4230,14 @@ components:
         * `IMPROVED` - Yaxshilandi
         * `UNCHANGED` - O‘zgarmadi
         * `WORSENED` - Yomonlashdi
+    SourceEnum:
+      enum:
+      - DEVICE
+      - DEMO
+      type: string
+      description: |-
+        * `DEVICE` - DEVICE
+        * `DEMO` - DEMO
     StaffAccount:
       type: object
       properties:

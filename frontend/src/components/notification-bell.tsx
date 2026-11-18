@@ -22,6 +22,7 @@ const labels: Record<string, string> = {
   PATIENT_WORSENED: 'Bemor holati yomonlashganini bildirdi',
   RESPONSE_OVERDUE: 'Murojaatga javob muddati o‘tgan',
   RESPONSE_SCHEDULE_MISSING: 'Shifokorning javob jadvali belgilanmagan',
+  AI_EMERGENCY_ALERT: 'DEMO SOS · bemor shoshilinch belgi bildirgan',
 }
 
 export function NotificationBell() {
@@ -100,6 +101,9 @@ export function NotificationBell() {
                     {item.read_at ? 'O‘qilgan' : 'O‘qilmagan'}
                   </p>
                   <div className="flex flex-wrap gap-2.5">
+                    {item.event_type === 'AI_EMERGENCY_ALERT' && ['DOCTOR', 'COORDINATOR'].includes(user.role) && (
+                      <Link className={secondaryButton} to="/kabinet/$role" params={{ role }} search={{}} hash="demo-sos" onClick={() => { mutation.mutate(item.id); setOpen(false) }}>Demo SOSni ochish</Link>
+                    )}
                     {item.task &&
                       ['DOCTOR', 'COORDINATOR'].includes(user.role) && (
                         <Link

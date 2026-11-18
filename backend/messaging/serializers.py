@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from django.utils import timezone
 from rest_framework import serializers
 
+from .assistant_serializers import AssistantAssessmentSerializer
 from .models import Conversation, Message, PatientStatusUpdate, WorkSchedule
 from .services import schedule_snapshot
 
@@ -49,6 +50,9 @@ class ConversationSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    assistant = AssistantAssessmentSerializer(
+        source="assistant_assessment", read_only=True, allow_null=True
+    )
     delivery_status = serializers.SerializerMethodField()
     answered_at = serializers.SerializerMethodField()
 
@@ -64,6 +68,7 @@ class MessageSerializer(serializers.ModelSerializer):
             "kind",
             "delivery_status",
             "answered_at",
+            "assistant",
         ]
         read_only_fields = fields
 
@@ -79,6 +84,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class MessageInput(serializers.Serializer):
     text = serializers.CharField(min_length=1, max_length=4000)
+    assistant_response_to = serializers.UUIDField(required=False)
 
 
 class StatusInput(serializers.Serializer):

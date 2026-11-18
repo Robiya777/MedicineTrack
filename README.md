@@ -11,6 +11,8 @@ Repo tarkibida [backend](backend/README.md), [web frontend](frontend/README.md) 
 
 Android sinov natijalari va cheklovlari [tekshiruv hisobotida](android/VALIDATION.md) keltirilgan.
 
+Android 0.5.0 va vebda [kalitsiz yordamchi hamda demo SOS](backend/docs/ASSISTANT_DEMO.md) mavjud: alomatga mos suhbat, ichki ogohlantirish va rozilik bilan lokatsiya ulashish. Yordamchi qoidalar asosidagi demo; haqiqiy tez yordam avtomatik chaqirilmaydi va shifokor javobi alohida qoladi.
+
 ## Frontendni ishga tushirish
 
 Node.js 24 va npm ishlatiladi.

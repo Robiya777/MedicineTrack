@@ -1,0 +1,109 @@
+{
+  "verified_at": "2026-11-18T08:48:21.857973+00:00",
+  "mode": "DEMO",
+  "external_model": false,
+  "real_dispatch": false,
+  "backend": {
+    "postgresql": {
+      "passed": 173,
+      "skipped": 0
+    },
+    "sqlite": {
+      "passed": 167,
+      "skipped": 6
+    },
+    "checks": [
+      "ruff",
+      "ruff format",
+      "Django system check",
+      "makemigrations --check",
+      "OpenAPI validate --fail-on-warn"
+    ]
+  },
+  "android": {
+    "assistant_passed": 39,
+    "assistant_backend": "http://10.0.2.2:8001/api/v1",
+    "regression_passed": 88,
+    "platform": "Android 14 / API 34 emulator",
+    "device_gps": "synthetic emulator coordinates",
+    "actual_emergency_calls": 0
+  },
+  "frontend": {
+    "unit_passed": 9,
+    "lint": true,
+    "typecheck": true,
+    "production_build": true
+  },
+  "browser": {
+    "base": "http://127.0.0.1:5173",
+    "fixture_run": "7d6c997e",
+    "checks": [
+      {
+        "name": "Primary frontend and backend expose the keyless demo",
+        "passed": true
+      },
+      {
+        "name": "Symptom reply and contextual quick answer render in the real browser",
+        "passed": true
+      },
+      {
+        "name": "Danger automatically creates one clearly labelled demo SOS",
+        "passed": true,
+        "evidence": {
+          "incident_id": "a9a61071-f803-4d8c-acf9-6cd6df24fc88",
+          "conversation_id": "a34e00d0-0ddd-4928-9702-f90b33d9ab28"
+        }
+      },
+      {
+        "name": "Cancelling consent sends no coordinates",
+        "passed": true
+      },
+      {
+        "name": "Denied GPS permission reports an error without invented coordinates",
+        "passed": true
+      },
+      {
+        "name": "Explicit demo location is marked as a demonstration",
+        "passed": true
+      },
+      {
+        "name": "Consented browser GPS is saved as device coordinates",
+        "passed": true
+      },
+      {
+        "name": "Assigned doctor sees the same SOS and patient GPS",
+        "passed": true
+      },
+      {
+        "name": "Territory coordinator sees and acknowledges the demo SOS",
+        "passed": true
+      },
+      {
+        "name": "Demo SOS notification reaches the real notification worker",
+        "passed": true
+      },
+      {
+        "name": "360px mobile web keeps emergency actions within the viewport",
+        "passed": true
+      },
+      {
+        "name": "Doctor reply stays separate and closes the real response episode",
+        "passed": true
+      }
+    ],
+    "browser_errors": [],
+    "server_errors": []
+  },
+  "artifact": {
+    "path": "android/app/build/outputs/apk/debug/app-debug.apk",
+    "version": "0.5.0",
+    "version_code": 5,
+    "sha256": "af217c1d376de7ca340561e4299f8b37be439c1bb0e45e72f6b61ef7cb54e982"
+  },
+  "known_limits": [
+    "Rule-based demo; not clinically validated.",
+    "No real ambulance dispatch, SMS or push transport.",
+    "Android target 34 warning; physical phone and release testing remain.",
+    "Existing frontend bundle size warning."
+  ]
+}

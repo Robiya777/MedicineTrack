@@ -10,7 +10,7 @@ import subprocess
 parser = argparse.ArgumentParser()
 parser.add_argument('--serial', default='emulator-5554')
 parser.add_argument('--base', default='http://10.0.2.2:8001/api/v1')
-parser.add_argument('--mode', choices=['full', 'layout'], default='full')
+parser.add_argument('--mode', choices=['full', 'layout', 'assistant'], default='full')
 parser.add_argument('--patient-user', default='demo.patient')
 parser.add_argument('--doctor-user', default='demo.doctor')
 parser.add_argument('--linked-base')

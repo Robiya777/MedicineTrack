@@ -1,4 +1,10 @@
-# MedicineTrack Android 0.4.0
+# MedicineTrack Android 0.5.0
+
+## 0.5.0 — kalitsiz yordamchi va demo SOS
+
+Bemor bosh sahifasi → **AI yordamchi bilan suhbat**. Alomatga mos savol/javob, xavfli belgida avtomatik **DEMO SOS**, shifokor kabinetiga ichki ogohlantirish va bemor roziligi bilan bir martalik lokatsiya ulangan. Haqiqiy GPS va namoyish koordinatasi alohida ko‘rsatiladi. Tashqi AI kaliti kerak emas; yordamchi qoidalar asosidagi demo, tashxis va dori dozasini belgilamaydi.
+
+103 tugmasi telefon terish oynasini ochadi; haqiqiy tez yordam avtomatik chaqirilmaydi. Fon lokatsiyasi yo‘q. [Namoyish yo‘riqnomasi va API](../backend/docs/ASSISTANT_DEMO.md), [yangi tekshiruvlar](../docs/ASSISTANT_DEMO_VALIDATION.md).
 
 ## 0.4.0 — dori va ahvol budilniklari
 

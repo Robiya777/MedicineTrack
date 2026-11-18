@@ -1,4 +1,5 @@
 import {DischargeCorrections} from '@/features/records/corrections'
+import { AssistantIntroduction, AssistantReply, EmergencyBoard } from './assistant'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
@@ -68,7 +69,9 @@ export function PatientDashboard() {
           retry={() => void patient.refetch()}
         />
       )}
+      <AssistantIntroduction />
       <ConversationList />
+      <EmergencyBoard />
       <section className="mt-card space-y-4 p-5 sm:p-6">
         <h2 className="text-xl font-semibold">Mening chiqarishlarim</h2>
         {discharges.isPending && <Notice>Chiqarishlar yuklanmoqda…</Notice>}
@@ -316,6 +319,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
   const snapshot = conversation.work_schedule
   return (
     <>
+      {user.role === 'PATIENT' && <AssistantIntroduction />}
       <section className="mt-card space-y-3 p-5">
         <h2 className="font-semibold">
           {user.role === 'DOCTOR' ? patient.data?.full_name || 'Bemor ' + conversation.patient.slice(0, 8) : conversation.doctor
@@ -389,7 +393,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
         )}
         {!denied && (
           <ol className="mt-message-list">
-            {messages.data?.map((message) => (
+            {messages.data?.map((message, index) => (
               <li
                 key={message.id}
                 className={
@@ -417,6 +421,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
                     Javob vaqti: {formatTashkentDateTime(message.answered_at)}
                   </p>
                 )}
+                {message.assistant && <AssistantReply assessment={message.assistant} conversationId={conversation.id} interactive={user.role === 'PATIENT' && conversation.status === 'OPEN' && index === (messages.data?.length || 0) - 1} />}
               </li>
             ))}
           </ol>

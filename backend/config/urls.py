@@ -32,9 +32,11 @@ from medications.views import (
     MedicationPlanViewSet,
     PatientPlansView,
 )
+from messaging.assistant_views import AssistantConfigView, EmergencyViewSet
 from messaging.views import ConversationViewSet, ScheduleView, UnansweredView
 
 router = SimpleRouter(trailing_slash=False)
+router.register("assistant/emergencies", EmergencyViewSet, basename="assistant-emergency")
 router.register("medication-plans", MedicationPlanViewSet, basename="medication-plan")
 router.register("dose-occurrences", DoseOccurrenceViewSet, basename="dose-occurrence")
 router.register("dose-records", DoseRecordViewSet, basename="dose-record")
@@ -50,6 +52,7 @@ router.register("reference/doctors", DoctorViewSet, basename="doctor")
 router.register("conversations", ConversationViewSet, basename="conversation")
 
 urlpatterns = [
+    path("api/v1/assistant/config", AssistantConfigView.as_view()),
     path("api/v1/patients/<uuid:pk>/medication-plans", PatientPlansView.as_view()),
     path("api/v1/patients/<uuid:pk>/medication-history", MedicationHistoryView.as_view()),
     path("health/live", live),

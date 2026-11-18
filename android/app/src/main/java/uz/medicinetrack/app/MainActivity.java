@@ -23,6 +23,7 @@ public final class MainActivity extends Activity {
       LINE = Design.LINE;
   static final String DEFAULT_API = "http://10.0.2.2:8001/api/v1";
   ProgressBar progress;
+  LocationShare locationShare;
   ScrollView contentScroll;
   JSONArray taskRows = new JSONArray();
   JSONObject conversationPatientNames = new JSONObject();
@@ -139,6 +140,7 @@ public final class MainActivity extends Activity {
   @Override
   protected void onPause() {
     paused = true;
+    if (locationShare != null) locationShare.pause();
     saveChatDraft();
     saveFormDraft();
     super.onPause();
@@ -146,6 +148,7 @@ public final class MainActivity extends Activity {
 
   @Override
   protected void onDestroy() {
+    if (locationShare != null) locationShare.cancel();
     handler.removeCallbacksAndMessages(null);
     // Shared serial worker also serves the OS medication sync job.
     super.onDestroy();
@@ -243,7 +246,7 @@ public final class MainActivity extends Activity {
   }
 
   void working(View view, boolean pending) {
-    if (view == null) return;
+    if (view == null || "emergency-call".equals(view.getTag())) return;
     if (view instanceof Button
         || view instanceof EditText
         || view instanceof Spinner
@@ -497,11 +500,13 @@ public final class MainActivity extends Activity {
   String section() {
     if (screen.equals("Asosiy")) return "Asosiy";
     if (screen.equals("Hisob") || screen.equals("Bildirishnomalar")) return "Hisob";
-    if (screen.startsWith("Suhbat") || screen.startsWith("Holat:")) return "Suhbatlar";
+    if (screen.startsWith("Suhbat") || screen.startsWith("Holat:") || screen.startsWith("SOS"))
+      return "Suhbatlar";
     return doctor() ? "Chaqiruvlar" : "Dorilar";
   }
 
   void frame(String heading, boolean navigation) {
+    if (locationShare != null) locationShare.cancel();
     saveFormDraft();
     draftFields.clear();
     activeFormKey = "";
@@ -541,6 +546,9 @@ public final class MainActivity extends Activity {
     LinearLayout brand = column();
     TextView name = text("MedicineTrack", 18, INK);
     name.setTypeface(Design.font(this, true));
+    name.setMaxLines(1);
+    name.setAutoSizeTextTypeUniformWithConfiguration(
+        13, 18, 1, android.util.TypedValue.COMPLEX_UNIT_SP);
     brand.addView(name);
     brand.addView(
         text(
@@ -550,6 +558,16 @@ public final class MainActivity extends Activity {
             11,
             MUTED));
     bar.addView(brand, new LinearLayout.LayoutParams(0, -2, 1));
+    if (navigation && !doctor()) {
+      ImageButton phone =
+          iconButton(
+              "phone",
+              "O‘zbekiston: 103 telefon oynasini ochish",
+              () -> new AssistantUi(this).call());
+      phone.setTag("emergency-call");
+      phone.setOnClickListener(v -> new AssistantUi(this).call());
+      bar.addView(phone, new LinearLayout.LayoutParams(dp(44), dp(48)));
+    }
     if (navigation)
       bar.addView(
           iconButton("bell", "Bildirishnomalar", () -> new ClinicalUi(this).notifications()),
@@ -888,6 +906,12 @@ public final class MainActivity extends Activity {
     TextView second =
         metric(
             metrics, doctor() ? "Muddat o‘tgan" : "Qayd kutilmoqda", doctor() ? "bell" : "check");
+    if (!doctor()) new AssistantUi(this).entry();
+    else {
+      LinearLayout sos = card();
+      badge(sos, "DEMO · SOS kuzatuvi", "PENDING");
+      secondary(sos, "Demo SOS yozuvlari", () -> new AssistantUi(this).incidents());
+    }
     LinearLayout c = card();
     badge(c, doctor() ? "PATRONAJ" : "KUNDALIK PARVARISH", "ACTIVE");
     c.addView(text(doctor() ? "Mening chaqiruvlarim" : "Dori qabul qilish jadvali", 20, INK));
@@ -1352,6 +1376,10 @@ public final class MainActivity extends Activity {
                 body,
                 conversationPatientNames.optString(c.optString("patient"), "Bemor bilan aloqa"));
           label(body, c.optString("response_policy"));
+          label(
+              body,
+              "AI yordamchi javoblari DEMO deb belgilanadi. Ular shifokor javobi emas; haqiqiy tez"
+                  + " yordam chaqirmaydi.");
           if (rows.length() == 0) label(body, "Birinchi xabaringizni yuboring.");
           if (rows.length() > messageLimit)
             secondary(
@@ -1373,6 +1401,11 @@ public final class MainActivity extends Activity {
             label(box, (own ? "Siz" : "Suhbatdoshingiz") + " · " + when(m.optString("sent_at")));
             box.addView(text(m.optString("text"), 16, INK));
             label(box, status(m.optString("delivery_status")));
+            new AssistantUi(this)
+                .assessment(
+                    m.optJSONObject("assistant"),
+                    id,
+                    i == rows.length() - 1 && c.optString("status").equals("OPEN"));
           }
           if (c.optString("status").equals("OPEN")) {
             LinearLayout compose = card();
@@ -1763,6 +1796,12 @@ public final class MainActivity extends Activity {
               }
             })
         .show();
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int code, String[] permissions, int[] grants) {
+    super.onRequestPermissionsResult(code, permissions, grants);
+    if (code == LocationShare.PERMISSION && locationShare != null) locationShare.permissionResult();
   }
 
   void notificationPermission() {

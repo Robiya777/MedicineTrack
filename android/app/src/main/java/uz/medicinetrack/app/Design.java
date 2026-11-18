@@ -71,6 +71,11 @@ final class Design {
       canvas.translate(b.left, b.top);
       canvas.scale(b.width() / 24f, b.height() / 24f);
       switch (name) {
+        case "phone":
+          path(
+              canvas, 6, 2, 3, 3, 2, 7, 4, 13, 10, 19, 16, 22, 20, 21, 22, 18, 17, 14, 14, 16, 8,
+              10, 10, 7, 6, 2);
+          break;
         case "home":
           path(canvas, 3, 10, 12, 3, 21, 10, 21, 21, 15, 21, 15, 14, 9, 14, 9, 21, 3, 21, 3, 10);
           break;

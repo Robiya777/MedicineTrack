@@ -12,6 +12,7 @@ import {
 } from '@/api/tasks'
 import { TaskTable } from './task-table'
 import { CoordinatorMetrics } from './coordinator-metrics'
+import { EmergencyBoard } from '@/features/messaging/assistant'
 import {
   Field,
   Notice,
@@ -111,6 +112,7 @@ export function TaskDashboard({ coordinator }: { coordinator: boolean }) {
       />
 
       {coordinator && <CoordinatorMetrics />}
+      <EmergencyBoard />
 
       <section
         aria-label="Chaqiruvlar"

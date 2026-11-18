@@ -56,15 +56,23 @@ class ConversationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, Scop
     def messages(self, request, pk=None):
         conversation = self.get_object()
         if request.method == "GET":
-            queryset = conversation.messages.select_related("response_episode").order_by(
-                "sent_at", "id"
-            )
+            queryset = conversation.messages.select_related(
+                "response_episode",
+                "assistant_assessment__incident__assessment",
+                "assistant_assessment__incident__episode__conversation__patient",
+            ).order_by("sent_at", "id")
             return self.get_paginated_response(
                 MessageSerializer(self.paginate_queryset(queryset), many=True).data
             )
         serializer = MessageInput(data=request.data)
         serializer.is_valid(raise_exception=True)
-        message = send_message(pk, request.user, serializer.validated_data["text"], request)
+        message = send_message(
+            pk,
+            request.user,
+            serializer.validated_data["text"],
+            request,
+            assistant_response_to=serializer.validated_data.get("assistant_response_to"),
+        )
         return Response(MessageSerializer(message).data, status=201)
 
     @extend_schema(request=None, responses={200: dict})

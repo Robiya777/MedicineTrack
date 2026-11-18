@@ -2,6 +2,7 @@ import axios, { isAxiosError } from 'axios'
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { apiClient } from './client'
+import { assessmentSchema } from './assistant'
 const date = z.iso.datetime({ offset: true })
 export const intervalSchema = z.object({ start: z.string(), end: z.string() })
 export const scheduleInputSchema = z.object({
@@ -37,6 +38,7 @@ const messageSchema = z.object({
   kind: z.string(),
   delivery_status: z.enum(['SENT', 'READ', 'ANSWERED']),
   answered_at: date.nullable(),
+  assistant: assessmentSchema.nullable().optional(),
 })
 export const states = {
   IMPROVED: 'Yaxshilandi',
@@ -125,12 +127,12 @@ export function statusesQuery(id: string) {
     retry: false,
   })
 }
-export async function sendMessage(id: string, text: string, key: string) {
+export async function sendMessage(id: string, text: string, key: string, responseTo?: string) {
   return messageSchema.parse(
     (
       await apiClient.post(
         `/conversations/${id}/messages`,
-        { text },
+        { text, ...(responseTo ? { assistant_response_to: responseTo } : {}) },
         { headers: { 'Idempotency-Key': key } },
       )
     ).data,

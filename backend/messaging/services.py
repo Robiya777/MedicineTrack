@@ -130,7 +130,7 @@ def open_episode(conversation, now):
 
 
 @transaction.atomic
-def send_message(pk, user, text, request=None, status_data=None):
+def send_message(pk, user, text, request=None, status_data=None, assistant_response_to=None):
     conversation = locked_conversation(pk, user)
     now = timezone.now()
     message = Message.objects.create(
@@ -180,4 +180,8 @@ def send_message(pk, user, text, request=None, status_data=None):
                 dedupe_prefix=str(update.id),
             )
     audit(user, message, "STATUS_SENT" if status_data else "MESSAGE_SENT", request=request)
+    if user.role == Role.PATIENT:
+        from .assistant import assessment_for_message
+
+        assessment_for_message(message, assistant_response_to)
     return message
