@@ -1,269 +1,45 @@
-import { Building2, MapPin, Plus, RefreshCw, Users } from 'lucide-react'
-import {useState} from 'react'
-import {useQuery,useQueryClient} from '@tanstack/react-query'
-import {accountsQuery,adminOrganizationsQuery,adminTerritoriesQuery,adminKeys,type Account,type Organization,type Territory} from '@/api/admin'
-import {Field,inputStyle,primaryButton,secondaryButton,Notice,RequestError} from '@/components/ui'
-import {AccountEditor} from './account-editor'
-import {OrganizationEditor,TerritoryEditor} from './reference-editors'
-import {roleLabels} from './labels'
-type Editor =
-  | { kind: 'account'; value: Account | null }
-  | { kind: 'organization'; value: Organization | null }
-  | { kind: 'territory'; value: Territory | null }
+import { Building2, MapPin, Plus, RefreshCw, Users, Search, ShieldCheck, Pencil, CheckCircle2 } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { accountsQuery, adminOrganizationsQuery, adminTerritoriesQuery, adminKeys, type Account, type Organization, type Territory } from '@/api/admin'
+import { Field, inputStyle, primaryButton, secondaryButton, Notice, RequestError } from '@/components/ui'
+import { AccountEditor } from './account-editor'
+import { OrganizationEditor, TerritoryEditor } from './reference-editors'
+import { roleLabels } from './labels'
+type Tab = 'account' | 'organization' | 'territory'
+type Editor = {kind:'account';value:Account|null}|{kind:'organization';value:Organization|null}|{kind:'territory';value:Territory|null}
 export function AdminDashboard() {
-  const [tab, setTab] = useState<'account' | 'organization' | 'territory'>(
-      'account',
-    ),
-    [editor, setEditor] = useState<Editor | null>(null),
-    [search, setSearch] = useState(''),
-    accounts = useQuery(accountsQuery()),
-    organizations = useQuery(adminOrganizationsQuery()),
-    territories = useQuery(adminTerritoriesQuery()),
-    client = useQueryClient()
-  async function saved() {
-    await Promise.all([
-      client.invalidateQueries({ queryKey: adminKeys }),
-      client.invalidateQueries({ queryKey: ['hospital', 'territories'] }),
-      client.invalidateQueries({ queryKey: ['care', 'doctors'] }),
-      client.invalidateQueries({ queryKey: ['care', 'organizations'] }),
-    ])
-    setEditor(null)
-  }
-  const names = new Map(organizations.data?.map((o) => [o.id, o.name])),
-    territoryNames = new Map(territories.data?.map((t) => [t.id, t.name]))
-  const current =
-    tab === 'account'
-      ? accounts
-      : tab === 'organization'
-        ? organizations
-        : territories
-  return (
-    <section className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-semibold">Texnik boshqaruv</h1>
-          <p className="mt-2 text-sm text-muted">
-            Xodim akkauntlari, klinik ruxsatlar va muassasa/hudud
-            ma’lumotnomalari.
-          </p>
-        </div>
-        <button
-          type="button"
-          className={secondaryButton}
-          onClick={() => void current.refetch()}
-          disabled={current.isFetching}
-        >
-          <RefreshCw size={17} aria-hidden="true" />
-          Yangilash
-        </button>
-      </div>
-      <div
-        className="flex flex-wrap gap-3"
-        role="group"
-        aria-label="Boshqaruv bo‘limi"
-      >
-        {(
-          [
-            ['account', 'Xodimlar', Users],
-            ['organization', 'Muassasalar', Building2],
-            ['territory', 'Hududlar', MapPin],
-          ] as const
-        ).map(([value, label, Icon]) => (
-          <button
-            type="button"
-            key={value}
-            disabled={Boolean(editor)}
-            className={tab === value ? primaryButton : secondaryButton}
-            aria-pressed={tab === value}
-            onClick={() => {
-              setTab(value)
-              setSearch('')
-            }}
-          >
-            <Icon size={17} aria-hidden="true" />
-            {label}
-          </button>
-        ))}
-      </div>
-      {editor?.kind === 'account' && (
-        <AccountEditor
-          initial={editor.value}
-          organizations={organizations.data || []}
-          close={() => setEditor(null)}
-          saved={saved}
-        />
-      )}
-      {editor?.kind === 'organization' && (
-        <OrganizationEditor
-          initial={editor.value}
-          territories={territories.data || []}
-          close={() => setEditor(null)}
-          saved={saved}
-        />
-      )}
-      {editor?.kind === 'territory' && (
-        <TerritoryEditor
-          initial={editor.value}
-          territories={territories.data || []}
-          close={() => setEditor(null)}
-          saved={saved}
-        />
-      )}
-      {!editor && (
-        <div className="flex flex-wrap items-end gap-4">
-          <Field label="Ro‘yxatdan qidirish">
-            {(a) => (
-              <input
-                {...a}
-                className={inputStyle}
-                type="search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            )}
-          </Field>
-          <button
-            type="button"
-            className={primaryButton}
-            disabled={current.isPending || current.isError}
-            onClick={() =>
-              setEditor(
-                tab === 'account'
-                  ? { kind: 'account', value: null }
-                  : tab === 'organization'
-                    ? { kind: 'organization', value: null }
-                    : { kind: 'territory', value: null },
-              )
-            }
-          >
-            <Plus size={17} aria-hidden="true" />
-            {tab === 'account'
-              ? 'Yangi xodim'
-              : tab === 'organization'
-                ? 'Yangi muassasa'
-                : 'Yangi hudud'}
-          </button>
-        </div>
-      )}
-      {current.isPending && <Notice>Ma’lumotlar yuklanmoqda…</Notice>}
-      {current.isError && (
-        <RequestError
-          error={current.error}
-          retry={() => void current.refetch()}
-        />
-      )}
-      {!current.isError && (
-        <ul
-          className="grid gap-4 lg:grid-cols-2"
-          aria-label="Boshqaruv ro‘yxati"
-        >
-          {tab === 'account' &&
-            accounts.data
-              ?.filter((a) =>
-                (a.username + ' ' + a.first_name + ' ' + a.last_name)
-                  .toLocaleLowerCase()
-                  .includes(search.toLocaleLowerCase()),
-              )
-              .map((account) => (
-                <li key={account.id} className="rounded-2xl border border-line bg-surface shadow-xs space-y-3 p-5">
-                  <h2 className="wrap-break-word text-lg font-semibold">
-                    {[account.first_name, account.last_name]
-                      .filter(Boolean)
-                      .join(' ') || account.username}
-                  </h2>
-                  <p className="text-sm text-muted">
-                    Login: {account.username}
-                  </p>
-                  <p>
-                    {roleLabels[account.role]} ·{' '}
-                    {account.is_active ? 'Faol' : 'Faol emas'}
-                  </p>
-                  <p className="text-sm">
-                    Muassasa:{' '}
-                    {account.organization
-                      ? names.get(account.organization) || account.organization
-                      : '—'}
-                  </p>
-                  {account.role === 'DOCTOR' && (
-                    <p className="text-sm">
-                      Klinik tasdiq:{' '}
-                      {account.can_approve_medication_schedule
-                        ? 'Ruxsat berilgan'
-                        : 'Ruxsat berilmagan'}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    className={secondaryButton}
-                    disabled={Boolean(editor)}
-                    onClick={() =>
-                      setEditor({ kind: 'account', value: account })
-                    }
-                  >
-                    Xodimni tahrirlash
-                  </button>
-                </li>
-              ))}
-          {tab === 'organization' &&
-            organizations.data
-              ?.filter((o) =>
-                o.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
-              )
-              .map((org) => (
-                <li key={org.id} className="rounded-2xl border border-line bg-surface shadow-xs space-y-3 p-5">
-                  <h2 className="wrap-break-word text-lg font-semibold">
-                    {org.name}
-                  </h2>
-                  <p>
-                    {org.type === 'HOSPITAL' ? 'Statsionar' : 'Poliklinika'} ·{' '}
-                    {org.active ? 'Faol' : 'Faol emas'}
-                  </p>
-                  <p className="text-sm">
-                    Hudud: {territoryNames.get(org.territory) || org.territory}
-                  </p>
-                  <button
-                    className={secondaryButton}
-                    disabled={Boolean(editor)}
-                    onClick={() =>
-                      setEditor({ kind: 'organization', value: org })
-                    }
-                  >
-                    Muassasani tahrirlash
-                  </button>
-                </li>
-              ))}
-          {tab === 'territory' &&
-            territories.data
-              ?.filter((t) =>
-                t.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
-              )
-              .map((territory) => (
-                <li key={territory.id} className="rounded-2xl border border-line bg-surface shadow-xs space-y-3 p-5">
-                  <h2 className="wrap-break-word text-lg font-semibold">
-                    {territory.name}
-                  </h2>
-                  <p className="text-sm">
-                    Yuqori hudud:{' '}
-                    {territory.parent
-                      ? territoryNames.get(territory.parent) || territory.parent
-                      : '—'}
-                  </p>
-                  <button
-                    className={secondaryButton}
-                    disabled={Boolean(editor)}
-                    onClick={() =>
-                      setEditor({ kind: 'territory', value: territory })
-                    }
-                  >
-                    Hududni tahrirlash
-                  </button>
-                </li>
-              ))}
-        </ul>
-      )}
-      {current.isSuccess && current.data?.length === 0 && (
-        <Notice>Yozuvlar hali yo‘q.</Notice>
-      )}
-    </section>
-  )
+  const [tab,setTab]=useState<Tab>('account'), [editor,setEditor]=useState<Editor|null>(null), [search,setSearch]=useState(''), [activity,setActivity]=useState('all')
+  const accounts=useQuery(accountsQuery()), organizations=useQuery(adminOrganizationsQuery()), territories=useQuery(adminTerritoriesQuery()), client=useQueryClient()
+  const current=tab==='account'?accounts:tab==='organization'?organizations:territories
+  const names=new Map(organizations.data?.map(o=>[o.id,o.name])), territoryNames=new Map(territories.data?.map(t=>[t.id,t.name]))
+  const matches=(text:string)=>text.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())
+  const activeMatches=(active:boolean)=>activity==='all'||(activity==='active' ? active : !active)
+  const staff=accounts.data?.filter(a=>matches([a.username,a.first_name,a.last_name,roleLabels[a.role],names.get(a.organization || '')].join(' '))&&activeMatches(a.is_active)) || []
+  const orgs=organizations.data?.filter(o=>matches(o.name+' '+territoryNames.get(o.territory))&&activeMatches(o.active)) || []
+  const areas=territories.data?.filter(t=>matches(t.name)) || []
+  const count=tab==='account'?staff.length:tab==='organization'?orgs.length:areas.length
+  async function saved(){await Promise.all([client.invalidateQueries({queryKey:adminKeys}),client.invalidateQueries({queryKey:['hospital','territories']}),client.invalidateQueries({queryKey:['care','doctors']}),client.invalidateQueries({queryKey:['care','organizations']})]);setEditor(null)}
+  function create(){setEditor(tab==='account'?{kind:'account',value:null}:tab==='organization'?{kind:'organization',value:null}:{kind:'territory',value:null})}
+  return <section className="space-y-5">
+    <header className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-3"><span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-mint text-primary"><ShieldCheck size={24} aria-hidden="true"/></span><div><h1 className="text-2xl font-semibold tracking-tight">Texnik boshqaruv</h1><p className="mt-1 text-sm text-muted">Xodimlar, muassasalar va hududlarni boshqaring.</p></div></div><button type="button" className={secondaryButton} disabled={current.isFetching} onClick={()=>void current.refetch()}><RefreshCw size={17} aria-hidden="true"/>Yangilash</button></header>
+    <div className="grid gap-3 sm:grid-cols-3" role="group" aria-label="Boshqaruv bo‘limi">{([['account','Xodimlar',Users,accounts.data?.length],['organization','Muassasalar',Building2,organizations.data?.length],['territory','Hududlar',MapPin,territories.data?.length]] as const).map(([value,label,Icon,total])=><button key={value} type="button" disabled={Boolean(editor)} aria-pressed={tab===value} onClick={()=>{setTab(value);setSearch('');setActivity('all')}} className={'flex min-h-20 items-center gap-3 rounded-2xl border p-4 text-left transition-colors focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-60 '+(tab===value?'border-primary/30 bg-mint':'border-line bg-surface hover:bg-page')}><span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface text-primary"><Icon size={20} aria-hidden="true"/></span><span className="flex-1 text-sm font-semibold">{label}</span><span className="text-xl font-semibold tabular-nums">{total??'—'}</span></button>)}</div>
+    {editor?.kind==='account' && <AccountEditor initial={editor.value} organizations={organizations.data||[]} close={()=>setEditor(null)} saved={saved}/>}
+    {editor?.kind==='organization' && <OrganizationEditor initial={editor.value} territories={territories.data||[]} close={()=>setEditor(null)} saved={saved}/>}
+    {editor?.kind==='territory' && <TerritoryEditor initial={editor.value} territories={territories.data||[]} close={()=>setEditor(null)} saved={saved}/>}
+    {!editor && <section className="overflow-hidden rounded-3xl border border-line bg-surface shadow-xs">
+      <div className="flex flex-wrap items-end gap-3 border-b border-line p-4 sm:p-5"><div className="w-full min-w-0 flex-none sm:w-auto sm:min-w-60 sm:flex-1"><Field label="Ro‘yxatdan qidirish">{a=><div className="relative"><Search size={17} className="absolute left-3 top-3.5 text-muted" aria-hidden="true"/><input {...a} className={inputStyle+' pl-10'} type="search" placeholder={tab==='account'?'Ism, login yoki muassasa':'Nom bo‘yicha qidirish'} value={search} onChange={e=>setSearch(e.target.value)}/></div>}</Field></div>{tab!=='territory' && <Field label="Faollik">{a=><select {...a} className={inputStyle} value={activity} onChange={e=>setActivity(e.target.value)}><option value="all">Barchasi</option><option value="active">Faol</option><option value="inactive">Faol emas</option></select>}</Field>}<button type="button" className={primaryButton} disabled={current.isPending||current.isError} onClick={create}><Plus size={17} aria-hidden="true"/>{tab==='account'?'Yangi xodim':tab==='organization'?'Yangi muassasa':'Yangi hudud'}</button></div>
+      <div className="flex items-center justify-between px-5 py-3 text-xs text-muted"><span>{tab==='account'?'Xodimlar ro‘yxati':tab==='organization'?'Muassasalar ro‘yxati':'Hududlar ro‘yxati'}</span><span>{count} ta yozuv</span></div>
+      {current.isPending && <div className="p-5"><Notice>Ma’lumotlar yuklanmoqda…</Notice></div>}
+      {current.isError && <div className="p-5"><RequestError error={current.error} retry={()=>void current.refetch()}/></div>}
+      {!current.isError && !current.isPending && <ul className="divide-y divide-line" aria-label="Boshqaruv ro‘yxati">
+        {tab==='account' && staff.map(a=><AdminRow key={a.id} title={[a.first_name,a.last_name].filter(Boolean).join(' ')||a.username} subtitle={'@'+a.username} icon={<Users size={21}/>} edit={()=>setEditor({kind:'account',value:a})} editLabel="Xodimni tahrirlash" badge={<Activity active={a.is_active}/>}><p className="text-sm font-medium">{roleLabels[a.role]}</p><p className="mt-1 flex items-center gap-1.5 text-xs text-muted"><Building2 size={13} aria-hidden="true"/>{a.organization?names.get(a.organization)||'Muassasa topilmadi':'Muassasa biriktirilmagan'}</p>{a.role==='DOCTOR'&&a.can_approve_medication_schedule&&<p className="mt-2 flex items-center gap-1 text-xs text-primary"><CheckCircle2 size={13} aria-hidden="true"/>Klinik tasdiq huquqi bor</p>}</AdminRow>)}
+        {tab==='organization' && orgs.map(o=><AdminRow key={o.id} title={o.name} subtitle={o.type==='HOSPITAL'?'Statsionar':'Poliklinika'} icon={<Building2 size={21}/>} edit={()=>setEditor({kind:'organization',value:o})} editLabel="Muassasani tahrirlash" badge={<Activity active={o.active}/>}><p className="flex items-center gap-2 text-sm text-muted"><MapPin size={15} aria-hidden="true"/>{territoryNames.get(o.territory)||'Hudud topilmadi'}</p></AdminRow>)}
+        {tab==='territory' && areas.map(t=><AdminRow key={t.id} title={t.name} subtitle="Hudud" icon={<MapPin size={21}/>} edit={()=>setEditor({kind:'territory',value:t})} editLabel="Hududni tahrirlash"><p className="text-xs text-muted">Yuqori hudud</p><p className="mt-1 text-sm">{t.parent?territoryNames.get(t.parent)||'Hudud topilmadi':'Asosiy hudud'}</p></AdminRow>)}
+      </ul>}
+      {current.isSuccess && count===0 && <div className="px-6 py-14 text-center"><Search size={30} className="mx-auto mb-3 text-primary" aria-hidden="true"/><h2 className="font-semibold">{search||activity!=='all'?'Mos yozuv topilmadi':'Yozuvlar hali yo‘q'}</h2><p className="mt-2 text-sm text-muted">{search||activity!=='all'?'Qidiruv yoki faollik filtrini o‘zgartiring.':'Yangi yozuv qo‘shish tugmasidan boshlang.'}</p>{(search||activity!=='all')&&<button type="button" className={secondaryButton+' mt-4'} onClick={()=>{setSearch('');setActivity('all')}}>Filtrlarni tozalash</button>}</div>}
+    </section>}
+  </section>
 }
+function Activity({active}:{active:boolean}){return <span className={'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium '+(active?'bg-mint text-primary':'bg-page text-muted')}><span className={'size-1.5 rounded-full '+(active?'bg-primary':'bg-muted')} aria-hidden="true"/>{active?'Faol':'Faol emas'}</span>}
+function AdminRow({title,subtitle,icon,children,badge,edit,editLabel}:{title:string;subtitle:string;icon:ReactNode;children:ReactNode;badge?:ReactNode;edit:()=>void;editLabel:string}){return <li className="grid min-w-0 gap-4 px-4 py-5 transition-colors hover:bg-page/50 sm:px-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_auto] lg:items-center"><div className="flex min-w-0 items-center gap-3"><span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-page text-primary" aria-hidden="true">{icon}</span><div className="min-w-0"><h2 className="wrap-break-word font-semibold">{title}</h2><p className="mt-1 break-all text-xs text-muted">{subtitle}</p></div></div><div className="min-w-0 wrap-break-word">{children}</div><div className="flex items-center justify-between gap-3 lg:justify-end">{badge}<button type="button" className={secondaryButton} aria-label={editLabel+' — '+title} onClick={edit}><Pencil size={15} aria-hidden="true"/>Tahrirlash</button></div></li>}
