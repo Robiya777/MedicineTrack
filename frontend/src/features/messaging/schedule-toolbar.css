@@ -44,4 +44,4 @@
 .schedule-toolbar ~ fieldset > div:first-child { scroll-margin-top: 180px; }
 @media (prefers-reduced-motion: reduce) { .schedule-toolbar button, .schedule-toolbar > div:first-child { transition: none; } }
 
-.schedule-calendar-section { position: sticky; top: calc(88px + var(--schedule-toolbar-height, 64px)); }
+.schedule-calendar-section { position: relative; z-index: 10; will-change: transform; }
