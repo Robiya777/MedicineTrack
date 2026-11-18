@@ -9,7 +9,7 @@ import {
 } from '@/api/notifications'
 import { useSessionStore } from '@/state/session'
 import { workspaces } from '@/lib/workspaces'
-import { Dialog, Notice, RequestError, secondaryButton } from '@/components/ui'
+import { Dialog, Notice, RequestError, secondaryButton, iconButton } from '@/components/ui'
 import { formatTashkentDateTime } from '@/lib/date'
 
 const labels: Record<string, string> = {
@@ -67,16 +67,14 @@ export function NotificationBell() {
         )}
       </button>
       {open && (
-        <Dialog title="Bildirishnomalar" close={() => setOpen(false)}>
-          <div className="space-y-4 p-5">
-            <button
-              className={secondaryButton}
-              disabled={query.isFetching}
-              onClick={() => void query.refetch()}
-            >
-              <RefreshCw size={17} aria-hidden="true" />
-              Yangilash
+        <Dialog title="Bildirishnomalar" close={() => setOpen(false)} scrollBody
+          actions={(
+            <button type="button" className={iconButton} aria-label="Yangilash" title="Yangilash"
+              disabled={query.isFetching} onClick={() => void query.refetch()}>
+              <RefreshCw size={17} className={query.isFetching ? 'motion-safe:animate-spin' : undefined} aria-hidden="true" />
             </button>
+          )}>
+          <div className="space-y-4">
             {query.isPending && <Notice>Bildirishnomalar yuklanmoqda…</Notice>}
             {query.isError && (
               <RequestError
