@@ -213,3 +213,14 @@ xato login, sessiya tugashi xabari va ochiq bemor aktivatsiyasi ishladi.
 Kirilmagan foydalanuvchi /, kabinet, design va noma’lum manzildan /login ga
 yo‘naltirildi. Mavjud akkaunt loginidan keyin / o‘z kabinetiga yo‘naltirildi.
 ESLint, TypeScript va production build o‘tdi.
+
+## Ish jadvali kalendari — 2026-11-18
+
+Uzun kunlik formalar haftalik soat to‘ri va rangli ish bloklariga almashtirildi.
+Oraliq dialog orqali qo‘shiladi/tahrirlanadi/o‘chiriladi; desktopda pointer orqali
+vaqt tanlanadi va blok pastidan davomiylik o‘zgartiriladi. Mobilda kun tanlash
+va bosib vaqt kiritish ishlatiladi. Istisno sanalar alohida tabda.
+1440/360 px localhost ko‘rinishi, oraliq qo‘shish, kesishishni rad etish va istisno
+sana yaratish Chromiumda tekshirildi. Saqlash mavjud versiyali/idempotent API
+orqali qoladi. Jadval huquqlari o‘zgartirilmadi; bu ish vaqti, tashrif bookingi emas.
+ESLint, TypeScript va build o‘tdi.

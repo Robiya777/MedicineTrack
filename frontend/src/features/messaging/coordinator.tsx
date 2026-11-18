@@ -1,3 +1,4 @@
+import { ScheduleCalendar } from './schedule-calendar'
 import { RefreshCw, Clock3, MessageCircle, Stethoscope, TriangleAlert, UserRound } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type SubmitEvent } from 'react'
@@ -45,13 +46,10 @@ export function SchedulePage() {
   const [id, setId] = useState('')
   const schedule = useQuery({ ...scheduleQuery(id), enabled: Boolean(id) })
   return (
-    <section className="mt-workflow space-y-5">
+    <section className="space-y-5">
       <h1 className="text-3xl font-semibold">Shifokor ish jadvali</h1>
-      <p className="text-muted">
-        Tanaffus uchun bir kunga bir nechta ish oralig‘ini kiriting. Istisno
-        sana haftalik jadval o‘rniga ishlatiladi.
-      </p>
-      <div className="mt-card p-5">
+      <p className="text-sm text-muted">Shifokorning ish vaqti va istisno kunlarini belgilang.</p>
+      <div className="max-w-sm">
         <Field label="Shifokor">
           {(a11y) => (
             <select
@@ -102,6 +100,8 @@ function ScheduleEditor({
 }) {
   const client = useQueryClient()
   const [input, setInput] = useState<ScheduleInput>(initial)
+  const [tab, setTab] = useState<'week' | 'exceptions'>('week')
+  const [dirty, setDirty] = useState(false)
   const [day, setDay] = useState('')
   const [error, setError] = useState('')
   const mutation = useIdempotentMutation((data: ScheduleInput, key) =>
@@ -109,6 +109,7 @@ function ScheduleEditor({
   )
   const [saved, setSaved] = useState(false)
   function change(value: ScheduleInput) {
+    setDirty(true)
     setInput(value)
     setSaved(false)
   }
@@ -140,6 +141,7 @@ function ScheduleEditor({
     try {
       await mutation.mutateAsync(input)
       setSaved(true)
+      setDirty(false)
       void client.invalidateQueries({
         queryKey: ['messaging', 'conversations'],
       })
@@ -150,13 +152,13 @@ function ScheduleEditor({
   }
   return (
     <form
-      className="mt-card space-y-6 p-5 sm:p-6"
+      className="space-y-5"
       onSubmit={submit}
       aria-busy={mutation.isPending}
     >
-      <h2 className="text-xl font-semibold">Haftalik jadval</h2>
-      <fieldset className="space-y-5" disabled={mutation.isPending}>
-        <Field
+      <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex rounded-xl border border-line bg-surface p-1">{(['week','exceptions'] as const).map(value=><button type="button" key={value} onClick={()=>setTab(value)} className={`min-h-11 rounded-lg px-4 text-sm font-semibold ${tab===value ? 'bg-mint text-primary' : 'text-muted'}`}>{value==='week' ? 'Haftalik tartib' : 'Istisno kunlar'}</button>)}</div><span className="text-xs text-muted">{dirty ? 'Saqlanmagan o‘zgarishlar' : 'Jadval'} · {input.timezone}</span></div>
+      <fieldset className="min-w-0 space-y-5" disabled={mutation.isPending}>
+        <details className="max-w-sm text-sm"><summary className="cursor-pointer text-muted">Vaqt zonasi sozlamasi</summary><Field
           label="Vaqt zonasi"
           hint="IANA nomi, masalan Asia/Tashkent."
           error={responseFieldErrors(mutation.error).timezone}
@@ -171,23 +173,9 @@ function ScheduleEditor({
             />
           )}
         </Field>
-        {weekdays.map((label, weekday) => (
-          <IntervalEditor
-            key={label}
-            label={label}
-            intervals={input.shifts.filter((s) => s.weekday === weekday)}
-            change={(intervals) =>
-              change({
-                ...input,
-                shifts: [
-                  ...input.shifts.filter((s) => s.weekday !== weekday),
-                  ...intervals.map((s) => ({ ...s, weekday })),
-                ],
-              })
-            }
-          />
-        ))}
-        <div className="space-y-4 border-t border-line pt-5">
+        </details>
+        {tab === 'week' && <ScheduleCalendar intervals={input.shifts} change={shifts=>change({...input,shifts})} />}
+        <div className={`space-y-4 ${tab !== 'exceptions' ? 'hidden' : ''}`}>
           <h2 className="text-xl font-semibold">Istisno kunlar</h2>
           <p className="text-sm text-muted">
             Oraliqlarsiz istisno — dam olish kuni.
@@ -238,7 +226,7 @@ function ScheduleEditor({
                 />
                 <button
                   type="button"
-                  className="mt-button mt-button-danger"
+                  className="min-h-11 rounded-lg px-3 text-sm font-medium text-danger hover:bg-danger-wash"
                   onClick={() => {
                     const next = { ...input.exceptions }
                     delete next[date]
@@ -277,69 +265,7 @@ function IntervalEditor({
   intervals: Interval[]
   change: (value: Interval[]) => void
 }) {
-  return (
-    <section className="space-y-3">
-      <h3 className="font-semibold">{label}</h3>
-      {intervals.length === 0 && (
-        <p className="text-sm text-muted">Ish oralig‘i belgilanmagan.</p>
-      )}
-      {intervals.map((interval, index) => (
-        <div key={index} className="mt-interval">
-          <Field label={label + ' · Boshlanish ' + (index + 1)}>
-            {(a11y) => (
-              <input
-                {...a11y}
-                className={inputStyle}
-                type="time"
-                value={interval.start}
-                onChange={(e) =>
-                  change(
-                    intervals.map((item, i) =>
-                      i === index ? { ...item, start: e.target.value } : item,
-                    ),
-                  )
-                }
-                required
-              />
-            )}
-          </Field>
-          <Field label={label + ' · Tugash ' + (index + 1)}>
-            {(a11y) => (
-              <input
-                {...a11y}
-                className={inputStyle}
-                type="time"
-                value={interval.end}
-                onChange={(e) =>
-                  change(
-                    intervals.map((item, i) =>
-                      i === index ? { ...item, end: e.target.value } : item,
-                    ),
-                  )
-                }
-                required
-              />
-            )}
-          </Field>
-          <button
-            type="button"
-            className={secondaryButton}
-            aria-label={label + ' ' + (index + 1) + '-oraliqni o‘chirish'}
-            onClick={() => change(intervals.filter((_, i) => i !== index))}
-          >
-            O‘chirish
-          </button>
-        </div>
-      ))}
-      <button
-        type="button"
-        className={secondaryButton}
-        onClick={() => change([...intervals, { start: '09:00', end: '18:00' }])}
-      >
-        {label} · Oraliq qo‘shish
-      </button>
-    </section>
-  )
+  return <ScheduleCalendar singleLabel={label} intervals={intervals.map(i=>({...i,weekday:0}))} change={values=>change(values.map(({start,end})=>({start,end})))} />
 }
 export function UnansweredPage() {
   const query = useQuery(unansweredQuery())
