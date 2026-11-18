@@ -244,3 +244,14 @@ qo‘llanilmaydi: har doza alohida vaqt belgisi. Klinik ruxsatlar o‘zgartirilm
 Chromium localhostda 1440/360 px, ikonali back, dori/vaqt qo‘shish va 08:15
 aniqligi tekshirildi; sintetik bemorda API orqali DRAFT saqlash 201 qaytardi.
 Tashqi gorizontal surilish va runtime xatosi aniqlanmadi. Lint/typecheck/build o‘tdi.
+
+## Dori jadvali sahifasi — bemor tanlash va o‘qish qulayligi
+
+UUID kiritish asosiy oqimdan qo‘shimcha detailsga ko‘chirildi. Ruxsatli chiqarishlar
+sahifalangan bemor kartalarida, joriy sahifa bo‘yicha ism qidiruvi bilan chiqadi.
+Tanlangan dischargeId URL search orqali saqlanadi va patientIdga mosligi
+tekshiriladi; yangi loyihaga chiqarish UUIDsini qayta kiritish kerak emas.
+Joriy/Tarix/Barchasi filtrlari, rangli holatlar, doza/kurs guruhlari va qabul
+vaqti belgilari qo‘shildi. Klinik approve va bemor qabuli vakolatlari saqlandi.
+Chromium localhostda kartadan tanlash, kontekst, filtr, loyihaga kirish hamda
+1440/360 px ko‘rinish tekshirildi; lint/typecheck/build o‘tdi.
