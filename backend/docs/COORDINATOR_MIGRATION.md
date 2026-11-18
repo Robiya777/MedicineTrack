@@ -25,7 +25,7 @@ PATCH hujjatdagi bemor yoki chiqaruvchi kasalxonani almashtirmaydi. Tasdiqlangan
 
 Rol birlashtirish ma’lumot migratsiyasi **avtomatik orqaga qaytarilmaydi**: haqiqiy koordinator bilan o‘zgartirilgan sobiq statsionarni taxmin orqali ajratish mumkin emas. Rollback uchun migratsiyadan oldingi DB backupi va unga mos oldingi kod ishlatiladi. Yangi yozuvlar paydo bo‘lgach backupga qaytish ularni yo‘qotishi mumkin; avval eksport/reconciliation kerak.
 
-Bu backend bosqichi. Frontend hali HOSPITAL menyusi va eski yaratish payloadidan foydalanadi; API yangilangach frontendning 3-bosqichi ham kerak. Shuning uchun foydalanuvchining ishlayotgan lokal bazasi ushbu bosqichda migratsiya qilinmadi. Android DOCTOR/PATIENT loginlarini saqlaydi; koordinator uchun yangi mobil kabinet qo‘shilmadi.
+3–4-bosqichda frontend ham COORDINATORga moslashtirildi. Koordinator menyusiga chiqarishlar va dori jadvali ulandi; yangi yaratish payloadida hospital yuboriladi. Lokal bazaga backupdan keyin migratsiyalar qo‘llandi va localhost:5173da ikki koordinatorning umumiy oqimi tekshirildi. Batafsil: ../../frontend/docs/COORDINATOR_UNIFICATION.md. Android DOCTOR/PATIENT loginlarini saqlaydi; koordinator uchun yangi mobil kabinet qo‘shilmadi.
 
 ## Sinovlar
 
