@@ -443,7 +443,9 @@ def test_medication_dose_does_not_answer_chat_or_complete_patronage(world, draft
     assert task.status == "NEW" and ResponseEpisode.objects.get().responded_at is None
 
 
-def test_hospital_doctor_can_only_approve_own_discharge(world, medication_data, client_for):
+def test_hospital_doctor_without_assignment_cannot_manage_discharge_or_plan(
+    world, medication_data, client_for
+):
     clinician = User.objects.create_user(
         username="hospital.doctor",
         role=Role.DOCTOR,

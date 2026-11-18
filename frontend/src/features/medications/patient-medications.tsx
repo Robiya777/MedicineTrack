@@ -1,7 +1,9 @@
 import { RefreshCw, Pill, Plus } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRef, useState, type SubmitEvent } from 'react'
-import { getRouteApi } from '@tanstack/react-router'
+import { ArrowLeft, CalendarDays, Clock3, Stethoscope } from 'lucide-react'
+import { dischargeQuery, hospitalPatientQuery } from '@/api/hospital'
+import { getRouteApi, Link } from '@tanstack/react-router'
 import { isAxiosError } from 'axios'
 import {
   changePlan,
@@ -25,7 +27,7 @@ import {
   primaryButton,
   RequestError,
   secondaryButton,
-  Facts,
+  iconButton,
 } from '@/components/ui'
 import {
   useIdempotentMutation,
@@ -59,7 +61,12 @@ function today() {
 }
 export function MedicationPage() {
   const { patientId } = route.useParams()
-  return <MedicationPanel patientId={patientId} />
+  const { dischargeId } = route.useSearch()
+  const user = useSessionStore(s=>s.user)!
+  const context=useQuery({...dischargeQuery(dischargeId || ''),enabled:Boolean(dischargeId)})
+  const patient=useQuery({...hospitalPatientQuery(patientId),retry:false})
+  const invalid=context.data && context.data.patient!==patientId
+  return <section className="space-y-5"><header className="flex items-center gap-3"><Link to="/kabinet/$role/dorilar" params={{role:user.role==='COORDINATOR'?'koordinator':user.role==='DOCTOR'?'shifokor':'bemor'}} className={iconButton} aria-label="Dori jadvallariga qaytish" title="Orqaga"><ArrowLeft size={18} aria-hidden="true" /></Link><div><h1 className="text-2xl font-semibold tracking-tight">{patient.data?.full_name || context.data?.patient_snapshot.full_name || 'Bemor dori jadvali'}</h1><p className="mt-1 text-xs text-muted">Dorilar, kurslar va aniq qabul vaqtlari</p></div></header>{invalid?<Notice>Tanlangan chiqarish bu bemorga tegishli emas.</Notice>:context.isError?<RequestError error={context.error}/>:dischargeId && context.isPending?<Notice>Jadval ma’lumotlari yuklanmoqda…</Notice>:<MedicationPanel key={patientId+dischargeId} patientId={patientId} dischargeId={dischargeId}/>}</section>
 }
 export function MedicationPanel({
   patientId,
@@ -72,6 +79,7 @@ export function MedicationPanel({
   const user = useSessionStore((s) => s.user)!,
     client = useQueryClient(),
     plans = useQuery(plansQuery(patientId))
+  const [planFilter, setPlanFilter] = useState<'current'|'history'|'all'>('current')
   const [creating, setCreating] = useState(false),
     [day, setDay] = useState(today),
     [history, setHistory] = useState(false),
@@ -156,10 +164,9 @@ export function MedicationPanel({
               </p>
             </div>
           )}
-          {plans.data?.rows.length === 0 && (
-            <Notice>Tasdiqlangan dori jadvali hali yo‘q.</Notice>
-          )}
-          {plans.data?.rows.map((plan) => (
+          {plans.data && <div className="flex flex-wrap items-center justify-between gap-3"><div className="inline-flex gap-1 rounded-xl border border-line bg-surface p-1" role="group" aria-label="Dori jadvallari filtri">{([['current','Joriy'],['history','Tarix'],['all','Barchasi']] as const).map(([value,label])=><button type="button" key={value} aria-pressed={planFilter===value} onClick={()=>setPlanFilter(value)} className={`min-h-11 rounded-lg px-3 text-sm font-semibold ${planFilter===value?'bg-primary text-white':'text-muted hover:bg-page'}`}>{label}</button>)}</div><p className="text-xs text-muted">{plans.data.rows.length} ta jadval</p></div>}
+          {plans.data && !plans.data.rows.some(plan=>planFilter==='all' || (planFilter==='current'?['DRAFT','ACTIVE'].includes(plan.status):['STOPPED','COMPLETED'].includes(plan.status))) && <Notice>{planFilter==='current'?'Hozircha joriy jadval yo‘q.':'Bu bo‘limda jadval yo‘q.'}</Notice>}
+          {plans.data?.rows.filter(plan=>planFilter==='all' || (planFilter==='current'?['DRAFT','ACTIVE'].includes(plan.status):['STOPPED','COMPLETED'].includes(plan.status))).map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}
@@ -206,46 +213,27 @@ function PlanCard({
         </h2>
         <span
           className={
-            'mt-status mt-status-' +
+            'inline-flex rounded-full px-3 py-1.5 text-xs font-semibold ' +
             (plan.status === 'ACTIVE'
-              ? 'accepted'
+              ? 'bg-success-wash text-success'
               : plan.status === 'DRAFT'
-                ? 'unassigned'
-                : 'completed')
+                ? 'bg-warning-wash text-warning'
+                : 'bg-page text-muted')
           }
         >
           {statuses[plan.status]}
         </span>
       </div>
-      <p className="break-all text-xs text-muted">{plan.id}</p>
+      <p className="text-xs text-muted">{plan.items.length} ta dori · {plan.status === 'DRAFT' ? 'Klinik tasdiq kutilmoqda' : 'Davolash rejasi'}</p>
       {plan.items.map((item) => (
         <section key={item.id} className="space-y-3 border-t border-line pt-4">
           <h3 className="font-semibold">
             {item.name || 'Nomi kiritilmagan dori'}
           </h3>
-          <Facts
-            items={[
-              {
-                label: 'Ko‘rsatmadagi doza',
-                value: item.prescribed_dose_text || 'Kiritilmagan',
-              },
-              { label: 'Qabul yo‘li', value: item.route || 'Kiritilmagan' },
-              {
-                label: 'Kurs',
-                value:
-                  (item.start_date || '—') + ' — ' + (item.end_date || '—'),
-              },
-              {
-                label: 'Qabul vaqtlari',
-                value: item.local_times.join(', ') + ' · ' + item.timezone,
-              },
-              { label: 'Ko‘rsatma', value: item.instructions || '—' },
-              {
-                label: 'Manba',
-                value: item.source_reference || 'Kiritilmagan',
-              },
-            ]}
-          />
+          <div className="grid gap-3 sm:grid-cols-2"><div className="rounded-xl bg-mint/40 p-3"><p className="flex items-center gap-2 text-xs text-muted"><Stethoscope size={15} aria-hidden="true" />Ko‘rsatmadagi doza</p><p className="mt-1 whitespace-pre-wrap text-sm font-semibold">{item.prescribed_dose_text || 'Kiritilmagan'}</p><p className="mt-1 text-xs text-muted">{item.route || 'Qabul yo‘li kiritilmagan'}</p></div><div className="rounded-xl bg-page p-3"><p className="flex items-center gap-2 text-xs text-muted"><CalendarDays size={15} aria-hidden="true" />Kurs</p><p className="mt-1 text-sm font-medium">{item.start_date || '—'} → {item.end_date || '—'}</p><p className="mt-1 text-xs text-muted">{item.timezone}</p></div></div>
+          <div className="flex flex-wrap items-center gap-2"><Clock3 size={16} className="text-blue" aria-hidden="true" />{item.local_times.map(time=><span key={time} className="rounded-lg border border-blue/15 bg-blue-wash px-3 py-2 text-sm font-semibold tabular-nums text-blue">{time}</span>)}{!item.local_times.length && <span className="text-xs text-warning">Qabul vaqti kiritilmagan</span>}</div>
+          {item.instructions && <p className="whitespace-pre-wrap text-sm leading-6">{item.instructions}</p>}
+          {user.role !== 'PATIENT' && <details className="text-xs text-muted"><summary className="cursor-pointer py-2">Ko‘rsatma manbasi</summary><p className="whitespace-pre-wrap py-2">{item.source_reference || 'Kiritilmagan'}</p></details>}
           {item.needs_clarification && (
             <p className="text-warning">
               Aniqlashtirish kerak:{' '}
@@ -289,7 +277,7 @@ function PlanCard({
                     Yangi versiya yaratish
                   </button>
                   <button
-                    className="mt-button mt-button-danger"
+                    className="min-h-11 rounded-lg border border-danger/20 bg-danger-wash px-4 text-sm font-semibold text-danger"
                     onClick={() => setAction('stop')}
                   >
                     Jadvalni to‘xtatish
@@ -479,10 +467,10 @@ function OccurrenceCard({
       due &&
       (!item.cancelled_at || Boolean(item.record))
   return (
-    <article className="space-y-3 rounded-lg border border-line p-4">
+    <article className="space-y-3 rounded-xl border border-line bg-surface p-4 shadow-xs">
       <div className="flex flex-wrap justify-between gap-3">
         <h4 className="font-semibold">{item.item_details.name}</h4>
-        <span className="mt-status">{doseStatuses[item.status]}</span>
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${item.status==='TAKEN'?'bg-success-wash text-success':item.status==='SKIPPED' || item.status==='UNRECORDED'?'bg-warning-wash text-warning':'bg-page text-muted'}`}>{doseStatuses[item.status]}</span>
       </div>
       <p className="text-sm">
         {new Intl.DateTimeFormat('sv-SE', {

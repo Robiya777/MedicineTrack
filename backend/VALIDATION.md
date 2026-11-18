@@ -99,3 +99,7 @@ migrate va seed_demo ikki marta o‘tdi. Django check, migration drift dry-run v
 OpenAPI sxemasini generatsiya qilish o‘tdi. Lokal ishlayotgan baza o‘zgartirilmadi;
 frontendning 3-bosqichi bilan birga API migratsiyasi chiqarilishi kerak.
 Batafsil: docs/COORDINATOR_MIGRATION.md.
+
+## Pull merge verification — 2026-11-18
+
+PostgreSQL: **116 passed** in a separate temporary test database. SQLite: **110 passed, 6 skipped**. Django check, migration drift, OpenAPI validation, Ruff lint and format pass. Coordinator patient visibility uses a membership subquery so contact updates can lock rows without PostgreSQL's unsupported DISTINCT/FOR UPDATE combination. The active application database was not migrated by this merge.

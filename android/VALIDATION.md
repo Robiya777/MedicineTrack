@@ -87,3 +87,7 @@ API 34 emulatorda yakuniy yangi sintetik bazaga qarshi **52 checks PASS**. Dori 
 assembleDebug / assembleDebugAndroidTest / lintDebug o‘tdi: 0 errors, 4 warnings (old target API, redundant v26 resource folder, 2 literal UI strings). Ikki takroriy test lokal login throttlega tushgan; yangi ajratilgan backend jarayoni va bazada mavjud throttle qoidalarini o‘zgartirmasdan to‘liq test o‘tdi.
 
 Chegara: full-screen Activity ko‘rinishi foreground preview bilan tekshirildi; qulflangan jismoniy telefonda avtomatik ochilish, ovozning real eshitilishi, API 26 runtime, uzoq muddatli interval va OEM batareya cheklovlari tekshirilmagan. Full-screen va exact alarm maxsus ruxsatlari mavjud bo‘lmaganda notification/inexact fallback ishlatiladi. Avvalgi reboot tiklash dalili 0.2.0ga tegishli; yangi health boot yo‘li kodga ulangan, shu versiyada jismoniy reboot sinovi bajarilmadi. Holatning haqiqiy yuborilishi bemorning tasdig‘ini talab qiladi.
+
+## Pull merge verification — 2026-11-18 / 0.4.0
+
+The local native UI, compact-screen navigation and correction fixes are preserved together with incoming medication/health alarms, alarm settings and deep links. Debug APK/test APK builds and lint pass (0 errors, 1 OldTargetApi warning). **88 emulator checks PASS** on API 34 against a fresh isolated synthetic backend; the linked web patient/chat/medications and completed care task remain readable. This merge did not repeat physical-device, reboot or long-duration alarm tests.

@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-18",
+  "local_before_merge": "81beed4e8baf8bdbb3eb2a297e671700b0dfd022",
+  "incoming": "63fcf874d586c85a4b9463340a046e9fc5b08099",
+  "first_merge": "5672f11",
+  "backend": {
+    "postgresql_passed": 116,
+    "sqlite_passed": 110,
+    "sqlite_skipped": 6,
+    "ruff": "PASS",
+    "django_check": "PASS",
+    "migration_drift": "PASS",
+    "openapi_validation": "PASS",
+    "live_database_migrated": false
+  },
+  "frontend": {
+    "regressions_passed": 9,
+    "eslint": "PASS",
+    "typecheck": "PASS",
+    "production_build": "PASS",
+    "browser": {
+      "checks": [
+        "Coordinator workspace exposes discharge navigation",
+        "Legacy discharge link keeps its identifier and query",
+        "Medication patient selection renders names and scoped cards",
+        "Nullable drafts remain readable in the merged medication panel",
+        "Mobile coordinator page fits the viewport",
+        "Hospital doctor gets doctor workspace without discharge permissions"
+      ],
+      "passed": 6,
+      "page_errors": [],
+      "server_errors": []
+    }
+  },
+  "android": {
+    "version": "0.4.0",
+    "api": 34,
+    "emulator_checks_passed": 88,
+    "debug_build": "PASS",
+    "test_apk_build": "PASS",
+    "lint_errors": 0,
+    "lint_warning": "OldTargetApi",
+    "apk_sha256": "a63a6d0e4a5b3d58839d3382e07623d4f470f79eec048b9da1a5264c8e5f0376"
+  },
+  "backup_branch": "backup/pull-merge-20261118-122438"
+}

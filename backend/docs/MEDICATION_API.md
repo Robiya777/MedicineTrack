@@ -7,7 +7,7 @@ Barcha yo‘llar `/api/v1` ostida, autentifikatsiya `Authorization: Bearer <acce
 - `COORDINATOR`: o‘z muassasasi boshqaradigan discharge uchun DRAFT yaratadi va tahrirlaydi. Approve/stop/revision va bemorning qabul tarixi uchun ruxsati yo‘q.
 - Oilaviy `DOCTOR`: faqat faol PatientAssignment orqali o‘ziga biriktirilgan bemorning jadvali va tarixini ko‘radi; DRAFT yaratadi/tahrirlaydi, revision va stop qiladi.
 - Approve uchun qo‘shimcha **`can_approve_medication_schedule=true`** talab qilinadi. Bu ruxsatning o‘zi boshqa bemorga kirish bermaydi.
-- Statsionardagi `DOCTOR` o‘z muassasasida **o‘zi yaratgan discharge** uchun jadval tuzib, klinik ruxsat bilan tasdiqlay oladi. Family Assignment bo‘lmasa bemorning qabul qaydlari ochilmaydi: occurrences javobida `record` yo‘q va `status=NOT_AVAILABLE`.
+- Kasalxonadagi `DOCTOR` tashkilot turi yoki eski discharge muallifligi orqali koordinator vakolatini olmaydi. Dori jadvaliga kirish uchun faol oilaviy shifokor biriktiruvi talab qilinadi; biriktirilmagan bemorning jadvali va qabul qaydlari ochilmaydi.
 - `PATIENT`: o‘zining faqat tasdiqlangan jadvallari va qabul tarixini ko‘radi, o‘zi uchun TAKEN/SKIPPED qayd va correction yuboradi. Jadvalni o‘zgartirmaydi.
 - `ADMIN` va `COORDINATOR`ga dori matni va qabul tarixi avtomatik ochilmaydi.
 
