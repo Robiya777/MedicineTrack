@@ -176,7 +176,7 @@ function ScheduleEditor({
         </select>}</Field>
         <div className="flex justify-end"><button type="button" className={secondaryButton} onClick={()=>setZoneOpen(false)}>Yopish</button></div>
       </Dialog>}
-      <fieldset className="min-w-0 space-y-5" disabled={mutation.isPending}>
+      <fieldset className="schedule-calendar-section min-w-0 space-y-5" disabled={mutation.isPending}>
         {tab === 'week' && <ScheduleCalendar intervals={input.shifts} change={shifts=>change({...input,shifts})} />}
         <div className={`space-y-4 ${tab !== 'exceptions' ? 'hidden' : ''}`}>
           <h2 className="text-xl font-semibold">Istisno kunlar</h2>
