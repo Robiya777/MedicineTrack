@@ -36,8 +36,8 @@ export function OrganizationEditor({
     }
   }
   return (
-    <form className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5" onSubmit={submit}>
-      <h2 className="text-xl font-semibold">
+    <form className="rounded-3xl border border-line bg-surface shadow-xs space-y-4 p-5" onSubmit={submit}>
+      <h2 className="border-b border-line pb-4 text-lg font-semibold">
         {initial ? 'Muassasani tahrirlash' : 'Yangi muassasa'}
       </h2>
       <fieldset className="space-y-4" disabled={mutation.isPending}>
@@ -134,8 +134,8 @@ export function TerritoryEditor({
     }
   }
   return (
-    <form className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5" onSubmit={submit}>
-      <h2 className="text-xl font-semibold">
+    <form className="rounded-3xl border border-line bg-surface shadow-xs space-y-4 p-5" onSubmit={submit}>
+      <h2 className="border-b border-line pb-4 text-lg font-semibold">
         {initial ? 'Hududni tahrirlash' : 'Yangi hudud'}
       </h2>
       <fieldset className="space-y-4" disabled={mutation.isPending}>

@@ -47,11 +47,11 @@ export function AccountEditor({
   }
   return (
     <form
-      className="rounded-2xl border border-line bg-surface shadow-xs space-y-5 p-5 sm:p-6"
+      className="rounded-3xl border border-line bg-surface shadow-xs space-y-5 p-5 sm:p-6"
       onSubmit={submit}
       aria-busy={mutation.isPending}
     >
-      <h2 className="text-xl font-semibold">
+      <h2 className="border-b border-line pb-4 text-lg font-semibold">
         {initial ? 'Xodimni tahrirlash' : 'Yangi xodim'}
       </h2>
       <fieldset className="space-y-4" disabled={mutation.isPending}>
