@@ -18,11 +18,12 @@ import java.util.concurrent.*;
 import org.json.*;
 
 public final class MainActivity extends Activity {
-  static final int INK = 0xff19312b,
-      GREEN = 0xff176b56,
-      MUTED = 0xff61756d,
-      BG = 0xfff4f7f5,
-      LINE = 0xffdce6e0;
+  static final int INK = 0xff18332f,
+      GREEN = 0xff0f766e,
+      MUTED = 0xff52645e,
+      BG = 0xfff5f8f7,
+      LINE = 0xffdce6e2;
+  Typeface face;
   final ExecutorService worker = SyncJobService.WORK;
   final Handler handler = new Handler(Looper.getMainLooper());
   Vault vault;
@@ -84,6 +85,7 @@ public final class MainActivity extends Activity {
   public void onCreate(Bundle saved) {
     super.onCreate(saved);
     if (!BuildConfig.DEBUG) getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+    face = getResources().getFont(R.font.dm_sans);
     vault = new Vault(this);
     api = new Api(vault);
     loginUI();
@@ -238,6 +240,8 @@ public final class MainActivity extends Activity {
   TextView text(String s, int size, int color) {
     TextView t = new TextView(this);
     t.setText(s);
+    t.setTypeface(face);
+    t.setLineSpacing(dp(2), 1f);
     t.setTextSize(size);
     t.setTextColor(color);
     t.setPadding(0, dp(4), 0, dp(4));
@@ -246,7 +250,7 @@ public final class MainActivity extends Activity {
 
   TextView title(String s) {
     TextView t = text(s, 26, INK);
-    t.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
+    t.setTypeface(Typeface.create(face, Typeface.BOLD));
     return t;
   }
 
@@ -259,7 +263,9 @@ public final class MainActivity extends Activity {
   LinearLayout card() {
     LinearLayout c = column();
     c.setPadding(dp(18), dp(14), dp(18), dp(14));
-    c.setBackground(bg(Color.WHITE, 18));
+    GradientDrawable surface = bg(Color.WHITE, 16);
+    surface.setStroke(dp(1), LINE);
+    c.setBackground(surface);
     LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, -2);
     p.setMargins(0, dp(6), 0, dp(8));
     body.addView(c, p);
@@ -273,10 +279,18 @@ public final class MainActivity extends Activity {
   Button button(LinearLayout c, String s, Runnable action) {
     Button b = new Button(this);
     b.setText(s);
-    b.setTextSize(14);
+    b.setTextSize(15);
+    b.setTypeface(face, Typeface.BOLD);
+    b.setStateListAnimator(null);
     b.setAllCaps(false);
     b.setTextColor(Color.WHITE);
-    b.setBackground(bg(GREEN, 12));
+    b.setBackground(bg(GREEN, 9));
+    if (s.equals("O‘tkazib yubordim") || s.equals("Qaydni tuzatish") || s.equals("Yangilash") || s.equals("Suhbatlarni ochish")) {
+      GradientDrawable outline = bg(Color.WHITE, 9);
+      outline.setStroke(dp(1), LINE);
+      b.setBackground(outline);
+      b.setTextColor(GREEN);
+    }
     LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(-1, dp(48));
     p.setMargins(0, dp(8), 0, dp(4));
     c.addView(b, p);
@@ -297,10 +311,11 @@ public final class MainActivity extends Activity {
             : value);
     if (!password && !activeFormKey.isEmpty()) draftFields.put(draftId, e);
     e.setTextColor(INK);
+    e.setTypeface(face);
     e.setTextSize(16);
     e.setPadding(dp(12), dp(8), dp(12), dp(8));
-    GradientDrawable d = bg(BG, 10);
-    d.setStroke(dp(1), LINE);
+    GradientDrawable d = bg(Color.WHITE, 9);
+    d.setStroke(dp(1), 0xff81988f);
     e.setBackground(d);
     e.setMinHeight(dp(48));
     e.setSingleLine(true);
@@ -342,16 +357,30 @@ public final class MainActivity extends Activity {
     root.setBackgroundColor(BG);
     root.setPadding(dp(20), dp(12), dp(20), dp(8));
     setContentView(root);
-    TextView brand = text("＋  MEDICINETRACK", 13, GREEN);
-    brand.setLetterSpacing(.12f);
-    brand.setTypeface(Typeface.DEFAULT_BOLD);
-    root.addView(brand);
+    LinearLayout top = new LinearLayout(this);
+    top.setGravity(Gravity.CENTER_VERTICAL);
+    TextView brand = text("＋  MedicineTrack", 20, GREEN);
+    brand.setTypeface(face, Typeface.BOLD);
+    top.addView(brand, new LinearLayout.LayoutParams(0, dp(48), 1));
+    if (navigation) {
+      TextView avatar = text(doctor() ? "SH" : "B", 13, GREEN);
+      avatar.setGravity(Gravity.CENTER);
+      avatar.setBackground(bg(0xffdff5ef, 20));
+      avatar.setContentDescription("Mening hisobim");
+      top.addView(avatar, new LinearLayout.LayoutParams(dp(44), dp(44)));
+      avatar.setOnClickListener(v -> { if (!busy) account(); });
+    }
+    root.addView(top);
     root.addView(title(heading));
     feedback = text("", 13, 0xffa8372d);
     feedback.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+    feedback.setVisibility(View.GONE);
     root.addView(feedback);
     ScrollView scroll = new ScrollView(this);
     scroll.setFillViewport(true);
+    scroll.setClipToPadding(false);
+    scroll.setPadding(0, dp(4), 0, dp(8));
+    scroll.setVerticalScrollBarEnabled(false);
     body = column();
     scroll.addView(body);
     root.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
@@ -361,16 +390,25 @@ public final class MainActivity extends Activity {
           doctor()
               ? new String[] {"Asosiy", "Chaqiruvlar", "Suhbatlar", "Hisob"}
               : new String[] {"Asosiy", "Dorilar", "Suhbatlar", "Hisob"};
-      for (String name : names) {
-        TextView t = text(name, 12, GREEN);
+      nav.setBackground(bg(Color.WHITE, 16));
+      nav.setPadding(dp(4), dp(6), dp(4), dp(6));
+      String active = screen.equals("Suhbat") ? "Suhbatlar" : screen.equals("Topshiriq") ? "Chaqiruvlar" : screen;
+      for (int i = 0; i < names.length; i++) {
+        String name = names[i];
+        boolean selected = name.equals(active);
+        LinearLayout tab = column();
+        tab.setGravity(Gravity.CENTER);
+        if (selected) tab.setBackground(bg(0xffdff5ef, 12));
+        ImageView icon = new ImageView(this);
+        icon.setImageDrawable(new NavIcon(i, selected ? GREEN : MUTED));
+        tab.addView(icon, new LinearLayout.LayoutParams(dp(22), dp(22)));
+        TextView t = text(name, 11, selected ? GREEN : MUTED);
         t.setGravity(Gravity.CENTER);
-        t.setMinHeight(dp(54));
-        t.setTypeface(Typeface.DEFAULT_BOLD);
-        nav.addView(t, new LinearLayout.LayoutParams(0, -2, 1));
-        t.setOnClickListener(
-            v -> {
-              if (!busy) navigate(name);
-            });
+        t.setTypeface(face, selected ? Typeface.BOLD : Typeface.NORMAL);
+        tab.addView(t);
+        tab.setContentDescription(name);
+        nav.addView(tab, new LinearLayout.LayoutParams(0, dp(60), 1));
+        tab.setOnClickListener(v -> { if (!busy) navigate(name); });
       }
       root.addView(nav);
     }
@@ -381,7 +419,10 @@ public final class MainActivity extends Activity {
   }
 
   void message(String s) {
-    if (feedback != null) feedback.setText(s);
+    if (feedback != null) {
+      feedback.setText(s);
+      feedback.setVisibility(s.isEmpty() ? View.GONE : View.VISIBLE);
+    }
   }
 
   String val(JSONObject j, String k) {
@@ -449,10 +490,15 @@ public final class MainActivity extends Activity {
 
   void loginUI() {
     screen = "Kirish";
-    frame("Parvarish davom etadi.", false);
-    label(body, "Uyga qaytgandan keyin ham shifokoringiz bilan aloqada bo‘ling.");
+    frame("Kabinetga kirish", false);
+    LinearLayout intro = card();
+    intro.setBackground(bg(GREEN, 16));
+    TextView introTitle = text("Har bir bemor e’tiborda.", 26, Color.WHITE);
+    introTitle.setTypeface(face, Typeface.BOLD);
+    intro.addView(introTitle);
+    intro.addView(text("Statsionardan chiqarilgandan keyingi bemor kuzatuvi va o‘z vaqtida patronaj.", 15, Color.WHITE));
     LinearLayout c = card();
-    label(c, "HISOBINGIZGA KIRING");
+    label(c, "Hisobingiz orqali tizimga kiring.");
     EditText server =
         field(
             c,
@@ -513,7 +559,7 @@ public final class MainActivity extends Activity {
             doctor() ? "Har bir chaqiruv ortida — bemor." : "Uyda ham yolg‘iz emassiz.",
             24,
             Color.WHITE);
-    h.setTypeface(Typeface.DEFAULT_BOLD);
+    h.setTypeface(Typeface.create(face, Typeface.BOLD));
     hero.addView(h);
     hero.addView(
         text(
@@ -924,19 +970,31 @@ public final class MainActivity extends Activity {
           label(body, "Jadval 24 soatdan eski. Shifokor bilan tekshiring.");
       }
     }
-    button(body, "Jadvalni yangilash", () -> loadMedication(patient));
+    LinearLayout settingsCard = card();
+    LinearLayout settings = column();
+    Button toggle = button(settingsCard, "Jadval va eslatma sozlamalari  ⌄", () -> {});
+    toggle.setTextColor(GREEN);
+    toggle.setBackground(bg(0xffdff5ef, 9));
+    settingsCard.addView(settings);
+    settings.setVisibility(View.GONE);
+    toggle.setOnClickListener(v -> {
+      boolean open = settings.getVisibility() != View.VISIBLE;
+      settings.setVisibility(open ? View.VISIBLE : View.GONE);
+      toggle.setText(open ? "Sozlamalarni yopish  ⌃" : "Jadval va eslatma sozlamalari  ⌄");
+    });
+    button(settings, "Jadvalni yangilash", () -> loadMedication(patient));
     if (!doctor()) {
-      button(body, "Eslatmalarga ruxsat berish", this::notificationPermission);
+      button(settings, "Eslatmalarga ruxsat berish", this::notificationPermission);
       if (Build.VERSION.SDK_INT >= 31) {
         boolean precise = getSystemService(AlarmManager.class).canScheduleExactAlarms();
         label(
-            body,
+            settings,
             precise
                 ? "Aniq vaqtli eslatma ruxsati yoqilgan"
                 : "Aniq vaqtli eslatma ruxsati yo‘q; eslatma kechikishi mumkin.");
         if (!precise)
           button(
-              body,
+              settings,
               "Aniq vaqtli eslatmani yoqish",
               () ->
                   startActivity(
@@ -944,10 +1002,10 @@ public final class MainActivity extends Activity {
                           android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
                           Uri.parse("package:" + getPackageName()))));
       }
-      button(body, "Saqlangan jadvalni ko‘rish", () -> cachedMedication(patient));
-      button(body, "Yuborilmagan qaydlar", () -> new ClinicalUi(this).queue());
+      button(settings, "Saqlangan jadvalni ko‘rish", () -> cachedMedication(patient));
+      button(settings, "Yuborilmagan qaydlar", () -> new ClinicalUi(this).queue());
       label(
-          body,
+          settings,
           "Eslatma Android batareya cheklovlari sabab kechikishi mumkin. Dorini o‘zgartirish uchun"
               + " shifokorga yozing.");
     }
@@ -1036,7 +1094,7 @@ public final class MainActivity extends Activity {
     LinearLayout c = card();
     c.addView(text(api.user.optString("username"), 22, INK));
     label(c, doctor() ? "Oilaviy shifokor" : "Bemor");
-    label(c, "MedicineTrack 0.2.0 · Sinov versiyasi");
+    label(c, "MedicineTrack 0.3.0 · Sinov versiyasi");
     label(
         c,
         "Bildirishnomalar: "

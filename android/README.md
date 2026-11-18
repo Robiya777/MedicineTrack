@@ -1,4 +1,16 @@
-# MedicineTrack Android 0.2.0
+# MedicineTrack Android 0.3.0
+
+## 0.3.0 dizayn moslashuvi
+
+Gitdagi frontend (`5e97667`) va `frontend/docs/DESIGN_SYSTEM.md` asosida:
+- bir xil teal/mint ranglar, mahalliy DM Sans (SIL OFL, `DM-Sans-LICENSE.txt`);
+- 16 dp oq kartalar, 9 dp input/tugmalar, konturli ikkilamchi amallar;
+- ikonali pastki menyu va faol bo‘limning mint foni, hisob avatari;
+- webdagi kirish matni va teal kirish kartasi;
+- dori jadvalini oldinga chiqarish uchun yig‘iladigan eslatma sozlamalari.
+
+Bu native Android moslashuvi; web kabinetning desktop yon menyusi mobil pastki menyuga aylantirilgan. API, encrypted draft va eslatma oqimlari saqlangan.
+
 
 Bemor va oilaviy shifokor uchun backendga ulangan birinchi native Android prototip. Package: `uz.medicinetrack.app`; Android 8.0+ (API 26), target/compile 34. Play uchun tayyor release emas.
 
