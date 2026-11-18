@@ -1,6 +1,6 @@
 # MedicineTrack — texnik topshiriq
 
-Versiya: 1.3 • Sana: 2026-11-18 • Holat: ishlab chiqish uchun bazaviy loyiha.
+Versiya: 1.4 • Sana: 2026-11-18 • Holat: ishlab chiqish uchun bazaviy loyiha.
 
 ## 1. Hujjat asosi va chegaralari
 
@@ -561,3 +561,88 @@ Qayta yuklash va ilova yangilanishida navbatdagi slot tiklanadi. Logoutda alarm 
 Android: @akashishunichiro — lokal alarm, ekran, ruxsatlar, snooze, settings, boot/logout. Backend: @sunnatila — mavjud status-updates API va server tasdig‘i. Frontend: @nuraziz07 — holat qaydlari ko‘rinishi. PM: @robiya777 — kunduzgi jadval va real qurilma demosi tasdig‘i.
 
 Qabul: 08:00→11:00 va 20:00→ertasi 08:00 hisoblanishi; 10 daqiqalik kechiktirish; o‘chirilganda signal yo‘qligi; haqiqiy AlarmManager notification yetkazishi; status formasi ochilishi va mavjud API orqali yuborilishi; logout/boot; API 26 mosligi, 34 ruxsatli/ruxsatsiz holatlar. Jismoniy qurilmadagi uyqu/batareya va uzoq muddatli tekshiruv alohida bajariladi.
+
+
+## 26. Shifokorning bemordan xabar olish chastotasini kuzatish
+
+### 26.1. Maqsad va hisoblash chegarasi
+
+Bemor kartasi va koordinator panelida shifokor bemor bilan oxirgi marta qachon bog‘langani, belgilangan kuzatuv rejasiga rioya qilgani va murojaatlarga qancha vaqtda javob bergani ko‘rinishi shart. Bu modul — bajarilishi lozim bo‘lgan yangi talab; quyidagi API va ekranlar mavjud deb hisoblanmaydi.
+
+Uch turdagi hodisa alohida yuritiladi:
+
+1. **Shifokor tashabbusi / javobi:** shifokorning server qabul qilgan chat xabari yoki qo‘lda kiritilgan telefon/tashrif qaydi. Chat xabari yuborilishi suhbat bo‘lib o‘tganining mustaqil isboti emas.
+2. **Natijali aloqa qaydi:** telefon/tashrifda “bemor bilan bog‘lanildi” natijasi yoki shifokor xabaridan keyingi bemor javobi. Manbasi “shifokor qaydi” yoki “ikki tomonlama chat” deb ochiq ko‘rsatiladi. “Ko‘rildi”, akkauntga kirish va ekran ochish buning o‘rnini bosmaydi.
+3. **Aloqa urinishi:** javobsiz qo‘ng‘iroq, noto‘g‘ri raqam, bemor rad etishi va boshqa muvaffaqiyatsiz urinish. Urinishlar saqlanadi, lekin natijali aloqa sifatida hisoblanmaydi.
+
+Bemorning 3 soatlik avtomatik holat budilnigi, dori eslatmasi, AI yoki tizim xabari shifokor aloqasi hisoblanmaydi. Bemor o‘zi yuborgan holat ham shifokor javob bermaguncha “shifokor xabar oldi” ko‘rsatkichini yangilamaydi. 3 soatlik bemor so‘rovi shifokorga har 3 soatda qo‘ng‘iroq qilish majburiyatini avtomatik yuklamaydi.
+
+### 26.2. Kuzatuv rejasi va kechikish
+
+- Har faol PatientAssignment uchun klinik vakolatli shifokor kuzatuv rejasini belgilaydi: boshlanish/tugash vaqti, navbatdagi aloqa muddati, keyingi aloqa oralig‘i (soatlarda), mas’ul va asos/izoh. Interval tibbiy tavsiya emas; klinik xodim belgilaydi, AI tanlamaydi.
+- Reja bo‘lmasa “Kuzatuv rejasi belgilanmagan” holati ko‘rsatiladi va koordinatorning alohida navbatiga tushadi. Tizim taxminiy interval yoki soxta deadline yaratmaydi.
+- Navbatdagi muddat shifokor aloqa qaydini yakunlaganda reja bo‘yicha hisoblanadi yoki asos bilan aniq belgilanadi. Faqat muvaffaqiyatsiz urinish, xabarni o‘qish yoki bemorning avtomatik so‘rovga javobi muddatni surmaydi. Bir tomonlama chat xabari “yuborildi, javob kutilmoqda” bo‘lib qoladi.
+- `server_now > next_contact_due_at` bo‘lsa “Aloqa muddati o‘tgan” belgisi va kechikish davomiyligi chiqadi. Worker muddati o‘tganini 60 soniya ichida aniqlab, koordinatorga bitta deduplikatsiyalangan hodisa yaratadi; har refreshda qayta bildirishnoma yubormaydi.
+- Navbatdagi muddat va oldingi muddatni o‘zgartirish sabab, muallif va vaqt bilan auditga yoziladi. Eski kechikish keyinchalik muddatni o‘zgartirish bilan tarixdan yo‘qolmaydi.
+- Reja tugashi/bekor qilinishi va bemor qayta biriktirilishi audit qilinadi. Yangi shifokorga eski bajarilgan ishlar yozilmaydi; ochiq kuzatuv majburiyati koordinator tasdiqlagan handover bilan, dastlabki deadline saqlangan holda o‘tadi.
+- Dastlabki 24 soatlik patronaj, chatning ish jadvaliga bog‘liq javob muddati va ushbu keyingi kuzatuv muddati alohida hisoblanadi. Keyingi aloqa qaydi yopilgan patronajni qayta ochmaydi yoki mavjud deadline’ni jim o‘zgartirmaydi.
+
+### 26.3. Ekranlar va ko‘rsatkichlar
+
+**Bemor kartasi (web va APK):** mas’ul shifokor; oxirgi shifokor xabari/urinishi; oxirgi natijali aloqa va uning manbasi; qancha vaqt o‘tgani; keyingi aloqa vaqti; reja holati. Tarixda vaqt, kanal, yo‘nalish (kim boshladi), natija va qayd muallifi ko‘rsatiladi. Telefon/tashrif foydalanuvchi qaydi ekanligi belgilanadi.
+
+**Shifokor kabineti:** “Bugun xabar olish kerak”, “Muddati o‘tgan”, “Bemor javobi kutilmoqda”, “Reja belgilanmagan” navbatlari; tegishli bemorni ochish va aloqa natijasini kiritish. Chat funksiyasi ichidagi shifokor javobi mavjud xabardan bog‘lanadi, qayta qo‘lda yozish talab qilinmaydi.
+
+**Koordinator paneli:** faqat vakolat hududi/muassasasidagi bemor va shifokorlar; shifokor, bemor, muddat holati, kanal va sana bo‘yicha filtr; oxirgi aloqa, keyingi deadline, kechikish va javobsiz murojaatlar. Aloqa metama’lumoti ko‘rinishi klinik chat matnini ko‘rish huquqini bermaydi.
+
+Hisobot davri standart oxirgi 7 yoki 30 Toshkent kalendar kuni; aniq boshlanish/tugash filtri ham bor. API UTC vaqt oralig‘ini `[from, to)` tarzida oladi. Quyidagilar alohida hisoblanadi:
+
+- shifokor yuborgan xabarlar soni; natijali aloqa epizodlari soni; muvaffaqiyatsiz urinishlar soni;
+- natijali aloqa qayd etilgan noyob kunlar va shu davrdagi faol biriktirish kunlari (ikkalasi alohida ko‘rsatiladi);
+- oxirgi natijali aloqadan o‘tgan vaqt; kamida ikki aloqa bo‘lsa ular orasidagi eng uzoq tanaffus, aks holda “Yetarli ma’lumot yo‘q”;
+- muddati davrga tushgan kuzatuv majburiyatlaridan vaqtida bajarilganlar soni / jami soni; denominator 0 bo‘lsa foiz o‘rniga “Majburiyat yo‘q”;
+- mavjud ResponseEpisode bo‘yicha birinchi javobga ketgan ish vaqti va javobsiz epizodlar; yakunlanmagan epizodga soxta javob vaqti berilmaydi.
+
+Bir suhbatdagi bitta ResponseEpisode yoki shifokor boshlagan bitta ochiq outreach epizodiga tegishli ketma-ket xabarlar bitta aloqa epizodi hisoblanadi; qayta yuborish va sync dublikatlari sonni oshirmaydi. Yangi epizod oldingi epizod yopilgandan keyin boshlanadi. Qo‘lda aloqa yakunlanganda bajarilgan vaqt (`performed_at`) va server qayd vaqti (`recorded_at`) alohida: kech kiritilgan aloqa tarixda bajarilgan vaqtida ko‘rinadi, lekin “vaqtida qayd etildi” KPI server vaqti bilan hisoblanadi. Hisobot avtomatik klinik sifat bahosi yoki shifokor reytingi sifatida talqin qilinmaydi.
+
+### 26.4. Ma’lumotlar, API va yaxlitlik
+
+Mavjud ContactAttempt, tashrif va ResponseEpisode yozuvlari manba bo‘lib qoladi; bir xil aloqaning ikkinchi mustaqil nusxasi yaratilmaydi. Taklif etilayotgan kengaytma:
+
+- `FollowUpPlan`: patient_id, assignment_id, owner_doctor_id, starts_at, ends_at, interval_hours (>0), next_contact_due_at, status, reason, version, created_by; assignment uchun bitta faol reja.
+- `FollowUpObligation`: plan_id/version, original_due_at, current_due_at, completed_contact_id nullable, recorded_at, escalation_at; har bir majburiyat alohida tarixiy satr.
+- `CareContactEpisode`: assignment_id, doctor_id, source_type/source_id (UNIQUE), direction, channel(CHAT/PHONE/VISIT), outcome(ATTEMPTED/AWAITING_PATIENT/CONTACTED/DECLINED), performed_at, recorded_at, next_action; avtomatik chat manbasi va qo‘lda qayd manbasi farqlanadi.
+- Audit: rejani o‘zgartirish, qayta biriktirish va qaydni tuzatish append-only; oldingi qiymat yo‘qolmaydi. Ko‘rsatkichlar shu manbalardan qayta hisoblanishi mumkin.
+
+Taklif etilayotgan kontrakt (backend bilan OpenAPI’da yakunlanadi):
+
+| Metod va yo‘l | Vazifa va ruxsat |
+|---|---|
+| GET /patients/{id}/follow-up-summary | Bemor o‘ziniki, faol shifokor o‘z bemori, koordinator o‘z vakolatidagi metama’lumot |
+| GET /patients/{id}/care-contacts | Sana/kanal/natija filtri, pagination; xuddi shu object-level ruxsatlar |
+| POST /patients/{id}/care-contacts | Faol shifokorning telefon/tashrif qaydi; idempotency, kelajak vaqti va begona assignment rad qilinadi |
+| POST /patients/{id}/follow-up-plans | Klinik vakolatli faol shifokor; bir faol reja, audit |
+| PATCH /follow-up-plans/{id} | Klinik vakolat va version tekshiruvi; o‘zgartirish sababi majburiy |
+| GET /dashboard/follow-up | Koordinatorga hududiy navbat va filtrlangan agregatlar |
+
+Javobga `as_of`, timezone, hisoblash davri va manba toifasi qo‘shiladi. Server tasdig‘isiz offline qayd “yuborilmoqda” bo‘lib qoladi va server KPIga kirmaydi. Takroriy idempotency key bitta hodisa beradi; eskirgan version konflikti mavjud 409 qoidalariga amal qiladi. Null sana “Hech qanday aloqa qayd etilmagan”; u 0 daqiqa yoki yaqinda aloqaga chiqqan deb ko‘rsatilmaydi.
+
+### 26.5. Mas’ullar, qabul va demo
+
+- Backend @sunnatila: manbalarni bog‘lash, reja/majburiyat, davriy hisoblar, API, dedupe va ruxsat testlari.
+- Web @nuraziz07: koordinator paneli, shifokor navbatlari, sana filtrlari va aloqa tarixi.
+- APK @akashishunichiro: bemor/shifokor kartasidagi oxirgi/keyingi aloqa, qayd formasi, offline yuborish holati.
+- PM @robiya777: klinik hamkor bilan kuzatuv intervali va natijali aloqa ta’rifini tasdiqlash, demo/qabul. Ish keyingi kuzatuv modulining alohida deliverable’i; muddat backend kontrakti va hajm bahosidan keyin kelishiladi.
+
+| ID | Sinov | Kutiladigan natija |
+|---|---|---|
+| AT-49 | Faqat budilnik, AI xabari yoki bemor holat qaydi keladi | Shifokor aloqa soni va oxirgi aloqasi o‘zgarmaydi |
+| AT-50 | Shifokor xabar yuboradi, bemor javob bermaydi | Tashabbus qayd etiladi; “javob kutilmoqda”, natijali aloqa deb ko‘rsatilmaydi |
+| AT-51 | Bemor javob beradi yoki shifokor telefon/tashrif natijasini qayd etadi | Manbasi ko‘rsatilgan aloqa epizodi; takroriy sync bitta yozuv |
+| AT-52 | Reja yo‘q yoki aloqa hali bo‘lmagan | Alohida aniq holat; soxta sana/foiz yo‘q |
+| AT-53 | Deadline o‘tadi, keyin sabab bilan tahrirlanadi | Bitta eskalatsiya; avvalgi deadline va kechikish tarixda qoladi |
+| AT-54 | Shifokor almashadi yoki aloqa kech kiritiladi | Muallif/assignment tarixi saqlanadi; eski shifokor ishi yangisiga yozilmaydi; KPI orqaga sana bilan yaxshilanmaydi |
+| AT-55 | Begona bemor IDsi yoki boshqa hudud filtri yuboriladi | Object-level ruxsat rad etadi; agregatlardan ham begona ma’lumot chiqmaydi |
+| AT-56 | 7/30 kunlik davr, chegaradagi vaqtlar va nol denominator | Toshkent kuni/UTC chegarasi to‘g‘ri, dublikat yo‘q, “Majburiyat yo‘q” |
+
+Demo: bemorga kuzatuv rejasi → avtomatik holat budilnigi (shifokor KPI o‘zgarmaydi) → shifokor xabari (javob kutiladi) → bemor javobi (aloqa epizodi) → javobsiz telefon urinishi → keyingi deadline kechikishi → koordinator navbati va 7 kunlik tarix. DoD: AT-49…AT-56, OpenAPI kontrakti, rol/hudud tekshiruvi va web/APKda bir xil summary natijasi. Kod va integratsiya ushbu TZ qo‘shimchasidan keyin alohida bajariladi.
