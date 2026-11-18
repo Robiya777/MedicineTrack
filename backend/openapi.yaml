@@ -2391,6 +2391,9 @@ components:
         hospital:
           type: string
           format: uuid
+        managing_organization:
+          type: string
+          format: uuid
           readOnly: true
         discharged_at:
           type: string
@@ -2434,6 +2437,7 @@ components:
       - follow_up_reason
       - hospital
       - id
+      - managing_organization
       - patient
       - patient_snapshot
       - recommendations
@@ -2442,6 +2446,9 @@ components:
       type: object
       properties:
         patient:
+          type: string
+          format: uuid
+        hospital:
           type: string
           format: uuid
         discharged_at:
@@ -2464,6 +2471,7 @@ components:
       required:
       - discharged_at
       - follow_up_reason
+      - hospital
       - patient
       - recommendations
     DischargeStatusEnum:
@@ -3508,6 +3516,9 @@ components:
         patient:
           type: string
           format: uuid
+        hospital:
+          type: string
+          format: uuid
         discharged_at:
           type: string
           format: date-time
@@ -3940,13 +3951,11 @@ components:
     StaffAccountRoleEnum:
       enum:
       - ADMIN
-      - HOSPITAL
       - DOCTOR
       - COORDINATOR
       type: string
       description: |-
         * `ADMIN` - ADMIN
-        * `HOSPITAL` - HOSPITAL
         * `DOCTOR` - DOCTOR
         * `COORDINATOR` - COORDINATOR
     Status:
@@ -4260,14 +4269,12 @@ components:
       - username
     UserRoleEnum:
       enum:
-      - HOSPITAL
       - DOCTOR
       - COORDINATOR
       - ADMIN
       - PATIENT
       type: string
       description: |-
-        * `HOSPITAL` - Statsionar xodimi
         * `DOCTOR` - Oilaviy shifokor
         * `COORDINATOR` - Koordinator
         * `ADMIN` - Texnik admin

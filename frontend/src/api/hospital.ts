@@ -27,6 +27,8 @@ const patientSchema = z.object({
 const dischargeSchema = z.object({
   id: z.uuid(),
   patient: z.uuid(),
+  hospital: z.uuid(),
+  managing_organization: z.uuid(),
   discharged_at: isoDateTimeSchema,
   confirmed_at: isoDateTimeSchema.nullable(),
   recommendations: z.string(),
@@ -47,7 +49,7 @@ export { type HospitalTask, taskSchema }
 export type PatientInput = Omit<HospitalPatient, 'id'>
 export type DischargeInput = Pick<
   Discharge,
-  'discharged_at' | 'recommendations' | 'follow_up_reason'
+  'hospital' | 'discharged_at' | 'recommendations' | 'follow_up_reason'
 >
 
 export const hospitalQueryKeys = {

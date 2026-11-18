@@ -183,3 +183,10 @@ Statsionar o‘z DRAFT chiqarishidagi o‘zi yaratgan bemor kontaktini tahrirlay
 CONFIRMED tavsiya va shifokorning o‘z hisoboti sababli alohida tuzatish oladi;
 original matn saqlanadi. Bemor tavsiyaning tuzatish tarixini o‘qiydi.
 Sinovlar va foydalanish: [6-bosqich hisoboti](docs/STAGE6_ACCEPTANCE.md).
+
+## Koordinator: bemor va chiqarishlar
+
+`demo.hospital` hamda `demo.coordinator` bitta koordinator kabinetidan foydalanadi.
+Chiqarishlar menyusi orqali bemor yarating, kasalxonani tanlang, chiqarish loyihasini
+saqlab tasdiqlang. Klinik dori tasdig‘i shifokorda qoladi.
+Batafsil: [birlashtirish hisoboti](docs/COORDINATOR_UNIFICATION.md).

@@ -37,7 +37,7 @@ public final class MainActivity extends Activity {
   LinearLayout root, body;
   TextView feedback;
   String screen = "Kirish", conversationId = "";
-  boolean busy = false, paused = true;
+  boolean busy = false, paused = true, initialMedicationSync = false;
   int generation = 0;
   JSONArray doses = new JSONArray();
   String medicationSyncWarning = "";
@@ -112,7 +112,8 @@ public final class MainActivity extends Activity {
         },
         v -> {
           if ((boolean) v) {
-            if ("Dorilar".equals(getIntent().getStringExtra("screen"))) medications();
+            if ("Holat".equals(getIntent().getStringExtra("screen"))) healthReport();
+            else if ("Dorilar".equals(getIntent().getStringExtra("screen"))) medications();
             else home();
           }
         });
@@ -129,6 +130,7 @@ public final class MainActivity extends Activity {
           () -> {
             try {
               Reminders.schedule(this);
+              AlarmAlerts.scheduleHealth(this);
             } catch (Exception ignored) {
             }
           });
@@ -153,6 +155,7 @@ public final class MainActivity extends Activity {
   protected void onNewIntent(Intent i) {
     super.onNewIntent(i);
     if (!api.access.isEmpty() && "Dorilar".equals(i.getStringExtra("screen"))) medications();
+    else if (!api.access.isEmpty() && "Holat".equals(i.getStringExtra("screen"))) healthReport();
   }
 
   final java.util.LinkedHashMap<String, EditText> draftFields = new java.util.LinkedHashMap<>();
@@ -845,6 +848,16 @@ public final class MainActivity extends Activity {
   void home() {
     screen = "Asosiy";
     frame(doctor() ? "Ish kuningiz, bir joyda." : "Bugun o‘zingizni asrang.", true);
+    if (!doctor() && !initialMedicationSync) {
+      initialMedicationSync = true;
+      worker.execute(
+          () -> {
+            try {
+              MedicationSync.sync(this);
+            } catch (Exception ignored) {
+            }
+          });
+    }
     label(
         body,
         LocalDate.now(ZoneId.of("Asia/Tashkent")).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
@@ -890,6 +903,26 @@ public final class MainActivity extends Activity {
           if (doctor()) loadTasks();
           else medications();
         });
+    if (!doctor()) {
+      LinearLayout alarms = card();
+      alarms.addView(text("Parvarish eslatmalari", 20, INK));
+      label(alarms, "Dori vaqti avtomatik eslatiladi. Ahvol so‘rovi: 08:00–22:00, har 3 soatda.");
+      secondary(
+          alarms,
+          "Eslatmalarni sozlash",
+          () -> {
+            screen = "Eslatmalar";
+            frame("Parvarish eslatmalari", true);
+            alarmSettings(card());
+          });
+      worker.execute(
+          () -> {
+            try {
+              AlarmAlerts.scheduleHealth(this);
+            } catch (Exception ignored) {
+            }
+          });
+    }
     LinearLayout chat = card();
     chat.addView(text(doctor() ? "Bemorlar bilan aloqa" : "Shifokor bilan aloqa", 20, INK));
     label(chat, "Xabar va holatni yuboring. Javob ish jadvali bo‘yicha beriladi.");
@@ -1377,6 +1410,76 @@ public final class MainActivity extends Activity {
         });
   }
 
+  void healthReport() {
+    execute(
+        () -> api.list("/conversations"),
+        v -> {
+          JSONArray rows = (JSONArray) v;
+          screen = "Holat:tanlash";
+          frame("Holatingizni yuborish", true);
+          backAction = this::home;
+          label(body, "Holatni qaysi suhbatga yubormoqchisiz?");
+          int open = 0;
+          String only = "";
+          for (int n = 0; n < rows.length(); n++) {
+            JSONObject conversation = rows.getJSONObject(n);
+            if (!"OPEN".equals(conversation.optString("status"))) continue;
+            open++;
+            only = conversation.getString("id");
+            final String id = only;
+            button(body, "Shifokorga holat yuborish · " + id.substring(0, 8), () -> statusForm(id));
+          }
+          if (open == 1) statusForm(only);
+          else if (open == 0) label(body, "Ochiq suhbat yo‘q. Muassasa bilan bog‘laning.");
+        });
+  }
+
+  void alarmSettings(LinearLayout c) {
+    label(c, "Ahvol so‘rovi: 08:00, 11:00, 14:00, 17:00, 20:00. Tunda bezovta qilmaydi.");
+    Switch enabled = new Switch(this);
+    enabled.setText(R.string.health_reminder_enabled);
+    enabled.setMinHeight(dp(48));
+    enabled.setChecked(getSharedPreferences("alarms", 0).getBoolean("health", true));
+    c.addView(enabled);
+    enabled.setOnCheckedChangeListener(
+        (b, on) -> {
+          getSharedPreferences("alarms", 0).edit().putBoolean("health", on).apply();
+          worker.execute(
+              () -> {
+                try {
+                  AlarmAlerts.scheduleHealth(this);
+                  if (!on) AlarmAlerts.dismiss(this, AlarmAlerts.HEALTH);
+                } catch (Exception ignored) {
+                }
+              });
+        });
+    secondary(c, "Ovozli eslatmalarga ruxsat", this::notificationPermission);
+    if (Build.VERSION.SDK_INT >= 31
+        && !getSystemService(AlarmManager.class).canScheduleExactAlarms())
+      button(
+          c,
+          "Aniq vaqtli budilnikni yoqish",
+          () ->
+              startActivity(
+                  new Intent(
+                      android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                      Uri.parse("package:" + getPackageName()))));
+    if (Build.VERSION.SDK_INT >= 34
+        && !getSystemService(NotificationManager.class).canUseFullScreenIntent())
+      button(
+          c,
+          "Budilnik ekraniga ruxsat berish",
+          () ->
+              startActivity(
+                  new Intent(
+                      android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                      Uri.parse("package:" + getPackageName()))));
+    label(
+        c,
+        "Ovoz va vibratsiya telefon sozlamalariga bog‘liq. Har bir signal 60 soniyadan keyin"
+            + " to‘xtaydi. 10 daqiqaga kechiktirish mumkin.");
+  }
+
   void statusForm(String id) {
     screen = "Holat:" + id;
     frame("Bugungi holatingiz", true);
@@ -1714,6 +1817,7 @@ public final class MainActivity extends Activity {
                               api.access = "";
                               api.refresh = "";
                               api.user = new JSONObject();
+                              initialMedicationSync = false;
                               return true;
                             },
                             v -> loginUI()))

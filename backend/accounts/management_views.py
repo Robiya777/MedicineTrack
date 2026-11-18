@@ -4,7 +4,6 @@ from django.utils import timezone
 from rest_framework import mixins, serializers
 from rest_framework.permissions import BasePermission
 
-from care.models import Organization
 from care.services import audit
 from care.views import ScopedViewSet
 
@@ -17,9 +16,7 @@ class IsTechnicalAdmin(BasePermission):
 
 
 class StaffAccountSerializer(serializers.ModelSerializer):
-    role = serializers.ChoiceField(
-        choices=[Role.ADMIN, Role.HOSPITAL, Role.DOCTOR, Role.COORDINATOR]
-    )
+    role = serializers.ChoiceField(choices=[Role.ADMIN, Role.DOCTOR, Role.COORDINATOR])
     password = serializers.CharField(write_only=True, required=False, trim_whitespace=False)
 
     class Meta:
@@ -51,8 +48,6 @@ class StaffAccountSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": "Parol majburiy."})
         if role != Role.ADMIN and (not organization or not organization.active):
             raise serializers.ValidationError({"organization": "Faol muassasa kerak."})
-        if role == Role.HOSPITAL and organization.type != Organization.Type.HOSPITAL:
-            raise serializers.ValidationError({"organization": "Muassasa turi rolga mos emas."})
         if (
             attrs.get(
                 "can_approve_medication_schedule",

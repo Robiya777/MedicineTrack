@@ -101,7 +101,7 @@ export function NotificationBell() {
                   </p>
                   <div className="flex flex-wrap gap-2.5">
                     {item.task &&
-                      ['DOCTOR', 'COORDINATOR'].includes(user.role) && role !== 'statsionar' && (
+                      ['DOCTOR', 'COORDINATOR'].includes(user.role) && (
                         <Link
                           className={secondaryButton}
                           to="/kabinet/$role/chaqiruv/$taskId"
@@ -116,7 +116,7 @@ export function NotificationBell() {
                         </Link>
                       )}
                     {item.conversation &&
-                      ['DOCTOR', 'PATIENT'].includes(user.role) && role !== 'statsionar' && (
+                      ['DOCTOR', 'PATIENT'].includes(user.role) && (
                         <Link
                           className={secondaryButton}
                           to="/kabinet/$role/suhbat/$conversationId"

@@ -1,3 +1,5 @@
+import { DischargeRecord } from '@/features/hospital/discharge-record'
+import { adminOrganizationsQuery } from '@/api/admin'
 import {DischargeCorrections} from '@/features/records/corrections'
 import {PatientContact} from '@/features/records/patient-contact'
 import { useState } from 'react'
@@ -10,16 +12,13 @@ import {
   hospitalQueryKeys,
   type Discharge,
 } from '@/api/hospital'
-import { formatTashkentDateTime } from '@/lib/date'
 import { responseFieldErrors } from '@/lib/errors'
 import { useIdempotentMutation } from '@/hooks/use-idempotent-mutation'
 import {
-  Facts,
   RequestError,
   primaryButton,
   secondaryButton,
 } from '@/components/ui'
-import { dischargeStatusLabels } from '@/features/hospital/format'
 import { DischargeForm } from '@/features/hospital/discharge-form'
 import { PatientActivation } from '@/features/messaging/activation'
 import { MedicationPanel } from '@/features/medications/patient-medications'
@@ -30,6 +29,7 @@ export interface DischargeSummaryProps {
 }
 
 export function DischargeSummary({ discharge }: DischargeSummaryProps) {
+  const hospitals = useQuery(adminOrganizationsQuery())
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
   const confirm = useIdempotentMutation((_: undefined, key) =>
@@ -111,30 +111,7 @@ export function DischargeSummary({ discharge }: DischargeSummaryProps) {
             retry={() => void patient.refetch()}
           />
         )}
-        <Facts
-          items={[
-            { label: 'Bemor', value: record?.full_name ?? '—' },
-            {
-              label: 'Bemor UUIDsi',
-              value: <span className="font-mono text-sm">{discharge.patient}</span>,
-            },
-            {
-              label: 'Chiqarish holati',
-              value: dischargeStatusLabels[discharge.status],
-            },
-            {
-              label: 'Haqiqiy chiqarish vaqti (Toshkent)',
-              value: formatTashkentDateTime(discharge.discharged_at),
-            },
-            { label: 'Telefon', value: contact },
-            { label: 'Manzil', value: record?.address || '—' },
-            {
-              label: 'Kuzatuvga olish asosi',
-              value: discharge.follow_up_reason,
-            },
-            { label: 'Shifokor tavsiyasi', value: discharge.recommendations },
-          ]}
-        />
+        <DischargeRecord discharge={discharge} name={record?.full_name || '—'} phone={contact} address={record?.address || '—'} hospital={hospitals.data?.find(org=>org.id===discharge.hospital)?.name || 'Yuklanmoqda…'} />
         {discharge.status === 'DRAFT' && (
           <div className="space-y-4 border-t border-line pt-4">
             <p className="text-sm text-muted">

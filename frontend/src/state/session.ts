@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type UserRole = 'HOSPITAL' | 'COORDINATOR' | 'DOCTOR' | 'PATIENT' | 'ADMIN'
+export type UserRole = 'COORDINATOR' | 'DOCTOR' | 'PATIENT' | 'ADMIN'
 
 export type SessionUser = {
   id: string

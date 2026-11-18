@@ -1,5 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router'
-import { CalendarClock, CircleAlert, Clock3, LayoutDashboard, MessageCircle, MessageCircleWarning, Pill, UserRoundX } from 'lucide-react'
+import { CalendarClock, CircleAlert, Clock3, ClipboardList, LayoutDashboard, MessageCircle, MessageCircleWarning, Pill, UserRoundX } from 'lucide-react'
 import type { UserRole } from '@/state/session'
 import type { WorkspaceConfig } from '@/lib/workspaces'
 
@@ -41,10 +41,11 @@ export function WorkspaceNavigation({
         onClick={onNavigate}
       >
         <LayoutDashboard className="shrink-0" size={19} aria-hidden="true" />
-        <span>{workspace.slug === 'statsionar' ? 'Chiqarishlar' : 'Ish stoli'}</span>
+        <span>Ish stoli</span>
       </Link>
 
-      {['PATIENT', 'DOCTOR', 'HOSPITAL'].includes(role) && (
+      {role === 'COORDINATOR' && <Link to="/kabinet/$role/chiqarish" params={{role:workspace.slug}} search={{}} className={navLinkClass(pathname.includes('/chiqarish'))} onClick={onNavigate}><ClipboardList size={19} aria-hidden="true" /><span>Chiqarishlar</span></Link>}
+      {['PATIENT', 'DOCTOR', 'COORDINATOR'].includes(role) && (
         <Link
           to="/kabinet/$role/dorilar"
           params={{ role: workspace.slug }}
@@ -58,7 +59,7 @@ export function WorkspaceNavigation({
         </Link>
       )}
 
-      {(['PATIENT', 'DOCTOR'].includes(role) && workspace.slug !== 'statsionar') && (
+      {['PATIENT', 'DOCTOR'].includes(role) && (
         <Link
           to="/kabinet/$role/suhbat"
           params={{ role: workspace.slug }}

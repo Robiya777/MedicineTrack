@@ -36,7 +36,7 @@ def world(db):
         name="Other hospital", type="HOSPITAL", territory=other_territory
     )
     staff = User.objects.create_user(
-        username="staff", password="Test-example-927!", role=Role.HOSPITAL, organization=hospital
+        username="staff", password="Test-example-927!", role=Role.COORDINATOR, organization=hospital
     )
     doctor = User.objects.create_user(
         username="doctor", password="Test-example-927!", role=Role.DOCTOR, organization=clinic
@@ -73,6 +73,7 @@ def world(db):
     discharge = Discharge.objects.create(
         patient=patient,
         hospital=hospital,
+        managing_organization=hospital,
         created_by=staff,
         discharged_at=timezone.now() - timedelta(hours=1),
         recommendations="Synthetic follow-up",

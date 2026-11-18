@@ -44,7 +44,7 @@ class Command(BaseCommand):
         )
         users = {}
         for username, role, org in [
-            ("demo.hospital", Role.HOSPITAL, hospital),
+            ("demo.hospital", Role.COORDINATOR, hospital),
             ("demo.doctor", Role.DOCTOR, clinic),
             ("demo.doctor2", Role.DOCTOR, clinic),
             ("demo.coordinator", Role.COORDINATOR, hospital),
@@ -73,7 +73,7 @@ class Command(BaseCommand):
             patient, _ = Patient.objects.get_or_create(
                 id=demo_id(f"patient:{name}"),
                 defaults={
-                    "created_by": users[Role.HOSPITAL],
+                    "created_by": users[Role.COORDINATOR],
                     "created_by_org": hospital,
                     "full_name": f"Sintetik bemor — {name}",
                     "birth_date": date(1980, 1, 1),
@@ -97,13 +97,14 @@ class Command(BaseCommand):
                 defaults={
                     "patient": patient,
                     "hospital": hospital,
-                    "created_by": users[Role.HOSPITAL],
+                    "managing_organization": hospital,
+                    "created_by": users[Role.COORDINATOR],
                     "discharged_at": timezone.now() - timedelta(hours=hours),
                     "recommendations": "Demo tavsiya: rejalashtirilgan patronaj.",
                     "follow_up_reason": "Sintetik demo holati",
                 },
             )
-            confirm_discharge(discharge.pk, users[Role.HOSPITAL])
+            confirm_discharge(discharge.pk, users[Role.COORDINATOR])
             if name == "normal":
                 account, _ = User.objects.get_or_create(
                     username="demo.patient", defaults={"role": Role.PATIENT, "patient": patient}
@@ -118,7 +119,7 @@ class Command(BaseCommand):
                     day = timezone.now().astimezone(ZoneInfo("Asia/Tashkent")).date()
                     plan = create_plan(
                         patient.id,
-                        users[Role.HOSPITAL],
+                        users[Role.COORDINATOR],
                         {
                             "discharge_id": discharge.id,
                             "items": [

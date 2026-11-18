@@ -19,7 +19,7 @@ from .models import (
     TaskStatus,
     VisitReport,
 )
-from .scopes import active_assignments, coordinator_scope, is_hospital_staff
+from .scopes import active_assignments, coordinator_scope, is_discharge_coordinator
 
 
 def audit(actor, entity, action, fields=(), request=None):
@@ -38,15 +38,15 @@ def require_role(user, *roles):
         raise PermissionDenied()
 
 
-def require_hospital_staff(user):
-    if not is_hospital_staff(user):
+def require_discharge_coordinator(user):
+    if not is_discharge_coordinator(user):
         raise PermissionDenied()
 
 
 def task_coordinators(task):
     users = User.objects.filter(role=Role.COORDINATOR, is_active=True, organization__active=True)
     if task.receiving_org_id is None:
-        return users.filter(organization_id=task.discharge.hospital_id)
+        return users.filter(organization_id=task.discharge.managing_organization_id)
     return users.filter(organization__territory_id=task.service_territory_id)
 
 
@@ -69,11 +69,11 @@ def enqueue(task, event_type, recipients, episode=None, dedupe_prefix=None, conv
 
 @transaction.atomic
 def confirm_discharge(discharge_id, user, request=None):
-    require_hospital_staff(user)
+    require_discharge_coordinator(user)
     discharge = (
         Discharge.objects.select_for_update(of=("self",))
         .select_related("patient", "hospital")
-        .get(pk=discharge_id, created_by=user, hospital_id=user.organization_id)
+        .get(pk=discharge_id, managing_organization_id=user.organization_id)
     )
     if discharge.status == Discharge.Status.CONFIRMED:
         return discharge.task, False

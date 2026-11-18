@@ -6,12 +6,11 @@ from accounts.models import Role
 from .models import OPEN_STATUSES, CareTask, Discharge, Organization, Patient, PatientAssignment
 
 
-def is_hospital_staff(user):
+def is_discharge_coordinator(user):
     return (
-        user.role in {Role.HOSPITAL, Role.DOCTOR}
+        user.role == Role.COORDINATOR
         and user.organization_id is not None
         and user.organization.active
-        and user.organization.type == Organization.Type.HOSPITAL
     )
 
 
@@ -36,15 +35,11 @@ def coordinator_scope(user):
         service_territory_id=territory,
         discharge__hospital__territory_id=territory,
         receiving_org__isnull=False,
-    ) | Q(receiving_org__isnull=True, discharge__hospital_id=user.organization_id)
+    ) | Q(receiving_org__isnull=True, discharge__managing_organization_id=user.organization_id)
 
 
 def tasks_for(user):
     queryset = CareTask.objects.all()
-    if is_hospital_staff(user):
-        return queryset.filter(
-            discharge__created_by=user, discharge__hospital_id=user.organization_id
-        )
     if user.role == Role.DOCTOR:
         return queryset.filter(assigned_doctor=user, receiving_org_id=user.organization_id)
     if user.role == Role.COORDINATOR:
@@ -56,21 +51,24 @@ def tasks_for(user):
 
 def patients_for(user):
     queryset = Patient.objects.all()
-    if is_hospital_staff(user):
-        return queryset.filter(created_by_org_id=user.organization_id)
+    if is_discharge_coordinator(user):
+        visible = queryset.filter(
+            Q(created_by_org_id=user.organization_id) | Q(discharges__task__in=tasks_for(user))
+        )
+        # Keep joins inside the membership query: PostgreSQL can then lock the
+        # outer Patient rows without combining FOR UPDATE with DISTINCT.
+        return queryset.filter(pk__in=visible.order_by().values("pk"))
     if user.role == Role.PATIENT:
         return queryset.filter(pk=user.patient_id)
     if user.role == Role.DOCTOR:
         return queryset.filter(
             discharges__task__in=tasks_for(user).filter(status__in=OPEN_STATUSES)
         ).distinct()
-    if user.role == Role.COORDINATOR:
-        return queryset.filter(discharges__task__in=tasks_for(user)).distinct()
     return queryset.none()
 
 
 def discharges_for(user):
     queryset = Discharge.objects.all()
-    if is_hospital_staff(user):
-        return queryset.filter(created_by=user, hospital_id=user.organization_id)
+    if is_discharge_coordinator(user):
+        return queryset.filter(managing_organization_id=user.organization_id)
     return queryset.filter(task__in=tasks_for(user))

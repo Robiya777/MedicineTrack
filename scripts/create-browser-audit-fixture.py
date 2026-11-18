@@ -33,7 +33,7 @@ with transaction.atomic():
     )
     actors = {}
     for name, role, org in [
-        ("hospital", Role.HOSPITAL, hospital),
+        ("hospital", Role.COORDINATOR, hospital),
         ("doctor", Role.DOCTOR, clinic),
         ("doctor2", Role.DOCTOR, clinic),
         ("coordinator", Role.COORDINATOR, hospital),
@@ -71,6 +71,7 @@ with transaction.atomic():
     discharge = Discharge.objects.create(
         patient=patient,
         hospital=hospital,
+        managing_organization=hospital,
         created_by=actors["hospital"],
         discharged_at=timezone.now() - timedelta(hours=2),
         recommendations="Sintetik QA tavsiya",
@@ -134,6 +135,7 @@ with transaction.atomic():
     clinical_discharge = Discharge.objects.create(
         patient=patient,
         hospital=hospital,
+        managing_organization=hospital,
         created_by=actors["clinician"],
         discharged_at=timezone.now() - timedelta(hours=1),
         recommendations="Sintetik klinik tavsiya",
@@ -141,7 +143,7 @@ with transaction.atomic():
     )
     clinical_plan = create_plan(
         patient.id,
-        actors["clinician"],
+        actors["hospital"],
         {
             "discharge_id": clinical_discharge.id,
             "items": [{**medication, "name": f"Sintetik QA klinik dori {run_id}"}],
@@ -168,6 +170,7 @@ with transaction.atomic():
         d = Discharge.objects.create(
             patient=p,
             hospital=hospital,
+            managing_organization=hospital,
             created_by=actors["hospital"],
             discharged_at=timezone.now() - timedelta(hours=hours),
             recommendations="Sintetik QA tavsiya",

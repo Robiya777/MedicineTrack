@@ -7,7 +7,6 @@ from common.models import UUIDModel
 
 
 class Role(models.TextChoices):
-    HOSPITAL = "HOSPITAL", "Statsionar xodimi"
     DOCTOR = "DOCTOR", "Oilaviy shifokor"
     COORDINATOR = "COORDINATOR", "Koordinator"
     ADMIN = "ADMIN", "Texnik admin"

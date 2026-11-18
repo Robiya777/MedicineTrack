@@ -21,7 +21,7 @@ const redact = (value) => [...secrets].reduce((text, secret) => text.replaceAll(
 const report = { base, fixture_run: fixture.run_id, checks: [], browser_errors: [], server_errors: [] }
 let browser
 const pages = new Map()
-const slugs = { hospital: 'statsionar', doctor: 'shifokor', patient: 'bemor', coordinator: 'koordinator', admin: 'admin', clinician: 'statsionar' }
+const slugs = { hospital: 'koordinator', doctor: 'shifokor', patient: 'bemor', coordinator: 'koordinator', admin: 'admin', clinician: 'shifokor' }
 const unique = Date.now().toString(36)
 
 function localInput(date) {
@@ -99,20 +99,20 @@ try {
 
   const hospital = await login(context, 'hospital')
   await check('Hospital login and session reload', async () => {
-    await hospital.getByRole('heading', { name: 'Statsionar kabineti', exact: true }).waitFor()
+    await hospital.getByRole('heading', { level: 1 }).first().waitFor()
     await hospital.reload()
-    await hospital.getByRole('heading', { name: 'Statsionar kabineti', exact: true }).waitFor()
+    await hospital.getByRole('heading', { level: 1 }).first().waitFor()
     await screenshot(hospital, 'hospital-dashboard')
   })
   await check('Nullable medication DRAFT renders in live discharge', async () => {
-    await hospital.goto(`${base}/kabinet/statsionar/chiqarish/${fixture.discharge_id}`)
+    await hospital.goto(`${base}/kabinet/koordinator/chiqarish/${fixture.discharge_id}`)
     await hospital.getByText(fixture.null_plan_id, { exact: true }).waitFor()
     await hospital.getByText('Nomi kiritilmagan dori', { exact: true }).waitFor()
   })
 
   let createdPatient, discharge, task
   await check('UI creates patient and discharge DRAFT', async () => {
-    await hospital.goto(`${base}/kabinet/statsionar/chiqarish/yangi`)
+    await hospital.goto(`${base}/kabinet/koordinator/chiqarish/yangi`)
     await hospital.getByRole('button', { name: 'Yangi bemor', exact: true }).click()
     await hospital.getByLabel('Ism va familiya', { exact: true }).fill(`Sintetik web audit ${unique}`)
     await hospital.getByLabel('Tug‘ilgan sana', { exact: true }).fill('1985-01-01')
@@ -120,6 +120,7 @@ try {
     await hospital.getByLabel('Manzil', { exact: true }).fill('Sintetik brauzer audit manzili')
     await hospital.getByLabel('Telefon', { exact: true }).fill('+998900000099')
     createdPatient = await mutation(hospital, '/api/v1/patients', () => hospital.getByRole('button', { name: 'Bemorni saqlash', exact: true }).click(), 201)
+    await hospital.getByLabel('Chiqaruvchi kasalxona', { exact: true }).selectOption(fixture.hospital_id)
     await hospital.getByLabel('Haqiqiy chiqarish vaqti', { exact: true }).fill(localInput(new Date(Date.now() - 300000)))
     await hospital.getByLabel('Kuzatuvga olish asosi', { exact: true }).fill('Sintetik browser audit kuzatuvi')
     await hospital.getByLabel('Shifokor tavsiyasi', { exact: true }).fill('Sintetik browser audit tavsiyasi')
@@ -297,15 +298,15 @@ try {
     await screenshot(patient, 'patient-medications')
   })
 
-  await check('Hospital DOCTOR reaches own hospital discharge and can approve own plan', async () => {
+  await check('Hospital doctors retain doctor workspace without coordinator discharge permissions', async () => {
     const clinician = await login(context, 'clinician')
-    await clinician.getByRole('heading', { name: 'Statsionar kabineti', exact: true }).waitFor()
-    await clinician.goto(`${base}/kabinet/statsionar/chiqarish/${fixture.clinical_discharge_id}`)
-    const plan = clinician.locator('article').filter({ hasText: fixture.clinical_plan_id })
-    await plan.getByRole('button', { name: 'Klinik tasdiqlash', exact: true }).click()
-    const approved = await mutation(clinician, `/medication-plans/${fixture.clinical_plan_id}/approve`, () => plan.getByRole('button', { name: 'Amalni tasdiqlash', exact: true }).click())
-    assert.equal(approved.status, 'ACTIVE')
-    assert.equal(await clinician.getByRole('button', { name: 'Qabul tarixini ochish', exact: true }).count(), 0)
+    assert.equal(await clinician.getByRole('link', { name: 'Chiqarishlar', exact: true }).count(), 0)
+    await clinician.goto(`${base}/kabinet/shifokor/chiqarish/${fixture.clinical_discharge_id}`)
+    await clinician.waitForURL((url) => url.pathname.replace(/\/$/, '') === '/kabinet/shifokor')
+    const denied = clinician.waitForResponse((response) => new URL(response.url()).pathname === `/api/v1/patients/${fixture.patient_id}/medication-plans`)
+    await clinician.goto(`${base}/kabinet/shifokor/dorilar/${fixture.patient_id}`)
+    assert.equal((await denied).status(), 404)
+    assert.equal(await clinician.getByRole('button', { name: 'Klinik tasdiqlash', exact: true }).count(), 0)
   })
 
   await check('Technical admin lists staff, institutions and territories', async () => {
@@ -356,8 +357,8 @@ try {
 
   await check('360px layout and mobile navigation', async () => {
     await hospital.setViewportSize({ width: 360, height: 800 })
-    await hospital.goto(`${base}/kabinet/statsionar`)
-    await hospital.getByRole('heading', { name: 'Statsionar kabineti', exact: true }).waitFor()
+    await hospital.goto(`${base}/kabinet/koordinator`)
+    await hospital.getByRole('heading', { level: 1 }).first().waitFor()
     await hospital.getByRole('button', { name: 'Menyuni ochish', exact: true }).click()
     await hospital.getByRole('dialog').waitFor()
     await screenshot(hospital, 'hospital-mobile-menu')

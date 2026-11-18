@@ -20,7 +20,7 @@ from .models import (
     Territory,
     VisitReport,
 )
-from .scopes import is_hospital_staff
+from .scopes import is_discharge_coordinator
 
 
 class PatientSerializer(serializers.ModelSerializer):
@@ -76,6 +76,7 @@ class DischargeSerializer(serializers.ModelSerializer):
             "id",
             "patient",
             "hospital",
+            "managing_organization",
             "discharged_at",
             "confirmed_at",
             "recommendations",
@@ -89,7 +90,7 @@ class DischargeSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
-            "hospital",
+            "managing_organization",
             "confirmed_at",
             "status",
             "patient_snapshot",
@@ -101,13 +102,24 @@ class DischargeSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         fields["patient"].queryset = (
             Patient.objects.filter(created_by_org_id=request.user.organization_id)
-            if request and request.user.is_authenticated and is_hospital_staff(request.user)
+            if request and request.user.is_authenticated and is_discharge_coordinator(request.user)
             else Patient.objects.none()
         )
         fields["replaces"].queryset = (
-            Discharge.objects.filter(created_by=request.user, task__status="CANCELLED")
+            Discharge.objects.filter(
+                managing_organization=request.user.organization, task__status="CANCELLED"
+            )
             if request and request.user.is_authenticated
             else Discharge.objects.none()
+        )
+        fields["hospital"].queryset = (
+            Organization.objects.filter(
+                type=Organization.Type.HOSPITAL,
+                active=True,
+                territory_id=request.user.organization.territory_id,
+            )
+            if request and request.user.is_authenticated and request.user.organization_id
+            else Organization.objects.none()
         )
         return fields
 
@@ -115,6 +127,14 @@ class DischargeSerializer(serializers.ModelSerializer):
         return AttachmentSerializer(obj.attachments.all(), many=True).data
 
     def validate(self, attrs):
+        if (
+            self.instance
+            and "hospital" in attrs
+            and attrs["hospital"].pk != self.instance.hospital_id
+        ):
+            raise serializers.ValidationError(
+                {"hospital": "Chiqaruvchi kasalxonani almashtirish mumkin emas."}
+            )
         if self.instance and "patient" in attrs and attrs["patient"].pk != self.instance.patient_id:
             raise serializers.ValidationError(
                 {"patient": "Chiqarish bemorini almashtirish mumkin emas."}

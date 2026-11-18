@@ -64,6 +64,9 @@ class Discharge(UUIDModel):
         CONFIRMED = "CONFIRMED", "Tasdiqlangan"
 
     patient = models.ForeignKey(Patient, on_delete=models.PROTECT, related_name="discharges")
+    managing_organization = models.ForeignKey(
+        Organization, on_delete=models.PROTECT, related_name="managed_discharges"
+    )
     hospital = models.ForeignKey(Organization, on_delete=models.PROTECT)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     discharged_at = models.DateTimeField()

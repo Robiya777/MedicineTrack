@@ -3,7 +3,7 @@ from rest_framework.exceptions import PermissionDenied
 
 from accounts.models import Role
 from care.models import Patient
-from care.scopes import active_assignments, is_hospital_staff
+from care.scopes import active_assignments, is_discharge_coordinator
 
 from .models import DoseOccurrence, DoseRecord, MedicationPlan, PlanStatus
 
@@ -12,7 +12,7 @@ def patients_for_medications(user):
     queryset = Patient.objects.all()
     if user.role == Role.PATIENT:
         return queryset.filter(pk=user.patient_id)
-    if is_hospital_staff(user):
+    if is_discharge_coordinator(user):
         return queryset.filter(created_by_org_id=user.organization_id)
     if user.role == Role.DOCTOR:
         return queryset.filter(pk__in=active_assignments().filter(doctor=user).values("patient_id"))
@@ -21,10 +21,8 @@ def patients_for_medications(user):
 
 def plans_for(user):
     queryset = MedicationPlan.objects.all()
-    if is_hospital_staff(user):
-        return queryset.filter(
-            discharge__created_by=user, discharge__hospital_id=user.organization_id
-        )
+    if is_discharge_coordinator(user):
+        return queryset.filter(discharge__managing_organization_id=user.organization_id)
     queryset = queryset.filter(patient__in=patients_for_medications(user))
     return queryset.exclude(status=PlanStatus.DRAFT) if user.role == Role.PATIENT else queryset
 

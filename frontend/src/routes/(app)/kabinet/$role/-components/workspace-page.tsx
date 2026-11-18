@@ -1,16 +1,14 @@
 import {AdminDashboard} from '@/features/admin/admin-dashboard'
 import { PatientDashboard } from '@/features/messaging/conversations'
-import { getWorkspace, isHospitalWorkspaceUser } from '@/lib/workspaces'
+import { getWorkspace } from '@/lib/workspaces'
 import { useSessionStore } from '@/state/session'
 import { TaskDashboard } from '@/features/tasks/task-list'
-import { HospitalDashboard } from './hospital-dashboard'
 
 export function WorkspacePage() {
   const user = useSessionStore((state) => state.user)
   if (!user) return null
   if (user.role === 'ADMIN') return <AdminDashboard/>
   if (user.role === 'PATIENT' && user.patient) return <PatientDashboard />
-  if (isHospitalWorkspaceUser(user)) return <HospitalDashboard />
   if (user.role === 'COORDINATOR' || user.role === 'DOCTOR') {
     return <TaskDashboard key={user.role} coordinator={user.role === 'COORDINATOR'} />
   }

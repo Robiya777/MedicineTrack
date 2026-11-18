@@ -40,7 +40,10 @@ def test_missing_or_inactive_assignment_goes_to_coordinator(world, inactive):
         world.assignment.delete()
     task, _ = confirm_discharge(world.discharge.pk, world.staff)
     assert task.status == "UNASSIGNED" and task.assigned_doctor_id is None
-    assert OutboxEvent.objects.get(event_type="TASK_CREATED").recipient == world.coordinator
+    assert (
+        OutboxEvent.objects.get(event_type="TASK_CREATED", recipient=world.coordinator).recipient
+        == world.coordinator
+    )
 
 
 def test_late_discharge_escalates_without_reminder_flood(world):
@@ -50,7 +53,10 @@ def test_late_discharge_escalates_without_reminder_flood(world):
     scan_deadlines()
     scan_deadlines()
     assert task.due_at < timezone.now()
-    assert OutboxEvent.objects.filter(event_type="TASK_OVERDUE").count() == 1
+    assert (
+        OutboxEvent.objects.filter(event_type="TASK_OVERDUE", recipient=world.coordinator).count()
+        == 1
+    )
     assert not OutboxEvent.objects.filter(event_type__startswith="TASK_REMINDER").exists()
 
 
@@ -181,6 +187,7 @@ def test_patient_validations_and_snapshot_are_stable(world, task, client_for):
     Discharge.objects.create(
         patient=world.patient,
         hospital=world.hospital,
+        managing_organization=world.hospital,
         created_by=world.staff,
         discharged_at=timezone.now(),
         recommendations="Synthetic",

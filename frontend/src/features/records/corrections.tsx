@@ -18,7 +18,6 @@ import { useIdempotentMutation } from '@/hooks/use-idempotent-mutation'
 import { responseFieldErrors } from '@/lib/errors'
 import { formatTashkentDateTime } from '@/lib/date'
 import { useSessionStore } from '@/state/session'
-import { isHospitalWorkspaceUser } from '@/lib/workspaces'
 const labels: Record<string, string> = {
   recommendations: 'Shifokor tavsiyasi',
   observation: 'Bemor holati',
@@ -182,7 +181,7 @@ export function DischargeCorrections({ discharge }: { discharge: Discharge }) {
   if (discharge.status !== 'CONFIRMED') return null
   return (
     <div className="space-y-4">
-      {user && isHospitalWorkspaceUser(user) && (
+      {user?.role === 'COORDINATOR' && (
         <CorrectionForm kind="discharge" id={discharge.id} />
       )}
       {task.isPending && <Notice>Tuzatishlar tekshirilmoqda…</Notice>}

@@ -1,3 +1,4 @@
+import { attachActionFeedback } from './action-feedback'
 import { tabSessionId } from './tab-session'
 import axios, { isAxiosError } from 'axios'
 import { queryClient } from '@/state/query-client'
@@ -125,3 +126,5 @@ export async function signOut() {
     signingOut = false
   }
 }
+
+attachActionFeedback(authClient)

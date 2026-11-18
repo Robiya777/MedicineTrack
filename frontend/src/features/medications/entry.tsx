@@ -13,11 +13,11 @@ export function MedicationEntry() {
   if (user.role === 'PATIENT' && user.patient)
     return <MedicationPanel patientId={user.patient} />
   return (
-    <section className="mt-card max-w-xl space-y-5 p-5">
+    <section className="rounded-2xl border border-line bg-surface shadow-xs max-w-xl space-y-5 p-5">
       <h1 className="text-2xl font-semibold">Dori jadvali</h1>
       <p className="text-muted">
         Bemorning aniq ichki UUIDsi bilan ruxsatli jadvallarni oching.
-        Statsionarda chiqarish tafsilotidan ham jadval tuzish mumkin.
+        Chiqarish tafsilotidan ham jadval tuzish mumkin.
       </p>
       <Field label="Bemor UUIDsi">
         {(a) => (

@@ -10,9 +10,13 @@ public final class ReminderReceiver extends BroadcastReceiver {
             () -> {
               try {
                 if (i.getData() != null) Reminders.show(c, i.getData().getLastPathSegment());
-                Reminders.schedule(c);
+
               } catch (Exception ignored) {
               } finally {
+                try {
+                  Reminders.schedule(c);
+                } catch (Exception ignored) {
+                }
                 r.finish();
               }
             })

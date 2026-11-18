@@ -88,3 +88,14 @@ Chromium web integration is documented in frontend/docs/STAGE6_ACCEPTANCE.md.
 - Corrected the notification management-command test to use a real transaction lifecycle on PostgreSQL, since the standalone command deliberately manages its own DB connections.
 
 Live browser and combined frontend/backend evidence is reported separately by the integration audit. This backend suite does not establish real AI/SMS/push integration, production hosting, physical Android behavior or the five-minute 1,000-record load target.
+
+## Koordinator birlashtirish: 1–2-bosqich — 2026-11-18
+
+SQLite regressiyasi: **97 passed, 6 skipped** (PostgreSQL-specific). Eski
+HOSPITAL akkaunt va hujjat bilan alohida DB migratsiyasi, sessiya/access token
+bekori, bir muassasadagi birgalikdagi DRAFT, poliklinikadan kasalxona tanlash,
+aktivatsiya, idempotent confirm va klinik ruxsatlar tekshirildi. Yangi DBda
+migrate va seed_demo ikki marta o‘tdi. Django check, migration drift dry-run va
+OpenAPI sxemasini generatsiya qilish o‘tdi. Lokal ishlayotgan baza o‘zgartirilmadi;
+frontendning 3-bosqichi bilan birga API migratsiyasi chiqarilishi kerak.
+Batafsil: docs/COORDINATOR_MIGRATION.md.

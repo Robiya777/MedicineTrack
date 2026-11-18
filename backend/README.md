@@ -30,7 +30,7 @@ Demo akkauntlar:
 
 | Login | Rol |
 |---|---|
-| `demo.hospital` | Statsionar xodimi |
+| `demo.hospital` | Koordinator (eski login saqlangan) |
 | `demo.doctor`, `demo.doctor2` | Oilaviy shifokor |
 | `demo.coordinator` | Koordinator |
 | `demo.admin` | Texnik admin |
@@ -160,3 +160,5 @@ tushiring. Har 15 soniyada chaqiruv/javob muddati tekshiriladi va outboxdagi
 in-app bildirishnomalar yetkaziladi. Bir martalik sikl uchun `--watch`ni olib
 tashlang. Bu buyruq AI/PDF ishlovini bajarmaydi. Productionda shu ishlarni
 mavjud Celery worker/beat bajaradi; lokal watch va Celeryni birga ishlatish shart emas.
+
+Koordinator vakolatlari va migratsiya: [COORDINATOR_MIGRATION.md](docs/COORDINATOR_MIGRATION.md).

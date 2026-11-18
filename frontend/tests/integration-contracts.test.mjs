@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { IdempotencyAttempt } from '../src/lib/idempotency.ts'
 import { planSchema } from '../src/api/medication-schemas.ts'
-import { getWorkspace, isHospitalWorkspaceUser } from '../src/lib/workspaces.ts'
+import { getWorkspace, isHospitalDoctor } from '../src/lib/workspaces.ts'
 import { takenDateForCorrection, takenInputValue } from '../src/lib/medication-record.ts'
 
 function attempts() {
@@ -79,15 +79,15 @@ test('medication contracts still reject corrupt field types', () => {
   assert.equal(planSchema.safeParse(value).success, false)
 })
 
-test('hospital clinicians use hospital workspace while family doctors retain doctor workspace', () => {
-  assert.equal(getWorkspace({ role: 'DOCTOR', organization_type: 'HOSPITAL' }).slug, 'statsionar')
+test('all doctors retain doctor workspace after discharge workflows move to coordinators', () => {
+  assert.equal(getWorkspace({ role: 'DOCTOR', organization_type: 'HOSPITAL' }).slug, 'shifokor')
   assert.equal(getWorkspace({ role: 'DOCTOR', organization_type: 'CLINIC' }).slug, 'shifokor')
-  assert.equal(isHospitalWorkspaceUser({ role: 'DOCTOR', organization_type: 'HOSPITAL' }), true)
-  assert.equal(isHospitalWorkspaceUser({ role: 'DOCTOR', organization_type: 'CLINIC' }), false)
+  assert.equal(isHospitalDoctor({ role: 'DOCTOR', organization_type: 'HOSPITAL' }), true)
+  assert.equal(isHospitalDoctor({ role: 'DOCTOR', organization_type: 'CLINIC' }), false)
 })
 
 test('other roles retain their assigned workspace', () => {
-  assert.equal(getWorkspace({ role: 'HOSPITAL', organization_type: 'HOSPITAL' }).slug, 'statsionar')
+  assert.equal(getWorkspace({ role: 'COORDINATOR', organization_type: 'CLINIC' }).slug, 'koordinator')
   assert.equal(getWorkspace({ role: 'COORDINATOR', organization_type: 'HOSPITAL' }).slug, 'koordinator')
   assert.equal(getWorkspace({ role: 'PATIENT', organization_type: null }).slug, 'bemor')
   assert.equal(getWorkspace({ role: 'ADMIN', organization_type: null }).slug, 'admin')
