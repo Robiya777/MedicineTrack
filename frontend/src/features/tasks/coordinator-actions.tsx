@@ -1,3 +1,4 @@
+import { UserRoundPlus, XCircle } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useState, type ReactNode } from 'react'
 import { doctorName, doctorsQuery, type CareTask } from '@/api/tasks'
@@ -23,20 +24,20 @@ export function CoordinatorActions({ task }: { task: CareTask }) {
   if (!taskIsOpen(task)) return null
 
   return (
-    <section className="flex flex-wrap gap-3" aria-label="Koordinator amallari">
+    <section className="flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-surface p-4 shadow-xs" aria-label="Koordinator amallari">
       <button
         type="button"
         className={primaryButton}
         onClick={() => setAction('reassign')}
       >
-        {task.assigned_doctor ? 'Qayta tayinlash' : 'Shifokor tayinlash'}
+        <UserRoundPlus size={17} aria-hidden="true" />{task.assigned_doctor ? 'Qayta tayinlash' : 'Shifokor tayinlash'}
       </button>
       <button
         type="button"
-        className={secondaryButton + ' mt-button-danger'}
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-danger/20 bg-surface px-4 py-2.5 text-sm font-semibold text-danger transition hover:bg-danger-wash sm:ml-auto"
         onClick={() => setAction('cancel')}
       >
-        Chaqiruvni bekor qilish
+        <XCircle size={17} aria-hidden="true" />Bekor qilish
       </button>
       {action && (
         <ActionDialog

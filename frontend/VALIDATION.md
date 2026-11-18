@@ -255,3 +255,13 @@ Joriy/Tarix/Barchasi filtrlari, rangli holatlar, doza/kurs guruhlari va qabul
 vaqti belgilari qo‘shildi. Klinik approve va bemor qabuli vakolatlari saqlandi.
 Chromium localhostda kartadan tanlash, kontekst, filtr, loyihaga kirish hamda
 1440/360 px ko‘rinish tekshirildi; lint/typecheck/build o‘tdi.
+
+## Chaqiruv tafsiloti dizayni — 2026-11-18
+
+Header ikonali back, sarlavha va bitta ikonali yangilash tugmasiga yig‘ildi.
+Bemor/holat, shifokor, muddatlar va kontaktlar guruhlandi; telefon havolasi
+saqlandi. UUID detailsga ko‘chirildi. Koordinator amallari ikonali panelga,
+chaqiruv tarixi chiziqli hodisalar lentasiga joylashtirildi.
+Chromium localhostda 1440/360 px, overflow, bitta refresh icon va ikkala amal
+dialogini ochish/yopish tekshirildi. Runtime xatosi aniqlanmadi, ma’lumotga
+yozish bajarilmadi. Lint/typecheck/build o‘tdi; ruxsat va API oqimlari saqlandi.
