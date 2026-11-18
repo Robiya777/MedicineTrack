@@ -1,3 +1,4 @@
+import { ScheduleToolbar } from './schedule-toolbar'
 import { ScheduleCalendar } from './schedule-calendar'
 import { Save, Globe2, RefreshCw, Clock3, MessageCircle, Stethoscope, TriangleAlert, UserRound } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -160,7 +161,7 @@ function ScheduleEditor({
       onSubmit={submit}
       aria-busy={mutation.isPending}
     >
-      <div className="sticky top-20 z-30 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-surface/95 p-2 shadow-xs backdrop-blur-sm">
+      <ScheduleToolbar>
         <div className="flex rounded-xl border border-line bg-page p-1">{(['week','exceptions'] as const).map(value=><button type="button" key={value} disabled={mutation.isPending} aria-pressed={tab===value} onClick={()=>setTab(value)} className={`min-h-10 rounded-md px-3 text-sm font-semibold ${tab===value ? 'bg-primary text-white shadow-xs' : 'text-muted hover:bg-mint hover:text-primary'}`}>{value==='week' ? 'Haftalik tartib' : 'Istisno kunlar'}</button>)}</div>
         <div className="ml-auto flex flex-wrap items-center gap-2">
           <button type="button" className={secondaryButton} onClick={()=>setZoneOpen(true)} disabled={mutation.isPending}><Globe2 size={16} aria-hidden="true" />{input.timezone}</button>
@@ -168,7 +169,7 @@ function ScheduleEditor({
           <span role="status" className="hidden text-xs text-warning lg:block">{dirty ? 'Saqlanmagan' : ''}</span>
           <button type="submit" className={primaryButton} disabled={mutation.isPending}><Save size={16} aria-hidden="true" />{mutation.isPending ? 'Saqlanmoqda…' : 'Saqlash'}</button>
         </div>
-      </div>
+      </ScheduleToolbar>
       {zoneOpen && <Dialog title="Vaqt zonasi" close={()=>setZoneOpen(false)}>
         <Field label="Vaqt zonasi" error={responseFieldErrors(mutation.error).timezone}>{a=><select {...a} className={inputStyle} value={input.timezone} disabled={mutation.isPending} onChange={e=>change({...input,timezone:e.target.value})}>
           {[...new Set([input.timezone, ...Intl.supportedValuesOf('timeZone'), 'UTC'])].sort().map(zone=><option key={zone} value={zone}>{zone.replaceAll('_',' ')}</option>)}
