@@ -21,9 +21,16 @@ export function responseFieldErrors(error: unknown): Record<string, string> {
   if (!fields || typeof fields !== 'object' || Array.isArray(fields)) return {}
 
   const messages: Record<string, string> = {}
-  for (const [field, value] of Object.entries(fields)) {
-    const message = Array.isArray(value) ? value.find((item) => typeof item === 'string') : value
-    if (typeof message === 'string') messages[field] = message
+  function collect(value: unknown, path: string) {
+    if (typeof value === 'string') { messages[path] = value; return }
+    if (Array.isArray(value)) {
+      const text = value.filter((item): item is string => typeof item === 'string')
+      if (text.length) messages[path] = text.join(' ')
+      value.forEach((item, index) => { if (typeof item !== 'string') collect(item, `${path}.${index}`) })
+    } else if (value && typeof value === 'object') {
+      Object.entries(value).forEach(([key, item]) => collect(item, path ? `${path}.${key}` : key))
+    }
   }
+  collect(fields, '')
   return messages
 }
