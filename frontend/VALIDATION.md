@@ -232,3 +232,15 @@ aktivatsiya/dori bo‘limlari va eski route redirecti localhostda tekshirildi.
 1440/360 px overflow va runtime xatosi aniqlanmadi; lint/typecheck/build o‘tdi.
 Backend regressiyasi 97 passed, 6 PostgreSQL-specific skipped.
 Dalillar: [COORDINATOR_UNIFICATION.md](docs/COORDINATOR_UNIFICATION.md).
+
+## Chiqarish tafsiloti va dori rejasi dizayni — 2026-11-18
+
+Back havolasi ikonali tugmaga aylantirildi; bemor/holat, kontakt, kasalxona va
+tavsiyalar alohida guruhlandi, UUID ochiladigan tafsilotda saqlandi. Dori headeri
+va amallari birlashtirildi. Yangi loyiha muharririda dori, doza, kurs va zona
+bilan 24 soatlik interaktiv qabul qatori bor; vaqtni tanlab dialogda aniq
+belgilash mavjud forma va payloadni yangilaydi. Ish vaqtidagi davomiy bloklar
+qo‘llanilmaydi: har doza alohida vaqt belgisi. Klinik ruxsatlar o‘zgartirilmadi.
+Chromium localhostda 1440/360 px, ikonali back, dori/vaqt qo‘shish va 08:15
+aniqligi tekshirildi; sintetik bemorda API orqali DRAFT saqlash 201 qaytardi.
+Tashqi gorizontal surilish va runtime xatosi aniqlanmadi. Lint/typecheck/build o‘tdi.
