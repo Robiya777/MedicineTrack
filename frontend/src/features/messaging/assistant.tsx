@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
-import { Phone, MapPin, ShieldAlert } from 'lucide-react'
+import { Phone, MapPin, ShieldAlert, Navigation, ExternalLink } from 'lucide-react'
 import {
   acknowledgeEmergency, assistantConfigQuery, assistantKeys, emergenciesQuery, shareEmergencyLocation,
   type Assessment, type Emergency, type LocationInput,
@@ -13,7 +13,7 @@ import { useSessionStore } from '@/state/session'
 
 const risks = { EMERGENCY: 'Shoshilinch belgi', DOCTOR_REVIEW: 'Shifokor ko‘rigi kerak', SELF_MONITOR: 'Kuzatuvni davom ettiring', NEEDS_INFO: 'Aniqlashtirish kerak' }
 export function EmergencyPhone() {
-  return <a href="tel:103" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-700 px-4 py-2 font-semibold text-white"><Phone size={18} aria-hidden="true" />103 · Telefon qilish</a>
+  return <a href="tel:103" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-800 hover:bg-red-100"><Phone size={18} aria-hidden="true" />103<span className="hidden sm:inline"> · Telefon qilish</span></a>
 }
 export function AssistantIntroduction() {
   const config = useQuery(assistantConfigQuery())
@@ -87,11 +87,13 @@ function EmergencyCard({ incident }: { incident: Emergency }) {
     <EmergencyPhone />
     <p className="text-sm">Ro‘yxatdagi manzil: {incident.registered_address || 'Kiritilmagan'}</p>
     {incident.contact && <p className="text-sm">Bemor telefoni: {incident.contact}</p>}
-    {location ? <div className="space-y-2 rounded-lg bg-slate-50 p-3">
-      <p className="font-semibold">{location.source === 'DEMO' ? 'Namoyish lokatsiyasi · bemorning GPSi emas' : 'Bemor ulashgan qurilma lokatsiyasi'}</p>
-      <p className="text-sm">{location.latitude}, {location.longitude}{location.accuracy_m !== null ? ` · aniqlik ±${Math.round(location.accuracy_m)} m` : ''}</p>
-      <p className="text-xs text-muted">Aniqlangan: {formatTashkentDateTime(location.recorded_at)} · bir martalik, jonli kuzatuv emas.</p>
-      <a className={secondaryButton} href={`https://www.openstreetmap.org/?mlat=${location.latitude}&mlon=${location.longitude}#map=17/${location.latitude}/${location.longitude}`} target="_blank" rel="noopener noreferrer"><MapPin size={16} aria-hidden="true" />Xaritada ochish</a>
+    {location ? <div className="max-w-md overflow-hidden rounded-2xl border border-line bg-surface shadow-xs" aria-label="Ulashilgan lokatsiya">
+      <div className="location-preview relative flex h-28 items-center justify-center overflow-hidden bg-mint" aria-hidden="true"><span className="absolute -left-8 top-8 h-5 w-[130%] -rotate-12 border-y-2 border-white bg-white/60"/><span className="absolute left-1/3 top-0 h-full w-5 rotate-12 border-x-2 border-white bg-white/60"/><span className="relative flex size-14 items-center justify-center rounded-full border-4 border-white bg-primary text-white shadow-md"><MapPin size={27}/></span></div>
+      <div className="space-y-2 p-4"><p className="flex items-center gap-2 text-sm font-semibold"><Navigation size={16} className="text-primary" aria-hidden="true"/>{location.source === 'DEMO' ? 'Namoyish lokatsiyasi' : 'Ulashilgan lokatsiya'}</p>
+      <p className="text-xs text-muted">{location.source === 'DEMO' ? 'Bemorning GPSi emas · namoyish nuqtasi' : 'Qurilmadan bir marta ulashilgan · jonli kuzatuv emas'}</p>
+      <p className="text-xs tabular-nums text-muted">{location.latitude}, {location.longitude}{location.accuracy_m !== null ? ` · ±${Math.round(location.accuracy_m)} m` : ''}</p>
+      <p className="text-xs text-muted">{formatTashkentDateTime(location.recorded_at)}</p></div>
+      <a className="flex min-h-11 items-center justify-center gap-2 border-t border-line bg-page px-4 py-3 text-sm font-semibold text-primary hover:bg-mint" href={`https://www.openstreetmap.org/?mlat=${location.latitude}&mlon=${location.longitude}#map=17/${location.latitude}/${location.longitude}`} target="_blank" rel="noopener noreferrer">Xaritada ochish<ExternalLink size={15} aria-hidden="true"/></a>
     </div> : <Notice>Lokatsiya hali ulashilmagan. Ro‘yxatdagi manzil GPS o‘rniga ishlatilmaydi.</Notice>}
     {user.role === 'PATIENT' && <button type="button" className={secondaryButton} onClick={() => setLocationDialog(true)}>Lokatsiyani ulashish</button>}
     <p className="text-sm">{incident.acknowledged_at ? `Tibbiyot xodimi ko‘rdi: ${formatTashkentDateTime(incident.acknowledged_at)}` : 'Tibbiyot xodimining tasdig‘i kutilmoqda.'}</p>
