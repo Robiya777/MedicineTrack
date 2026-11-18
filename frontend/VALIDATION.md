@@ -284,8 +284,20 @@ vaqti belgilari qo‘shildi. Klinik approve va bemor qabuli vakolatlari saqlandi
 Chromium localhostda kartadan tanlash, kontekst, filtr, loyihaga kirish hamda
 1440/360 px ko‘rinish tekshirildi; lint/typecheck/build o‘tdi.
 
-## Pull merge verification — 2026-11-18
+## Chaqiruv tafsiloti dizayni — 2026-11-18
 
-Coordinator role routing and legacy statsionar redirects were reconciled with the local idempotency, nullable-draft and intake-timestamp fixes. Incoming discharge/dose-planner and patient-selection screens are preserved; medication links resolve the current user's workspace. `npm ci`, 9 regression tests, ESLint, TypeScript and production build pass. Historical hospital-DOCTOR workspace assertions now follow the unified coordinator permissions.
+Header ikonali back, sarlavha va bitta ikonali yangilash tugmasiga yig‘ildi.
+Bemor/holat, shifokor, muddatlar va kontaktlar guruhlandi; telefon havolasi
+saqlandi. UUID detailsga ko‘chirildi. Koordinator amallari ikonali panelga,
+chaqiruv tarixi chiziqli hodisalar lentasiga joylashtirildi.
+Chromium localhostda 1440/360 px, overflow, bitta refresh icon va ikkala amal
+dialogini ochish/yopish tekshirildi. Runtime xatosi aniqlanmadi, ma’lumotga
+yozish bajarilmadi. Lint/typecheck/build o‘tdi; ruxsat va API oqimlari saqlandi.
 
-Post-merge Chromium smoke: **6 passed**, 0 page errors and 0 HTTP 5xx. Covered coordinator navigation, legacy discharge deep-link/query preservation, named medication-patient cards, nullable drafts, 360 px layout and hospital-DOCTOR route restrictions. API used an isolated synthetic database; the running application database was not migrated.
+## Ish jadvali boshlang‘ich holati
+
+Shifokor tanlanmaganda yo‘riqli welcome panel va mavjud shifokorlardan tez
+tanlash kartalari chiqadi. Loading/xato/bo‘sh ro‘yxat holatlari ajratilgan.
+Chromium localhostda 1440/360 px, tez tanlash bilan kalendarni ochish, tanlovni
+tozalash va bo‘sh shifokorlar javobi tekshirildi. Saqlash amali tanlovsiz
+ko‘rinmaydi; overflow/runtime xatosi aniqlanmadi. Lint/typecheck/build o‘tdi.

@@ -1,3 +1,4 @@
+import { ScheduleWelcome } from './schedule-welcome'
 import { ScheduleToolbar } from './schedule-toolbar'
 import { ScheduleCalendar } from './schedule-calendar'
 import { Save, Globe2, RefreshCw, Clock3, MessageCircle, Stethoscope, TriangleAlert, UserRound } from 'lucide-react'
@@ -61,6 +62,7 @@ export function SchedulePage() {
               {...a11y}
               className={inputStyle}
               value={id}
+              disabled={doctors.isPending || doctors.isError || !doctors.data?.length}
               onChange={(e) => setId(e.target.value)}
             >
               <option value="">Shifokorni tanlang</option>
@@ -80,6 +82,8 @@ export function SchedulePage() {
           retry={() => void doctors.refetch()}
         />
       )}
+      {!id && doctors.isPending && <Notice>Shifokorlar yuklanmoqda…</Notice>}
+      {!id && doctors.isSuccess && <ScheduleWelcome doctors={doctors.data} select={setId}/>}
       {id && schedule.isPending && <Notice>Jadval yuklanmoqda…</Notice>}
       {id && schedule.isError && (
         <RequestError

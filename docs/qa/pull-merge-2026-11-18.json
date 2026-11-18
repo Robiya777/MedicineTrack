@@ -42,5 +42,19 @@
     "lint_warning": "OldTargetApi",
     "apk_sha256": "a63a6d0e4a5b3d58839d3382e07623d4f470f79eec048b9da1a5264c8e5f0376"
   },
-  "backup_branch": "backup/pull-merge-20261118-122438"
+  "backup_branch": "backup/pull-merge-20261118-122438",
+  "frontend_merge_notes": [
+    "## Pull merge verification — 2026-11-18\n\nCoordinator role routing and legacy statsionar redirects were reconciled with the local idempotency, nullable-draft and intake-timestamp fixes. Incoming discharge/dose-planner and patient-selection screens are preserved; medication links resolve the current user's workspace. `npm ci`, 9 regression tests, ESLint, TypeScript and production build pass. Historical hospital-DOCTOR workspace assertions now follow the unified coordinator permissions.\n\nPost-merge Chromium smoke: **6 passed**, 0 page errors and 0 HTTP 5xx. Covered coordinator navigation, legacy discharge deep-link/query preservation, named medication-patient cards, nullable drafts, 360 px layout and hospital-DOCTOR route restrictions. API used an isolated synthetic database; the running application database was not migrated."
+  ],
+  "followup_merge": {
+    "previous_local": "c120b93",
+    "incoming": "df9e52798cc2ef08e7122c8a04b4e25fd1da9fdb",
+    "reason": "Concurrent append-only frontend validation notes; local merge notes moved into this dedicated report.",
+    "frontend_validation": {
+      "regressions_passed": 9,
+      "eslint": "PASS",
+      "typecheck": "PASS",
+      "production_build": "PASS"
+    }
+  }
 }
