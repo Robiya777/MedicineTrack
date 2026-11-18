@@ -1,8 +1,9 @@
+import './chat.css'
 import {DischargeCorrections} from '@/features/records/corrections'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, getRouteApi } from '@tanstack/react-router'
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
-import { ArrowLeft, MessageCircle, RefreshCw, Search, Send, CheckCheck } from 'lucide-react'
+import { ArrowLeft, MessageCircle, RefreshCw, Search, Send, CheckCheck, CalendarClock, ChevronDown, LoaderCircle } from 'lucide-react'
 import {
   conversationQuery,
   conversationsQuery,
@@ -250,7 +251,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
   const denied = messages.isError || statuses.isError
   const snapshot = conversation.work_schedule
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="chat-wallpaper flex min-h-full flex-col">
       <section className="space-y-3 border-b border-line bg-surface p-5">
         <h2 className="font-semibold">
           {user.role === 'DOCTOR' ? patient.data?.full_name || 'Bemor ' + conversation.patient.slice(0, 8) : conversation.doctor
@@ -271,37 +272,10 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
           </p>
         )}
         {'shifts' in snapshot && (
-          <details className="mt-schedule-summary">
-            <summary>Shifokorning ish jadvali</summary>
-            <p className="mt-2 text-sm text-muted">
-              Vaqt zonasi: {snapshot.timezone}
-            </p>
-            <ul className="mt-2 space-y-1 text-sm">
-              {snapshot.shifts.map((s, i) => (
-                <li key={i}>
-                  {
-                    [
-                      'Dushanba',
-                      'Seshanba',
-                      'Chorshanba',
-                      'Payshanba',
-                      'Juma',
-                      'Shanba',
-                      'Yakshanba',
-                    ][s.weekday]
-                  }
-                  : {s.start}–{s.end}
-                </li>
-              ))}
-            </ul>
-            {Object.entries(snapshot.exceptions).map(([day, intervals]) => (
-              <p key={day} className="text-sm">
-                {day}:{' '}
-                {intervals.length
-                  ? intervals.map((s) => s.start + '–' + s.end).join(', ')
-                  : 'Dam olish kuni'}
-              </p>
-            ))}
+          <details className="chat-schedule group rounded-2xl border border-line bg-page">
+            <summary className="flex cursor-pointer list-none items-center gap-2.5 px-4 py-3 text-sm font-medium"><CalendarClock size={18} className="text-primary" aria-hidden="true"/>Shifokorning ish jadvali<ChevronDown size={16} className="ml-auto text-muted transition-transform group-open:rotate-180" aria-hidden="true"/></summary>
+            <div className="border-t border-line p-3"><p className="mb-3 px-1 text-xs text-muted">Vaqt zonasi: {snapshot.timezone}</p><ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">{['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba','Yakshanba'].map((day,weekday)=>{const shifts=snapshot.shifts.filter(shift=>shift.weekday===weekday);return <li key={day} className={'rounded-xl border p-3 text-xs '+(shifts.length?'border-line bg-surface':'border-transparent bg-page text-muted')}><p className="mb-1.5 font-medium">{day}</p><p className={shifts.length?'font-semibold tabular-nums text-primary':''}>{shifts.length?shifts.map(shift=>shift.start+'–'+shift.end).join(', '):'Dam olish'}</p></li>})}</ul>
+            {Object.keys(snapshot.exceptions).length>0 && <div className="mt-3 border-t border-line pt-3"><h3 className="mb-2 text-xs font-semibold">Istisno kunlar</h3>{Object.entries(snapshot.exceptions).map(([day,intervals])=><p key={day} className="flex flex-wrap justify-between gap-2 py-1 text-xs"><span>{day}</span><span className="font-medium">{intervals.length?intervals.map(shift=>shift.start+'–'+shift.end).join(', '):'Dam olish kuni'}</span></p>)}</div>}</div>
           </details>
         )}
       </section>
@@ -328,7 +302,7 @@ function ConversationBody({ conversation }: { conversation: Conversation }) {
               <li
                 key={message.id}
                 className={
-                  'max-w-[90%] rounded-2xl p-3.5 text-sm leading-6 shadow-xs sm:max-w-[80%] ' +
+                  'chat-bubble max-w-[90%] rounded-2xl p-3.5 text-sm leading-6 shadow-xs sm:max-w-[80%] ' +
                   (message.sender === user.id ? 'self-end rounded-br-sm bg-mint' : 'self-start rounded-bl-sm border border-line bg-surface')
                 }
               >
@@ -423,6 +397,7 @@ function MessageForm({ conversationId }: { conversationId: string }) {
     try {
       await mutation.mutateAsync(text.trim())
       setText('')
+      if (composer.current) composer.current.style.height='auto'
       requestAnimationFrame(() =>
         composer.current?.focus({ preventScroll: true }),
       )
@@ -437,29 +412,17 @@ function MessageForm({ conversationId }: { conversationId: string }) {
       onSubmit={submit}
       aria-busy={mutation.isPending}
     >
-      <Field label="Xabar" error={responseFieldErrors(mutation.error).text}>
-        {(a11y) => (
-          <textarea
-            {...a11y}
-            className={inputStyle}
-            rows={2}
-            placeholder="Xabar yozing…"
-            maxLength={4000}
-            ref={composer}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            disabled={mutation.isPending}
-            required
-          />
-        )}
-      </Field>
+      <div className="flex items-end gap-2 rounded-3xl border border-line bg-page p-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
+        <label className="min-w-0 flex-1"><span className="sr-only">Xabar</span><textarea
+          className="block max-h-36 min-h-11 w-full resize-none border-0 bg-transparent px-3 py-3 text-sm leading-5 outline-none"
+          rows={1} placeholder="Xabar yozing…" maxLength={4000} ref={composer} value={text}
+          onChange={e=>{setText(e.target.value);e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,144)+'px'}}
+          onKeyDown={e=>{if(e.key==='Enter' && !e.shiftKey && !e.nativeEvent.isComposing){e.preventDefault();e.currentTarget.form?.requestSubmit()}}}
+          disabled={mutation.isPending} required aria-describedby="chat-composer-help"/></label>
+        <button type="submit" aria-label={mutation.isPending?'Yuborilmoqda':'Yuborish'} title="Yuborish (Enter)" className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-white transition-transform hover:scale-105 active:scale-95 disabled:scale-100 disabled:opacity-40 motion-reduce:transform-none" disabled={mutation.isPending || !text.trim()}>{mutation.isPending?<LoaderCircle size={20} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/>:<Send size={20} aria-hidden="true"/>}</button>
+      </div>
+      <p id="chat-composer-help" className="px-3 text-[10px] text-muted">Enter — yuborish · Shift+Enter — yangi qator</p>
       {mutation.error && <RequestError error={mutation.error} />}
-      <button
-        className={primaryButton}
-        disabled={mutation.isPending || !text.trim()}
-      >
-        <Send size={17} aria-hidden="true" />{mutation.isPending ? 'Yuborilmoqda…' : 'Yuborish'}
-      </button>
     </form>
   )
 }
