@@ -1,3 +1,4 @@
+import { ActionNotifications } from '@/components/action-notifications'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
@@ -20,7 +21,7 @@ if (!root) throw new Error('Ilova konteyneri topilmadi.')
 createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <ActionNotifications><RouterProvider router={router} /></ActionNotifications>
     </QueryClientProvider>
   </StrictMode>,
 )
