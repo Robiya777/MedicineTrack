@@ -1,3 +1,4 @@
+import {correctionSchema} from '@/api/corrections'
 import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { apiClient } from './client'
@@ -18,6 +19,7 @@ export const contactResultSchema = z.enum([
 ])
 
 export const taskSchema = z.object({
+  corrections: z.array(correctionSchema).default([]),
   id: z.uuid(),
   discharge: z.uuid(),
   patient: patientSnapshotSchema,
@@ -30,6 +32,7 @@ export const taskSchema = z.object({
 export type HospitalTask = z.infer<typeof taskSchema>
 
 const reportSchema = z.object({
+  author: z.uuid(),
   performed_at: isoDateTimeSchema,
   channel: channelSchema,
   observation: z.string(),

@@ -1,3 +1,5 @@
+import {DischargeCorrections} from '@/features/records/corrections'
+import {PatientContact} from '@/features/records/patient-contact'
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
@@ -176,6 +178,8 @@ export function DischargeSummary({ discharge }: DischargeSummaryProps) {
           </div>
         )}
       </section>
+      {discharge.status==='DRAFT'&&<PatientContact patientId={discharge.patient}/>}
+      <DischargeCorrections discharge={discharge}/>
       <PatientActivation patientId={discharge.patient} />
       <MedicationPanel
         patientId={discharge.patient}

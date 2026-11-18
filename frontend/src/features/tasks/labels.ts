@@ -25,6 +25,7 @@ export const eventLabels: Record<string, string> = {
   TASK_COMPLETED: 'Natija yuborildi',
   TASK_CANCELLED: 'Chaqiruv bekor qilindi',
   REPORT_CORRECTED: 'Natijaga tuzatish qo‘shildi',
+  DISCHARGE_CORRECTED: 'Chiqarish tavsiyasiga tuzatish qo‘shildi',
   DISCHARGE_DRAFT_CREATED: 'Chiqarish loyihasi yaratildi',
   DISCHARGE_DRAFT_UPDATED: 'Chiqarish loyihasi tahrirlandi',
 }

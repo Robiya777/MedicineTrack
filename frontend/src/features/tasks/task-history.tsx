@@ -1,11 +1,16 @@
+import {CorrectionHistory,CorrectionForm} from '@/features/records/corrections'
+import {useSessionStore} from '@/state/session'
 import type { CareTask } from '@/api/tasks'
 import { Facts } from '@/components/ui'
 import { formatTashkentDateTime } from '@/lib/date'
 import { channelLabels, contactResultLabels, eventLabels } from './labels'
 
 export function TaskHistory({ task }: { task: CareTask }) {
+  const user=useSessionStore(s=>s.user)
   return (
     <>
+      <CorrectionHistory items={task.corrections}/>
+      {user?.role==='DOCTOR'&&task.report?.author===user.id&&<CorrectionForm kind="report" id={task.id}/>}
       {task.contact_attempts.length > 0 && (
         <section aria-labelledby="contact-title" className="space-y-4 mt-card p-5 sm:p-6">
           <h2 id="contact-title" className="text-xl font-semibold">Aloqa urinishlari</h2>
