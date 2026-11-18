@@ -1,3 +1,4 @@
+import { attachActionFeedback } from './action-feedback'
 import axios, { CanceledError, type InternalAxiosRequestConfig } from 'axios'
 import { useSessionStore } from '@/state/session'
 import { refreshForRequest } from './session'
@@ -59,3 +60,5 @@ export async function checkBackendReadiness(signal: AbortSignal) {
 
   return true
 }
+
+attachActionFeedback(apiClient)
