@@ -82,7 +82,7 @@ function ContactForm({
     }
   }
   return (
-    <form className="mt-card space-y-4 p-5" onSubmit={submit}>
+    <form className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5" onSubmit={submit}>
       <h2 className="text-xl font-semibold">Kontakt va manzil</h2>
       <p className="text-sm text-muted">
         Tahrir faqat o‘zingiz yaratgan bemorning tasdiqlanmagan chiqarishi

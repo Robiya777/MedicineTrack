@@ -47,7 +47,7 @@ export function AccountEditor({
   }
   return (
     <form
-      className="mt-card space-y-5 p-5 sm:p-6"
+      className="rounded-2xl border border-line bg-surface shadow-xs space-y-5 p-5 sm:p-6"
       onSubmit={submit}
       aria-busy={mutation.isPending}
     >

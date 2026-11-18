@@ -161,7 +161,7 @@ export function AdminDashboard() {
                   .includes(search.toLocaleLowerCase()),
               )
               .map((account) => (
-                <li key={account.id} className="mt-card space-y-3 p-5">
+                <li key={account.id} className="rounded-2xl border border-line bg-surface shadow-xs space-y-3 p-5">
                   <h2 className="wrap-break-word text-lg font-semibold">
                     {[account.first_name, account.last_name]
                       .filter(Boolean)
@@ -206,7 +206,7 @@ export function AdminDashboard() {
                 o.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
               )
               .map((org) => (
-                <li key={org.id} className="mt-card space-y-3 p-5">
+                <li key={org.id} className="rounded-2xl border border-line bg-surface shadow-xs space-y-3 p-5">
                   <h2 className="wrap-break-word text-lg font-semibold">
                     {org.name}
                   </h2>
@@ -234,7 +234,7 @@ export function AdminDashboard() {
                 t.name.toLocaleLowerCase().includes(search.toLocaleLowerCase()),
               )
               .map((territory) => (
-                <li key={territory.id} className="mt-card space-y-3 p-5">
+                <li key={territory.id} className="rounded-2xl border border-line bg-surface shadow-xs space-y-3 p-5">
                   <h2 className="wrap-break-word text-lg font-semibold">
                     {territory.name}
                   </h2>

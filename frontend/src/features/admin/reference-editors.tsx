@@ -36,7 +36,7 @@ export function OrganizationEditor({
     }
   }
   return (
-    <form className="mt-card space-y-4 p-5" onSubmit={submit}>
+    <form className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5" onSubmit={submit}>
       <h2 className="text-xl font-semibold">
         {initial ? 'Muassasani tahrirlash' : 'Yangi muassasa'}
       </h2>
@@ -134,7 +134,7 @@ export function TerritoryEditor({
     }
   }
   return (
-    <form className="mt-card space-y-4 p-5" onSubmit={submit}>
+    <form className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5" onSubmit={submit}>
       <h2 className="text-xl font-semibold">
         {initial ? 'Hududni tahrirlash' : 'Yangi hudud'}
       </h2>

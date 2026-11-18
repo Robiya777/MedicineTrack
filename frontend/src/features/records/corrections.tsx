@@ -26,7 +26,7 @@ const labels: Record<string, string> = {
 }
 export function CorrectionHistory({ items }: { items: Correction[] }) {
   return items.length > 0 ? (
-    <section className="mt-card space-y-4 p-5">
+    <section className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5">
       <h2 className="text-xl font-semibold">Sababli tuzatishlar</h2>
       <p className="text-sm text-muted">
         Original matn saqlangan. Quyidagi tuzatishlar alohida kiritilgan.
@@ -109,7 +109,7 @@ function CorrectionEditor({
   }
   return (
     <form
-      className="mt-card space-y-4 p-5"
+      className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5"
       onSubmit={submit}
       aria-busy={mutation.isPending}
     >
