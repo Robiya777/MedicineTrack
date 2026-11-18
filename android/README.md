@@ -1,4 +1,11 @@
-# MedicineTrack Android 0.3.0
+# MedicineTrack Android 0.4.0
+
+## 0.4.0 — dori va ahvol budilniklari
+
+Dori occurrence’lari avtomatik ovozli/vibratsiyali alarm kanalida chiqadi. Ahvol so‘rovi Toshkent vaqti bilan 08:00, 11:00, 14:00, 17:00, 20:00 da; tunda yo‘q. Bemor bosh sahifasi → “Eslatmalarni sozlash” orqali o‘chirish va bildirishnoma/aniq vaqt/full-screen ruxsatlarini yoqish mumkin.
+
+Signal maksimum 60 soniya. “10 daqiqadan keyin”, “Yopish” va ilovadagi tegishli formani ochish amallari bor. Holatga javob avtomatik yuborilmaydi; bemor izoh bilan tasdiqlaydi. Qulflangan ekranda klinik tafsilot ko‘rsatilmaydi; qurilma qulfini ochish talab qilinadi. Android ruxsat bermasa heads-up/inexact alarm qoladi; telefonning DND/kanal/batareya qoidalari amal qiladi. Full-screen ekran emulator preview’da tekshirildi; barcha telefonlarda avtomatik full-screen ochilishi kafolatlanmaydi.
+
 
 ## 0.3.0 dizayn moslashuvi
 

@@ -31,7 +31,7 @@ public final class MainActivity extends Activity {
   LinearLayout root, body;
   TextView feedback;
   String screen = "Kirish", conversationId = "";
-  boolean busy = false, paused = true;
+  boolean busy = false, paused = true, initialMedicationSync = false;
   int generation = 0;
   JSONArray doses = new JSONArray();
   String medicationSyncWarning = "";
@@ -105,7 +105,8 @@ public final class MainActivity extends Activity {
         },
         v -> {
           if ((boolean) v) {
-            if ("Dorilar".equals(getIntent().getStringExtra("screen"))) medications();
+            if ("Holat".equals(getIntent().getStringExtra("screen"))) healthReport();
+            else if ("Dorilar".equals(getIntent().getStringExtra("screen"))) medications();
             else home();
           }
         });
@@ -122,6 +123,7 @@ public final class MainActivity extends Activity {
           () -> {
             try {
               Reminders.schedule(this);
+              AlarmAlerts.scheduleHealth(this);
             } catch (Exception ignored) {
             }
           });
@@ -146,6 +148,7 @@ public final class MainActivity extends Activity {
   protected void onNewIntent(Intent i) {
     super.onNewIntent(i);
     if (!api.access.isEmpty() && "Dorilar".equals(i.getStringExtra("screen"))) medications();
+    else if (!api.access.isEmpty() && "Holat".equals(i.getStringExtra("screen"))) healthReport();
   }
 
   final java.util.LinkedHashMap<String, EditText> draftFields = new java.util.LinkedHashMap<>();
@@ -285,7 +288,10 @@ public final class MainActivity extends Activity {
     b.setAllCaps(false);
     b.setTextColor(Color.WHITE);
     b.setBackground(bg(GREEN, 9));
-    if (s.equals("O‘tkazib yubordim") || s.equals("Qaydni tuzatish") || s.equals("Yangilash") || s.equals("Suhbatlarni ochish")) {
+    if (s.equals("O‘tkazib yubordim")
+        || s.equals("Qaydni tuzatish")
+        || s.equals("Yangilash")
+        || s.equals("Suhbatlarni ochish")) {
       GradientDrawable outline = bg(Color.WHITE, 9);
       outline.setStroke(dp(1), LINE);
       b.setBackground(outline);
@@ -368,7 +374,10 @@ public final class MainActivity extends Activity {
       avatar.setBackground(bg(0xffdff5ef, 20));
       avatar.setContentDescription("Mening hisobim");
       top.addView(avatar, new LinearLayout.LayoutParams(dp(44), dp(44)));
-      avatar.setOnClickListener(v -> { if (!busy) account(); });
+      avatar.setOnClickListener(
+          v -> {
+            if (!busy) account();
+          });
     }
     root.addView(top);
     root.addView(title(heading));
@@ -392,7 +401,10 @@ public final class MainActivity extends Activity {
               : new String[] {"Asosiy", "Dorilar", "Suhbatlar", "Hisob"};
       nav.setBackground(bg(Color.WHITE, 16));
       nav.setPadding(dp(4), dp(6), dp(4), dp(6));
-      String active = screen.equals("Suhbat") ? "Suhbatlar" : screen.equals("Topshiriq") ? "Chaqiruvlar" : screen;
+      String active =
+          screen.equals("Suhbat")
+              ? "Suhbatlar"
+              : screen.equals("Topshiriq") ? "Chaqiruvlar" : screen;
       for (int i = 0; i < names.length; i++) {
         String name = names[i];
         boolean selected = name.equals(active);
@@ -408,7 +420,10 @@ public final class MainActivity extends Activity {
         tab.addView(t);
         tab.setContentDescription(name);
         nav.addView(tab, new LinearLayout.LayoutParams(0, dp(60), 1));
-        tab.setOnClickListener(v -> { if (!busy) navigate(name); });
+        tab.setOnClickListener(
+            v -> {
+              if (!busy) navigate(name);
+            });
       }
       root.addView(nav);
     }
@@ -496,7 +511,11 @@ public final class MainActivity extends Activity {
     TextView introTitle = text("Har bir bemor e’tiborda.", 26, Color.WHITE);
     introTitle.setTypeface(face, Typeface.BOLD);
     intro.addView(introTitle);
-    intro.addView(text("Statsionardan chiqarilgandan keyingi bemor kuzatuvi va o‘z vaqtida patronaj.", 15, Color.WHITE));
+    intro.addView(
+        text(
+            "Statsionardan chiqarilgandan keyingi bemor kuzatuvi va o‘z vaqtida patronaj.",
+            15,
+            Color.WHITE));
     LinearLayout c = card();
     label(c, "Hisobingiz orqali tizimga kiring.");
     EditText server =
@@ -552,6 +571,16 @@ public final class MainActivity extends Activity {
   void home() {
     screen = "Asosiy";
     frame(doctor() ? "Ish kuningiz, bir joyda." : "Bugun o‘zingizni asrang.", true);
+    if (!doctor() && !initialMedicationSync) {
+      initialMedicationSync = true;
+      worker.execute(
+          () -> {
+            try {
+              MedicationSync.sync(this);
+            } catch (Exception ignored) {
+            }
+          });
+    }
     LinearLayout hero = card();
     hero.setBackground(bg(GREEN, 18));
     TextView h =
@@ -578,6 +607,26 @@ public final class MainActivity extends Activity {
           if (doctor()) loadTasks();
           else medications();
         });
+    if (!doctor()) {
+      LinearLayout alarms = card();
+      alarms.addView(text("Parvarish eslatmalari", 20, INK));
+      label(alarms, "Dori vaqti avtomatik eslatiladi. Ahvol so‘rovi: 08:00–22:00, har 3 soatda.");
+      button(
+          alarms,
+          "Eslatmalarni sozlash",
+          () -> {
+            screen = "Eslatmalar";
+            frame("Parvarish eslatmalari", true);
+            alarmSettings(card());
+          });
+      worker.execute(
+          () -> {
+            try {
+              AlarmAlerts.scheduleHealth(this);
+            } catch (Exception ignored) {
+            }
+          });
+    }
     LinearLayout chat = card();
     chat.addView(text("Shifokor bilan aloqa", 20, INK));
     label(chat, "Xabar yuborish va holatni qayd etish. Javob ish jadvali bo‘yicha.");
@@ -865,6 +914,74 @@ public final class MainActivity extends Activity {
         });
   }
 
+  void healthReport() {
+    execute(
+        () -> api.list("/conversations"),
+        v -> {
+          JSONArray rows = (JSONArray) v;
+          frame("Holatingizni yuborish", true);
+          label(body, "Holatni qaysi suhbatga yubormoqchisiz?");
+          int open = 0;
+          String only = "";
+          for (int n = 0; n < rows.length(); n++) {
+            JSONObject conversation = rows.getJSONObject(n);
+            if (!"OPEN".equals(conversation.optString("status"))) continue;
+            open++;
+            only = conversation.getString("id");
+            final String id = only;
+            button(body, "Shifokorga holat yuborish · " + id.substring(0, 8), () -> statusForm(id));
+          }
+          if (open == 1) statusForm(only);
+          else if (open == 0) label(body, "Ochiq suhbat yo‘q. Muassasa bilan bog‘laning.");
+        });
+  }
+
+  void alarmSettings(LinearLayout c) {
+    label(c, "Ahvol so‘rovi: 08:00, 11:00, 14:00, 17:00, 20:00. Tunda bezovta qilmaydi.");
+    Switch enabled = new Switch(this);
+    enabled.setText("Har 3 soatda ahvolimni so‘rash");
+    enabled.setMinHeight(dp(48));
+    enabled.setChecked(getSharedPreferences("alarms", 0).getBoolean("health", true));
+    c.addView(enabled);
+    enabled.setOnCheckedChangeListener(
+        (b, on) -> {
+          getSharedPreferences("alarms", 0).edit().putBoolean("health", on).apply();
+          worker.execute(
+              () -> {
+                try {
+                  AlarmAlerts.scheduleHealth(this);
+                  if (!on) AlarmAlerts.dismiss(this, AlarmAlerts.HEALTH);
+                } catch (Exception ignored) {
+                }
+              });
+        });
+    button(c, "Ovozli eslatmalarga ruxsat", this::notificationPermission);
+    if (Build.VERSION.SDK_INT >= 31
+        && !getSystemService(AlarmManager.class).canScheduleExactAlarms())
+      button(
+          c,
+          "Aniq vaqtli budilnikni yoqish",
+          () ->
+              startActivity(
+                  new Intent(
+                      android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                      Uri.parse("package:" + getPackageName()))));
+    if (Build.VERSION.SDK_INT >= 34
+        && !getSystemService(NotificationManager.class).canUseFullScreenIntent())
+      button(
+          c,
+          "Budilnik ekraniga ruxsat berish",
+          () ->
+              startActivity(
+                  new Intent(
+                      android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                      Uri.parse("package:" + getPackageName()))));
+    label(
+        c,
+        "Ovoz va vibratsiya telefon sozlamalariga bog‘liq. Har bir signal 60 soniyadan keyin"
+            + " to‘xtaydi. 10 daqiqaga kechiktirish mumkin.");
+  }
+
   void statusForm(String id) {
     screen = "Holat:" + id;
     frame("Bugungi holatingiz", true);
@@ -977,11 +1094,12 @@ public final class MainActivity extends Activity {
     toggle.setBackground(bg(0xffdff5ef, 9));
     settingsCard.addView(settings);
     settings.setVisibility(View.GONE);
-    toggle.setOnClickListener(v -> {
-      boolean open = settings.getVisibility() != View.VISIBLE;
-      settings.setVisibility(open ? View.VISIBLE : View.GONE);
-      toggle.setText(open ? "Sozlamalarni yopish  ⌃" : "Jadval va eslatma sozlamalari  ⌄");
-    });
+    toggle.setOnClickListener(
+        v -> {
+          boolean open = settings.getVisibility() != View.VISIBLE;
+          settings.setVisibility(open ? View.VISIBLE : View.GONE);
+          toggle.setText(open ? "Sozlamalarni yopish  ⌃" : "Jadval va eslatma sozlamalari  ⌄");
+        });
     button(settings, "Jadvalni yangilash", () -> loadMedication(patient));
     if (!doctor()) {
       button(settings, "Eslatmalarga ruxsat berish", this::notificationPermission);
@@ -1094,7 +1212,7 @@ public final class MainActivity extends Activity {
     LinearLayout c = card();
     c.addView(text(api.user.optString("username"), 22, INK));
     label(c, doctor() ? "Oilaviy shifokor" : "Bemor");
-    label(c, "MedicineTrack 0.3.0 · Sinov versiyasi");
+    label(c, "MedicineTrack 0.4.0 · Sinov versiyasi");
     label(
         c,
         "Bildirishnomalar: "
@@ -1128,6 +1246,7 @@ public final class MainActivity extends Activity {
                               api.access = "";
                               api.refresh = "";
                               api.user = new JSONObject();
+                              initialMedicationSync = false;
                               return true;
                             },
                             v -> loginUI()))

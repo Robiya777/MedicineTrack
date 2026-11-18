@@ -10,6 +10,7 @@ public final class BootReceiver extends BroadcastReceiver {
             () -> {
               try {
                 Reminders.schedule(c);
+                AlarmAlerts.scheduleHealth(c);
               } catch (Exception ignored) {
               } finally {
                 r.finish();

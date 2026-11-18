@@ -604,6 +604,57 @@ public final class FlowChecks extends Instrumentation {
             activity.clearChatDraft();
             activity.home();
           });
+      long eight = Instant.parse("2026-11-18T03:00:00Z").toEpochMilli();
+      check(AlarmAlerts.nextHealth(eight) == eight + 3 * 3600000L, "08:00 advances to 11:00");
+      long twenty = Instant.parse("2026-11-18T15:00:00Z").toEpochMilli();
+      check(
+          AlarmAlerts.nextHealth(twenty) == twenty + 12 * 3600000L,
+          "20:00 advances to next morning 08:00");
+      android.content.SharedPreferences alarmPrefs =
+          getTargetContext().getSharedPreferences("alarms", 0);
+      alarmPrefs.edit().putBoolean("health", true).remove("health_due").commit();
+      AlarmAlerts.scheduleHealth(getTargetContext());
+      check(alarmPrefs.getLong("health_due", 0) > System.currentTimeMillis(), "Health alarm armed");
+      AlarmAlerts.snooze(getTargetContext(), AlarmAlerts.HEALTH);
+      long snoozed = alarmPrefs.getLong("health_due", 0);
+      AlarmAlerts.scheduleHealth(getTargetContext());
+      check(alarmPrefs.getLong("health_due", 0) == snoozed, "Health snooze survives resume/rearm");
+      alarmPrefs.edit().putBoolean("health", false).commit();
+      AlarmAlerts.scheduleHealth(getTargetContext());
+      check(
+          !alarmPrefs.contains("health_due"), "Disabled health reminder clears pending timestamp");
+      alarmPrefs.edit().putBoolean("health", true).commit();
+      AlarmAlerts.scheduleHealth(getTargetContext());
+      // Execute the actual health receiver through a short synthetic AlarmManager trigger.
+      AlarmAlerts.arm(getTargetContext(), AlarmAlerts.HEALTH, System.currentTimeMillis() + 1500);
+      boolean healthDelivered = false;
+      for (int n = 0; n < 150; n++) {
+        Thread.sleep(100);
+        for (android.service.notification.StatusBarNotification notification :
+            getTargetContext()
+                .getSystemService(NotificationManager.class)
+                .getActiveNotifications()) {
+          if (notification.getId() == ("alarm:" + AlarmAlerts.HEALTH).hashCode())
+            healthDelivered = true;
+        }
+        if (healthDelivered) break;
+      }
+      check(healthDelivered, "Actual health AlarmReceiver delivered an alarm notification");
+      AlarmAlerts.dismiss(getTargetContext(), AlarmAlerts.HEALTH);
+      // Foreground preview is separate from the real AlarmManager delivery check above.
+      Activity alarm =
+          startActivitySync(
+              new Intent(getTargetContext(), AlarmActivity.class)
+                  .putExtra("kind", AlarmAlerts.HEALTH)
+                  .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+      Thread.sleep(500);
+      screenshot("09-alarm-screen");
+      ui(alarm::finish);
+      ui(() -> activity.healthReport());
+      idle();
+      visible("Bugungi holatingiz");
+      screenshot("10-health-form");
+      ui(() -> activity.home());
       screenshot("07-final-home");
       report.putString(
           "stream",
