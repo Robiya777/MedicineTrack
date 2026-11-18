@@ -1,3 +1,4 @@
+import { RefreshCw } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRef, useState, type SubmitEvent } from 'react'
 import { getRouteApi } from '@tanstack/react-router'
@@ -90,6 +91,7 @@ export function MedicationPanel({
           </p>
         </div>
         <button className={secondaryButton} onClick={() => void refresh()}>
+          <RefreshCw size={17} aria-hidden="true" />
           Yangilash
         </button>
       </div>

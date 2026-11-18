@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Bell } from 'lucide-react'
+import { RefreshCw, Bell } from 'lucide-react'
 import { useState } from 'react'
 import {
   notificationKey,
@@ -74,6 +74,7 @@ export function NotificationBell() {
               disabled={query.isFetching}
               onClick={() => void query.refetch()}
             >
+              <RefreshCw size={17} aria-hidden="true" />
               Yangilash
             </button>
             {query.isPending && <Notice>Bildirishnomalar yuklanmoqda…</Notice>}

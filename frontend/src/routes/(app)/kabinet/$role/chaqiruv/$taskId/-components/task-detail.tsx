@@ -1,3 +1,4 @@
+import { RefreshCw } from 'lucide-react'
 import { MedicationTaskLink } from '@/features/medications/entry'
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
@@ -26,6 +27,7 @@ export function TaskDetail() {
       disabled={task.isFetching}
       onClick={() => void task.refetch()}
     >
+      <RefreshCw size={17} aria-hidden="true" />
       Yangilash
     </button>
   )
