@@ -40,3 +40,12 @@ Not verified: real-device battery restrictions, long-duration scheduling, option
 Reference: main `5e97667`, frontend DESIGN_SYSTEM.md va src/index.css. DM Sans fonti ilova ichiga joylandi (internet talab qilmaydi). Umumiy native komponentlar rang, chegaralar, yumaloqlik va navigatsiya bo‘yicha moslashtirildi; kirish sahifasi yangilandi. Dori sahifasidagi yordamchi boshqaruvlar ochiladigan bo‘limga yig‘ildi.
 
 API 34 emulatorda login, bemor bosh sahifasi, dorilar, suhbat, shifokor ro‘yxati, tafsilot va dori formasi screenshotlari ko‘rib chiqildi. Lokal sintetik backendga qarshi dastlab 45 ta tekshiruv, yakuniy takroriy yugurishda 42 ta tekshiruv o‘tdi (oldingi yugurishda tugallangan task va dori holatlari sabab shartli tekshiruvlar soni kamayadi); assembleDebug/assembleDebugAndroidTest/lintDebug o‘tdi (0 lint error, avvalgi 3 warning). Jismoniy qurilma va production server bu tekshiruvga kirmaydi.
+
+
+## 2026-11-18 — parvarish budilniklari (0.4.0)
+
+API 34 emulatorda yakuniy yangi sintetik bazaga qarshi **52 checks PASS**. Dori AlarmManager receiver’i va yangi ahvol AlarmReceiver’i haqiqiy notification chiqardi. 08:00→11:00, 20:00→ertasi 08:00 hisoblari, snooze timestampining qayta rejalashda saqlanishi, o‘chirilganda timestamp bekor bo‘lishi tekshirildi. Budilnik Activity preview va holat formasiga o‘tish screenshotlari olindi. Bemor kirganda jadval avtomatik sinxronlanadi; fon job va lokal cache saqlanadi.
+
+assembleDebug / assembleDebugAndroidTest / lintDebug o‘tdi: 0 errors, 4 warnings (old target API, redundant v26 resource folder, 2 literal UI strings). Ikki takroriy test lokal login throttlega tushgan; yangi ajratilgan backend jarayoni va bazada mavjud throttle qoidalarini o‘zgartirmasdan to‘liq test o‘tdi.
+
+Chegara: full-screen Activity ko‘rinishi foreground preview bilan tekshirildi; qulflangan jismoniy telefonda avtomatik ochilish, ovozning real eshitilishi, API 26 runtime, uzoq muddatli interval va OEM batareya cheklovlari tekshirilmagan. Full-screen va exact alarm maxsus ruxsatlari mavjud bo‘lmaganda notification/inexact fallback ishlatiladi. Avvalgi reboot tiklash dalili 0.2.0ga tegishli; yangi health boot yo‘li kodga ulangan, shu versiyada jismoniy reboot sinovi bajarilmadi. Holatning haqiqiy yuborilishi bemorning tasdig‘ini talab qiladi.

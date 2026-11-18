@@ -72,6 +72,7 @@ final class Reminders {
       cancel(c);
     } catch (Exception ignored) {
     }
+    AlarmAlerts.clear(c);
     c.getSystemService(NotificationManager.class).cancelAll();
   }
 
@@ -89,31 +90,20 @@ final class Reminders {
           && r.isNull("record")) valid = true;
     }
     if (!valid) return;
-    NotificationManager nm = c.getSystemService(NotificationManager.class);
-    nm.createNotificationChannel(
-        new NotificationChannel(
-            "medication", "Dori eslatmalari", NotificationManager.IMPORTANCE_HIGH));
-    PendingIntent open =
-        PendingIntent.getActivity(
-            c,
-            0,
-            new Intent(c, MainActivity.class)
-                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                .putExtra("screen", "Dorilar"),
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-    boolean stale = System.currentTimeMillis() - cache.getLong("synced_at") > 86400000L;
-    nm.notify(
-        id.hashCode(),
-        new Notification.Builder(c, "medication")
-            .setSmallIcon(android.R.drawable.ic_popup_reminder)
-            .setContentTitle("Dori qabul qilish vaqti")
-            .setContentText(
-                stale
-                    ? "Jadval eskirgan bo‘lishi mumkin. Ilovada yangilang."
-                    : "Tasdiqlangan jadvalni ilovada ko‘ring.")
-            .setVisibility(Notification.VISIBILITY_PRIVATE)
-            .setContentIntent(open)
-            .setAutoCancel(true)
-            .build());
+    AlarmAlerts.show(c, id);
+  }
+
+  static boolean valid(Context c, String id) throws Exception {
+    String saved = new Vault(c).get("doses");
+    if (saved.isEmpty()) return false;
+    JSONArray rows = new JSONObject(saved).getJSONArray("rows");
+    for (int n = 0; n < rows.length(); n++) {
+      JSONObject row = rows.getJSONObject(n);
+      if (id.equals(row.optString("id"))
+          && row.optBoolean("reminder_enabled")
+          && row.isNull("cancelled_at")
+          && row.isNull("record")) return true;
+    }
+    return false;
   }
 }

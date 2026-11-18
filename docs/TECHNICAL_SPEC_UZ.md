@@ -1,6 +1,6 @@
 # MedicineTrack — texnik topshiriq
 
-Versiya: 1.2 • Sana: 2026-11-17 • Holat: ishlab chiqish uchun bazaviy loyiha.
+Versiya: 1.3 • Sana: 2026-11-18 • Holat: ishlab chiqish uchun bazaviy loyiha.
 
 ## 1. Hujjat asosi va chegaralari
 
@@ -537,3 +537,27 @@ Bu modul P0ga qo‘shildi. Ish hajmi oshgani sabab uch kunlik reja kafolat emas:
 | AT-48 | Kelajakdagi qabulni TAKEN qilish | 400; muddatidan oldin qabulni tasdiqlab bo‘lmaydi |
 
 DoDga AT-34…AT-48, fizik qurilmada fon/reboot/ruxsat rad etilishi, jadval-versiya-sync sinovi va demo bemorining eslatma → qayd → shifokor tarixi ssenariysi qo‘shiladi. 24 soat patronaj, chatga javob muddati va dori vaqtlari uchta alohida jarayon; biri boshqasini yopmaydi. Bu hujjatdagi talablar, hali implementatsiya qilingan funksiyalar emas.
+
+
+## 25. Androidda qulay ovozli eslatmalar va har 3 soatlik holat so‘rovi
+
+### 25.1. Bemor tajribasi
+
+- Dori eslatmasi shifokor tasdiqlagan occurrence vaqtida, ilova yopiq bo‘lsa ham lokal AlarmManager orqali chiqadi. Dori vaqtlarini ilova yoki AI o‘zi tanlamaydi.
+- Ahvol so‘rovi uchun kelishilgan kunduzgi oyna: Asia/Tashkent 08:00–22:00. Aniq slotlar 08:00, 11:00, 14:00, 17:00, 20:00; navbatdagi slot ertasi 08:00. 23:00 yoki tunda so‘rov chiqmaydi. Dori rejasi tungi qabulni belgilagan bo‘lsa, dori eslatmasi bundan mustasno.
+- Faol bemor sessiyasida kunduzgi so‘rov standart yoqilgan; bemor “Eslatmalarni sozlash”da o‘chirishi mumkin. Shifokor hisobiga holat budilnigi rejalashtirilmaydi.
+- Ovoz/vibratsiyali yuqori muhimlikdagi bildirishnoma va ruxsat mavjud bo‘lganda budilnikka o‘xshash ekran. Uch amal: jadval/holatni ochish, “10 daqiqadan keyin”, “Yopish”. Signal maksimum 60 soniya; keyingi eslatma mavjudligi bemorning haqiqiy javobi yoki dori qabul qilganini anglatmaydi.
+- Kechiktirilgan ahvol so‘rovi 22:00 dan oshsa, keyingi kunduzgi slotga o‘tadi. Ilovaga qaytish kechiktirish vaqtini bekor qilmaydi.
+- Holat tugmasi mavjud OPEN suhbatning holat formasini ochadi. Bemor “Yaxshilandi / O‘zgarmadi / Yomonlashdi” va izohni o‘zi yuboradi. Signalni yopish avtomatik tibbiy qayd yoki shifokorga xabar yaratmaydi. Offline yuborish muvaffaqiyatsiz bo‘lsa, mavjud shifrlangan forma chernovigi saqlanadi.
+
+### 25.2. Android ruxsatlari va maxfiylik
+
+Bildirishnoma, aniq alarm va Android 14+ full-screen intent ruxsatlari alohida ko‘rsatiladi. Full-screen ruxsat yo‘q bo‘lsa oddiy yuqori muhimlikdagi bildirishnoma; aniq alarm ruxsat yo‘q bo‘lsa OS boshqaradigan inexact alarm. Ovoz/vibratsiya DND, kanal, ovoz balandligi va qurilma cheklovlariga bog‘liq. Qulflangan ekran faqat umumiy matnni ko‘rsatadi; klinik ma’lumotlarga o‘tishda qurilma qulfi ochilishi kerak.
+
+Qayta yuklash va ilova yangilanishida navbatdagi slot tiklanadi. Logoutda alarm va bildirishnomalar bekor qilinadi. Eskirgan/offline dori jadvali uchun avvalgi ogohlantirishlar amal qiladi. Full-screen ruxsatning Play tarqatishdagi eligibility tekshiruvi release tayyorlash bosqichida bajariladi; ruxsat cheklovlarini aylanib o‘tish ko‘zda tutilmaydi.
+
+### 25.3. Qabul mezonlari va mas’ullar
+
+Android: @akashishunichiro — lokal alarm, ekran, ruxsatlar, snooze, settings, boot/logout. Backend: @sunnatila — mavjud status-updates API va server tasdig‘i. Frontend: @nuraziz07 — holat qaydlari ko‘rinishi. PM: @robiya777 — kunduzgi jadval va real qurilma demosi tasdig‘i.
+
+Qabul: 08:00→11:00 va 20:00→ertasi 08:00 hisoblanishi; 10 daqiqalik kechiktirish; o‘chirilganda signal yo‘qligi; haqiqiy AlarmManager notification yetkazishi; status formasi ochilishi va mavjud API orqali yuborilishi; logout/boot; API 26 mosligi, 34 ruxsatli/ruxsatsiz holatlar. Jismoniy qurilmadagi uyqu/batareya va uzoq muddatli tekshiruv alohida bajariladi.
