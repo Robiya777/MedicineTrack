@@ -7,6 +7,8 @@ import {
   hospitalPatientQuery,
 } from '@/api/hospital'
 import {
+  Field,
+  inputStyle,
   Notice,
   PageHeader,
   Pagination,
@@ -17,6 +19,8 @@ import { DischargeTable } from './hospital/discharge-table'
 import { DischargeCardList } from './hospital/discharge-card-list'
 
 export function HospitalDashboard() {
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
   const [page, setPage] = useState(1)
   const discharges = useQuery(dischargePageQuery(page))
   const rows = discharges.data?.results ?? []
@@ -37,10 +41,11 @@ export function HospitalDashboard() {
     ),
   )
 
+  const visibleRows = rows.filter(row => (!status || row.status === status) && (!search || (row.patient_snapshot.full_name || names.get(row.patient) || row.id).toLocaleLowerCase().includes(search.toLocaleLowerCase())))
   const newDischargeButton = (
     <Link
       to="/kabinet/$role/chiqarish/yangi"
-      params={{ role: 'statsionar' }}
+      params={{ role: 'koordinator' }}
       className={primaryButton}
     >
       <Plus size={18} aria-hidden="true" />
@@ -51,7 +56,7 @@ export function HospitalDashboard() {
   return (
     <section aria-labelledby="workspace-title" className="space-y-6">
       <PageHeader
-        title="Statsionar kabineti"
+        title="Chiqarishlar"
         description="Chiqarish yozuvlari va bemorni kuzatuvga topshirish."
         action={newDischargeButton}
       />
@@ -71,6 +76,8 @@ export function HospitalDashboard() {
           )}
         </div>
 
+        <div className="grid gap-3 border-b border-line p-4 sm:grid-cols-2"><Field label="Joriy sahifadan qidirish">{a=><input {...a} type="search" className={inputStyle} value={search} onChange={e=>setSearch(e.target.value)} />}</Field><Field label="Chiqarish holati">{a=><select {...a} className={inputStyle} value={status} onChange={e=>setStatus(e.target.value)}><option value="">Barchasi</option><option value="DRAFT">Loyiha</option><option value="CONFIRMED">Tasdiqlangan</option></select>}</Field></div>
+        {rows.length > 0 && visibleRows.length === 0 && <div className="p-5"><Notice>Joriy sahifada mos yozuv yo‘q.</Notice></div>}
         {discharges.isPending && (
           <div className="p-8">
             <Notice>Chiqarishlar yuklanmoqda…</Notice>
@@ -92,8 +99,8 @@ export function HospitalDashboard() {
 
         {rows.length > 0 && (
           <>
-            <DischargeTable rows={rows} names={names} />
-            <DischargeCardList rows={rows} names={names} />
+            <DischargeTable rows={visibleRows} names={names} />
+            <DischargeCardList rows={visibleRows} names={names} />
           </>
         )}
 

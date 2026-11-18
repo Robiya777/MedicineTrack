@@ -2,7 +2,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { z } from 'zod'
 import { apiClient } from '@/api/client'
 import { createPaginatedResponseSchema } from '@/api/types'
-export const roles = ['ADMIN', 'HOSPITAL', 'DOCTOR', 'COORDINATOR'] as const
+export const roles = ['ADMIN', 'DOCTOR', 'COORDINATOR'] as const
 export const accountSchema = z.object({
   id: z.uuid(),
   username: z.string(),

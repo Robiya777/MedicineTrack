@@ -55,7 +55,7 @@ export function DischargeTable({ rows, names }: DischargeTableProps) {
               <td className="px-5 py-4 align-middle text-right">
                 <Link
                   to="/kabinet/$role/chiqarish/$dischargeId"
-                  params={{ role: 'statsionar', dischargeId: row.id }}
+                  params={{ role: 'koordinator', dischargeId: row.id }}
                   className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-sm font-semibold text-primary hover:bg-teal-50 transition cursor-pointer"
                   aria-label={
                     (row.patient_snapshot.full_name ??

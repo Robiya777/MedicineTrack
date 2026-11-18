@@ -102,7 +102,7 @@ export function MedicationPanel({
       {!plans.isError && (
         <>
           {user.role !== 'PATIENT' && (
-            <div className="mt-card space-y-4 p-5">
+            <div className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5">
               {!dischargeId && (
                 <Field label="Chiqarish UUIDsi">
                   {(a) => (
@@ -136,7 +136,7 @@ export function MedicationPanel({
             />
           )}
           {user.role === 'PATIENT' && (
-            <div className="mt-card space-y-4 p-5">
+            <div className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5">
               <h2 className="text-xl font-semibold">Bugungi dorilar</h2>
               <Field label="Jadval sanasi (har dorining vaqt zonasida)">
                 {(a) => (
@@ -168,7 +168,7 @@ export function MedicationPanel({
             />
           ))}
           {['PATIENT', 'DOCTOR'].includes(user.role) && (
-            <section className="mt-card space-y-4 p-5">
+            <section className="rounded-2xl border border-line bg-surface shadow-xs space-y-4 p-5">
               <button
                 className={secondaryButton}
                 onClick={() => setHistory(!history)}
@@ -199,7 +199,7 @@ function PlanCard({
       null,
     )
   return (
-    <article className="mt-card space-y-5 p-5 sm:p-6">
+    <article className="rounded-2xl border border-line bg-surface shadow-xs space-y-5 p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-semibold">
           Jadval · {plan.version}-versiya

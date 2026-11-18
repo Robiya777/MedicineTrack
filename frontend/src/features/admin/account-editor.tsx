@@ -17,7 +17,7 @@ export function AccountEditor({
   saved: () => Promise<void>
 }) {
   const [role, setRole] = useState<Account['role']>(
-      initial?.role || 'HOSPITAL',
+      initial?.role || 'COORDINATOR',
     ),
     mutation = useIdempotentMutation((input: AccountInput, key) =>
       saveAccount(input, initial?.id, key),

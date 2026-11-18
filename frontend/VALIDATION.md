@@ -224,3 +224,11 @@ va bosib vaqt kiritish ishlatiladi. Istisno sanalar alohida tabda.
 sana yaratish Chromiumda tekshirildi. Saqlash mavjud versiyali/idempotent API
 orqali qoladi. Jadval huquqlari o‘zgartirilmadi; bu ish vaqti, tashrif bookingi emas.
 ESLint, TypeScript va build o‘tdi.
+
+## Koordinatorga birlashtirish — 3–4-bosqich
+
+Bemor yaratish → kasalxona tanlash → DRAFT → hamkasb koordinator tasdig‘i,
+aktivatsiya/dori bo‘limlari va eski route redirecti localhostda tekshirildi.
+1440/360 px overflow va runtime xatosi aniqlanmadi; lint/typecheck/build o‘tdi.
+Backend regressiyasi 97 passed, 6 PostgreSQL-specific skipped.
+Dalillar: [COORDINATOR_UNIFICATION.md](docs/COORDINATOR_UNIFICATION.md).

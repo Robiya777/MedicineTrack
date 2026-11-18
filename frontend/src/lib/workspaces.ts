@@ -1,7 +1,6 @@
 import type { UserRole } from '@/state/session'
 
 export const workspaces = {
-  HOSPITAL: { slug: 'statsionar', title: 'Statsionar kabineti', label: 'Statsionar xodimi' },
   COORDINATOR: { slug: 'koordinator', title: 'Koordinator kabineti', label: 'Koordinator' },
   DOCTOR: { slug: 'shifokor', title: 'Shifokor kabineti', label: 'Oilaviy shifokor' },
   PATIENT: { slug: 'bemor', title: 'Bemor kabineti', label: 'Bemor' },

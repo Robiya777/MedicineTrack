@@ -39,7 +39,7 @@ export function DischargeCardList({ rows, names }: DischargeCardListProps) {
           <div className="border-t border-line/60 pt-3 text-right">
             <Link
               to="/kabinet/$role/chiqarish/$dischargeId"
-              params={{ role: 'statsionar', dischargeId: row.id }}
+              params={{ role: 'koordinator', dischargeId: row.id }}
               className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline cursor-pointer"
               aria-label={
                 (row.patient_snapshot.full_name ??

@@ -19,8 +19,8 @@ export function DischargeDetail() {
       <PageHeader
         title="Chiqarish tafsiloti"
         backTo={{
-          to: '/kabinet/$role',
-          params: { role: 'statsionar' },
+          to: '/kabinet/$role/chiqarish',
+          params: { role: 'koordinator' },
           label: 'Chiqarishlarga qaytish',
         }}
       />
