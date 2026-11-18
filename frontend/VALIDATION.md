@@ -265,3 +265,11 @@ chaqiruv tarixi chiziqli hodisalar lentasiga joylashtirildi.
 Chromium localhostda 1440/360 px, overflow, bitta refresh icon va ikkala amal
 dialogini ochish/yopish tekshirildi. Runtime xatosi aniqlanmadi, ma’lumotga
 yozish bajarilmadi. Lint/typecheck/build o‘tdi; ruxsat va API oqimlari saqlandi.
+
+## Ish jadvali boshlang‘ich holati
+
+Shifokor tanlanmaganda yo‘riqli welcome panel va mavjud shifokorlardan tez
+tanlash kartalari chiqadi. Loading/xato/bo‘sh ro‘yxat holatlari ajratilgan.
+Chromium localhostda 1440/360 px, tez tanlash bilan kalendarni ochish, tanlovni
+tozalash va bo‘sh shifokorlar javobi tekshirildi. Saqlash amali tanlovsiz
+ko‘rinmaydi; overflow/runtime xatosi aniqlanmadi. Lint/typecheck/build o‘tdi.
