@@ -66,3 +66,12 @@ Lokal manzil va demo paroli `.env`da. U Gitdan chiqarilgan. Ishga tushirish va q
 - Full SQLite suite: 87 passed, 6 skipped (PostgreSQL-specific checks).
 - Chromium tested two pages in one context, forced access expiry, separate logout,
   a fresh tab and a window.open copy of sessionStorage. All passed.
+
+## Stage 6 record corrections and admin — 2026-11-18
+
+Full SQLite suite: **93 passed, 6 skipped** (PostgreSQL-specific tests).
+Four added regression tests cover correction original preservation, audit and
+idempotent replay, report author/role/field/reason restrictions, own DRAFT-only
+patient contact editing, and admin password reset revoking existing sessions
+without returning the password. Existing account/reference permission tests pass.
+Chromium web integration is documented in frontend/docs/STAGE6_ACCEPTANCE.md.
