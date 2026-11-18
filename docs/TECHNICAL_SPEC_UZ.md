@@ -21,6 +21,7 @@ MVP muvaffaqiyati: demo bemorini chiqarishdan shifokor tasdig‘igacha bo‘lgan
 | Yo‘nalish | Mas’ul | Topshiriladigan natija |
 |---|---|---|
 | PM | @robiya777 | Scope, backlog, klinik jarayon savollari, demo, qabul tekshiruvi |
+| Business analyst | @akmalorinov | Biznes talablarini tahlil qilish, jarayonlar va foydalanuvchi ssenariylari, qabul mezonlarini aniqlashtirish |
 | Frontend web | @nuraziz07 | Statsionar va koordinator kabineti, responsive UI, API integratsiyasi |
 | Android / APK | @akashishunichiro (foydalanuvchi) | Shifokor ilovasi, chaqiruvlar, natijani yuborish, o‘rnatiladigan APK |
 | Backend | @sunnatila | API, DB, autentifikatsiya, SLA, bildirishnoma, AI adapter, deploy |
