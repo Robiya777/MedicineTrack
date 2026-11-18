@@ -1,3 +1,4 @@
+import { Building2, MapPin, Plus, RefreshCw, Users } from 'lucide-react'
 import {useState} from 'react'
 import {useQuery,useQueryClient} from '@tanstack/react-query'
 import {accountsQuery,adminOrganizationsQuery,adminTerritoriesQuery,adminKeys,type Account,type Organization,type Territory} from '@/api/admin'
@@ -52,6 +53,7 @@ export function AdminDashboard() {
           onClick={() => void current.refetch()}
           disabled={current.isFetching}
         >
+          <RefreshCw size={17} aria-hidden="true" />
           Yangilash
         </button>
       </div>
@@ -62,11 +64,11 @@ export function AdminDashboard() {
       >
         {(
           [
-            ['account', 'Xodimlar'],
-            ['organization', 'Muassasalar'],
-            ['territory', 'Hududlar'],
+            ['account', 'Xodimlar', Users],
+            ['organization', 'Muassasalar', Building2],
+            ['territory', 'Hududlar', MapPin],
           ] as const
-        ).map(([value, label]) => (
+        ).map(([value, label, Icon]) => (
           <button
             type="button"
             key={value}
@@ -78,6 +80,7 @@ export function AdminDashboard() {
               setSearch('')
             }}
           >
+            <Icon size={17} aria-hidden="true" />
             {label}
           </button>
         ))}
@@ -133,6 +136,7 @@ export function AdminDashboard() {
               )
             }
           >
+            <Plus size={17} aria-hidden="true" />
             {tab === 'account'
               ? 'Yangi xodim'
               : tab === 'organization'

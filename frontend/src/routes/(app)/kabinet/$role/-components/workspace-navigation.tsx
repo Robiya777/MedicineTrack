@@ -1,5 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router'
-import { LayoutDashboard } from 'lucide-react'
+import { CalendarClock, CircleAlert, Clock3, LayoutDashboard, MessageCircle, MessageCircleWarning, Pill, UserRoundX } from 'lucide-react'
 import type { UserRole } from '@/state/session'
 import type { WorkspaceConfig } from '@/lib/workspaces'
 
@@ -40,7 +40,7 @@ export function WorkspaceNavigation({
         aria-current={isHomeActive ? 'page' : undefined}
         onClick={onNavigate}
       >
-        <LayoutDashboard size={19} aria-hidden="true" />
+        <LayoutDashboard className="shrink-0" size={19} aria-hidden="true" />
         <span>{role === 'HOSPITAL' ? 'Chiqarishlar' : 'Ish stoli'}</span>
       </Link>
 
@@ -53,7 +53,8 @@ export function WorkspaceNavigation({
           aria-current={pathname.includes('/dorilar') ? 'page' : undefined}
           onClick={onNavigate}
         >
-          Dori jadvali
+          <Pill size={19} className="shrink-0" aria-hidden="true" />
+          <span>Dori jadvali</span>
         </Link>
       )}
 
@@ -66,7 +67,8 @@ export function WorkspaceNavigation({
           aria-current={pathname.includes('/suhbat') ? 'page' : undefined}
           onClick={onNavigate}
         >
-          Suhbatlar
+          <MessageCircle size={19} className="shrink-0" aria-hidden="true" />
+          <span>Suhbatlar</span>
         </Link>
       )}
 
@@ -80,7 +82,8 @@ export function WorkspaceNavigation({
             aria-current={pathname.includes('/ish-jadvali') ? 'page' : undefined}
             onClick={onNavigate}
           >
-            Ish jadvali
+            <CalendarClock size={19} className="shrink-0" aria-hidden="true" />
+            <span>Ish jadvali</span>
           </Link>
           <Link
             to="/kabinet/$role/murojaatlar"
@@ -90,13 +93,14 @@ export function WorkspaceNavigation({
             aria-current={pathname.includes('/murojaatlar') ? 'page' : undefined}
             onClick={onNavigate}
           >
-            Javobsiz murojaatlar
+            <MessageCircleWarning size={19} className="shrink-0" aria-hidden="true" />
+            <span>Javobsiz murojaatlar</span>
           </Link>
-          {[
-            ['unassigned', 'Mas’ulsiz chaqiruvlar'],
-            ['soon', 'Muddati yaqin'],
-            ['overdue', 'Kechikkan chaqiruvlar'],
-          ].map(([itemSegment, label]) => {
+          {([
+            ['unassigned', 'Mas’ulsiz chaqiruvlar', UserRoundX],
+            ['soon', 'Muddati yaqin', Clock3],
+            ['overdue', 'Kechikkan chaqiruvlar', CircleAlert],
+          ] as const).map(([itemSegment, label, Icon]) => {
             const active = segment === itemSegment
             return (
               <Link
@@ -108,7 +112,8 @@ export function WorkspaceNavigation({
                 aria-current={active ? 'true' : undefined}
                 onClick={onNavigate}
               >
-                {label}
+                <Icon size={19} className="shrink-0" aria-hidden="true" />
+                <span>{label}</span>
               </Link>
             )
           })}
